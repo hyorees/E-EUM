@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VOLTIS - 2단계 AI 이상 거래 관제 대시보드</title>
+    <!-- Chart.js 및 PapaParse(CSV 파싱) / Tailwind CSS CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-900 text-slate-100 font-sans min-h-screen p-6">
+
+    <!-- 상단 헤더 -->
+    <header class="flex flex-col md:flex-row justify-between items-start md:items-center pb-6 border-b border-slate-800 mb-6 gap-4">
+        <div>
+            <h1 class="text-2xl font-bold text-amber-400 flex items-center gap-2">
+                ⚡ VOLTIS <span class="text-lg font-normal text-slate-300">| 2단계 AI 기반 태양광 P2P 이상 거래 관제 시스템</span>
+            </h1>
+            <p class="text-sm text-slate-400 mt-1">RandomForest 기상 예측 ➔ Residual 오차 산출 ➔ Isolation Forest 비지도 탐지 연동</p>
+        </div>
+        
+        <!-- CSV 파일 업로드 버튼 -->
+        <div class="flex items-center gap-3">
+            <label class="cursor-pointer bg-amber-500 hover:bg-amber-600 text-slate-900 font-semibold px-4 py-2 rounded-lg text-sm transition-colors flex items-center gap-2">
+                📁 결과 CSV 업로드 (`final_anomaly_results.csv`)
+                <input type="file" id="csvFileInput" accept=".csv" class="hidden">
+            </label>
+            <div id="statusBadge" class="bg-slate-800 px-3 py-2 rounded-lg border border-slate-700 text-xs text-slate-400">
+                상태: 대기 중
+            </div>
+        </div>
+    </header>
+
+    <!-- 요약 현황 카드 -->
+    <section class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+        <div class="bg-slate-800 p-4 rounded-xl border border-slate-700">
+            <p class="text-xs text-slate-400 mb-1">전체 데이터 분석</p>
+            <p id="totalCount" class="text-2xl font-bold text-slate-100">- <span class="text-sm font-normal text-slate-400">건</span></p>
+        </div>
+        <div class="bg-slate-800 p-4 rounded-xl border border-rose-900/50">
+            <p class="text-xs text-rose-400 mb-1">🚨 부정청구 탐지 (야간 조작)</p>
+            <p id="fraudCount" class="text-2xl font-bold text-rose-500">- <span class="text-sm font-normal text-slate-400">건</span></p>
+        </div>
+        <div class="bg-slate-800 p-4 rounded-xl border border-amber-900/50">
+            <p class="text-xs text-amber-400 mb-1">🔧 계측기 고장 탐지 (주간 무발전)</p>
+            <p id="faultCount" class="text-2xl font-bold text-amber-500">- <span class="text-sm font-normal text-slate-400">건</span></p>
+        </div>
+        <div class="bg-slate-800 p-4 rounded-xl border border-emerald-900/50">
+            <p class="text-xs text-emerald-400 mb-1">정상 거래 데이터</p>
+            <p id="normalCount" class="text-2xl font-bold text-emerald-500">- <span class="text-sm font-normal text-slate-400">건</span></p>
+        </div>
+    </section>
+
+    <!-- 차트 영역 -->
+    <section class="bg-slate-800 p-5 rounded-xl border border-slate-700 mb-6">
+        <div class="flex justify-between items-center mb-4">
+            <h2 class="text-base font-semibold text-slate-200">📊 AI 예측치 vs 실제 발전량 & 잔차(Residual) 시각화</h2>
+            <span class="text-xs text-slate-400">실시간 연동 차트</span>
+        </div>
+        <div class="h-80 w-full">
+            <canvas id="anomalyChart"></canvas>
+        </div>
+    </section>
+
+    <!-- 이상치 포착 상세 표 -->
+    <section class="bg-slate-800 p-5 rounded-xl border border-slate-700">
+        <div class="flex justify-between items-center mb-4">
+            <h2 class="text-base font-semibold text-slate-200">📋 AI 포착 이상 거래 데이터 상세 목록</h2>
+            <span id="listBadge" class="text-xs bg-slate-700 text-slate-300 px-3 py-1 rounded-full">파일을 업로드해 주세요</span>
+        </div>
+        <div class="overflow-x-auto max-h-96">
+            <table class="w-full text-left text-sm text-slate-300">
+                <thead class="bg-slate-900/80 text-slate-400 border-b border-slate-700 sticky top-0 backdrop-blur-md">
+                    <tr>
+                        <th class="p-3">일시 (Timestamp)</th>
+                        <th class="p-3">실제 발전량</th>
+                        <th class="p-3">AI 예측 발전량</th>
+                        <th class="p-3">잔차 (Residual)</th>
+                        <th class="p-3">일조량</th>
+                        <th class="p-3">AI 탐지 결과</th>
+                    </tr>
+                </thead>
+                <tbody id="tableBody" class="divide-y divide-slate-700/50">
+                    <tr>
+                        <td colspan="6" class="p-6 text-center text-slate-500">상단 버튼을 통해 `final_anomaly_results.csv` 파일을 업로드하면 결과가 시각화됩니다.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <script>
+        let myChart = null;
+
+        document.getElementById('csvFileInput').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            document.getElementById('statusBadge').innerHTML = '<span class="text-amber-400 font-semibold">● CSV 데이터 파싱 중...</span>';
+
+            Papa.parse(file, {
+                header: true,
+                skipEmptyLines: true,
+                complete: function(results) {
+                    processCSVData(results.data);
+                }
+            });
+        });
+
+        function processCSVData(data) {
+            let fraudList = [];
+            let faultList = [];
+            let total = data.length;
+
+            data.forEach(row => {
+                const result = row['AI_탐지결과'] || '정상';
+                if (result.includes('부정청구')) {
+                    fraudList.push(row);
+                } else if (result.includes('계측기고장')) {
+                    faultList.push(row);
+                }
+            });
+
+            // 현황 카운터 업데이트
+            document.getElementById('totalCount').innerText = total.toLocaleString();
+            document.getElementById('fraudCount').innerText = fraudList.length.toLocaleString();
+            document.getElementById('faultCount').innerText = faultList.length.toLocaleString();
+            document.getElementById('normalCount').innerText = (total - fraudList.length - faultList.length).toLocaleString();
+            document.getElementById('statusBadge').innerHTML = '<span class="text-emerald-400 font-semibold">● 실시간 분석 완료</span>';
+            document.getElementById('listBadge').innerText = `이상치 총 ${fraudList.length + faultList.length}건 포착됨`;
+
+            // 테이블 렌더링
+            const tbody = document.getElementById('tableBody');
+            tbody.innerHTML = '';
+
+            const anomalies = [...fraudList, ...faultList];
+
+            if (anomalies.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" class="p-6 text-center text-slate-400">탐지된 이상치가 없습니다. 모든 데이터가 정상입니다.</td></tr>';
+            } else {
+                anomalies.forEach(row => {
+                    const tr = document.createElement('tr');
+                    tr.className = "hover:bg-slate-700/30 transition-colors";
+                    
+                    const isFraud = (row['AI_탐지결과'] || '').includes('부정청구');
+                    const badgeClass = isFraud 
+                        ? 'bg-rose-500/10 text-rose-400 border-rose-500/30' 
+                        : 'bg-amber-500/10 text-amber-400 border-amber-500/30';
+
+                    const power = parseFloat(row['전력거래량(MWh)'] || 0).toFixed(2);
+                    const pred = parseFloat(row['AI_예측발전량'] || 0).toFixed(2);
+                    const res = parseFloat(row['residual'] || 0).toFixed(2);
+
+                    tr.innerHTML = `
+                        <td class="p-3 font-mono text-slate-300">${row['timestamp']}</td>
+                        <td class="p-3 font-semibold ${isFraud ? 'text-rose-400' : 'text-slate-300'}">${power} MWh</td>
+                        <td class="p-3 text-sky-400">${pred} MWh</td>
+                        <td class="p-3 font-mono ${res > 0 ? 'text-rose-400' : 'text-amber-400'}">${res > 0 ? '+' + res : res}</td>
+                        <td class="p-3">${row['일조(hr)'] || 0} hr</td>
+                        <td class="p-3"><span class="px-2 py-1 text-xs border rounded-md ${badgeClass}">${row['AI_탐지결과']}</span></td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+            }
+
+            // 차트 렌더링 (이상치 및 주변 표본 추출)
+            renderChart(anomalies.slice(0, 30));
+        }
+
+        function renderChart(sampleData) {
+            const ctx = document.getElementById('anomalyChart').getContext('2d');
+            
+            if (myChart) {
+                myChart.destroy();
+            }
+
+            const labels = sampleData.map(d => d['timestamp']);
+            const actualPower = sampleData.map(d => parseFloat(d['전력거래량(MWh)'] || 0));
+            const predPower = sampleData.map(d => parseFloat(d['AI_예측발전량'] || 0));
+            const residuals = sampleData.map(d => parseFloat(d['residual'] || 0));
+
+            myChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: 'AI 예상 정상 발전량 (Baseline)',
+                            data: predPower,
+                            borderColor: '#38bdf8',
+                            borderDash: [5, 5],
+                            borderWidth: 2,
+                            fill: false
+                        },
+                        {
+                            label: '실제 전력 거래량 (MWh)',
+                            data: actualPower,
+                            borderColor: '#94a3b8',
+                            backgroundColor: '#94a3b8',
+                            borderWidth: 1.5,
+                            pointRadius: 4
+                        },
+                        {
+                            label: '잔차 오차 (Residual)',
+                            data: residuals,
+                            type: 'bar',
+                            backgroundColor: residuals.map(r => r > 200 ? 'rgba(244, 63, 94, 0.6)' : 'rgba(245, 158, 11, 0.6)'),
+                            borderWidth: 0
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { labels: { color: '#cbd5e1' } }
+                    },
+                    scales: {
+                        x: { ticks: { color: '#94a3b8', maxRotation: 45 }, grid: { color: '#334155' } },
+                        y: { ticks: { color: '#94a3b8' }, grid: { color: '#334155' } }
+                    }
+                }
+            });
+        }
+    </script>
+</body>
+</html>
