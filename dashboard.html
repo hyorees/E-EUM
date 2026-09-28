@@ -3,27 +3,56 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VOLTIS - 2단계 AI 이상 거래 관제 대시보드</title>
-    <!-- Chart.js 및 PapaParse(CSV 파싱) / Tailwind CSS CDN -->
+    <title>VOLTIS - AI 이상 거래 지도 & 대시보드 통합 관제</title>
+    <!-- Chart.js, PapaParse, Leaflet.js, FontAwesome, Tailwind CSS -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.css"/>
+    <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+
+    <style>
+        .leaflet-popup-content-wrapper {
+            background: rgba(15, 23, 42, 0.95) !important;
+            color: #f8fafc !important;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 12px !important;
+        }
+        .leaflet-popup-tip { background: rgba(15, 23, 42, 0.95) !important; }
+    </style>
 </head>
-<body class="bg-slate-900 text-slate-100 font-sans min-h-screen p-6">
+<body class="bg-slate-900 text-slate-100 font-sans min-h-screen p-4 md:p-6 flex flex-col">
 
     <!-- 상단 헤더 -->
-    <header class="flex flex-col md:flex-row justify-between items-start md:items-center pb-6 border-b border-slate-800 mb-6 gap-4">
+    <header class="flex flex-col lg:flex-row justify-between items-start lg:items-center pb-5 border-b border-slate-800 mb-6 gap-4">
         <div>
             <h1 class="text-2xl font-bold text-amber-400 flex items-center gap-2">
-                ⚡ VOLTIS <span class="text-lg font-normal text-slate-300">| 2단계 AI 기반 태양광 P2P 이상 거래 관제 시스템</span>
+                ⚡ VOLTIS <span class="text-lg font-normal text-slate-300">| 태양광 P2P 이상 거래 통합 관제</span>
             </h1>
-            <p class="text-sm text-slate-400 mt-1">RandomForest 기상 예측 ➔ Residual 오차 산출 ➔ Isolation Forest 비지도 탐지 연동</p>
+            <p class="text-sm text-slate-400 mt-1">파일 업로드 시 지도의 관제 마커와 대시보드 차트가 실시간 동기화됩니다.</p>
         </div>
         
-        <!-- CSV 파일 업로드 버튼 -->
-        <div class="flex items-center gap-3">
-            <label class="cursor-pointer bg-amber-500 hover:bg-amber-600 text-slate-900 font-semibold px-4 py-2 rounded-lg text-sm transition-colors flex items-center gap-2">
-                📁 결과 CSV 업로드 (`final_anomaly_results.csv`)
+        <!-- 우측 컨트롤 영역 (화면 전환, 지역 필터, 파일 업로드) -->
+        <div class="flex flex-wrap items-center gap-2.5">
+            <!-- 뷰 전환 탭 -->
+            <div class="bg-slate-800 p-1 rounded-xl border border-slate-700 flex items-center">
+                <button id="btnDashView" onclick="switchView('dashboard')" class="px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all bg-amber-500 text-slate-900 shadow">
+                    📊 대시보드
+                </button>
+                <button id="btnMapView" onclick="switchView('map')" class="px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all text-slate-400 hover:text-slate-200">
+                    🗺️ 지도 관제
+                </button>
+            </div>
+
+            <!-- 지역 선택 셀렉트 -->
+            <select id="regionSelect" onchange="onRegionChange(this.value)" class="bg-slate-800 border border-slate-700 text-slate-200 text-xs rounded-lg px-3 py-2 font-semibold outline-none focus:border-amber-500">
+                <option value="전체">전국 전체 보기</option>
+            </select>
+
+            <!-- CSV 파일 업로드 버튼 -->
+            <label class="cursor-pointer bg-amber-500 hover:bg-amber-600 text-slate-900 font-bold px-3.5 py-2 rounded-lg text-xs transition-colors flex items-center gap-1.5 shadow-md">
+                <i class="fa-solid fa-file-arrow-up"></i> 결과 CSV 업로드
                 <input type="file" id="csvFileInput" accept=".csv" class="hidden">
             </label>
             <div id="statusBadge" class="bg-slate-800 px-3 py-2 rounded-lg border border-slate-700 text-xs text-slate-400">
@@ -33,152 +62,395 @@
     </header>
 
     <!-- 요약 현황 카드 -->
-    <section class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-        <div class="bg-slate-800 p-4 rounded-xl border border-slate-700">
-            <p class="text-xs text-slate-400 mb-1">전체 데이터 분석</p>
-            <p id="totalCount" class="text-2xl font-bold text-slate-100">- <span class="text-sm font-normal text-slate-400">건</span></p>
+    <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+        <div class="bg-slate-800/80 p-4 rounded-xl border border-slate-700">
+            <p class="text-xs text-slate-400 mb-1" id="cardRegionLabel">조회 대상: 전체</p>
+            <p id="totalCount" class="text-2xl font-bold text-slate-100">0 <span class="text-xs font-normal text-slate-400">건</span></p>
         </div>
-        <div class="bg-slate-800 p-4 rounded-xl border border-rose-900/50">
-            <p class="text-xs text-rose-400 mb-1">🚨 부정청구 탐지 (야간 조작)</p>
-            <p id="fraudCount" class="text-2xl font-bold text-rose-500">- <span class="text-sm font-normal text-slate-400">건</span></p>
+        <div class="bg-slate-800/80 p-4 rounded-xl border border-rose-900/50">
+            <p class="text-xs text-rose-400 mb-1">🚨 부정청구 (야간 조작)</p>
+            <p id="fraudCount" class="text-2xl font-bold text-rose-500">0 <span class="text-xs font-normal text-slate-400">건</span></p>
         </div>
-        <div class="bg-slate-800 p-4 rounded-xl border border-amber-900/50">
-            <p class="text-xs text-amber-400 mb-1">🔧 계측기 고장 탐지 (주간 무발전)</p>
-            <p id="faultCount" class="text-2xl font-bold text-amber-500">- <span class="text-sm font-normal text-slate-400">건</span></p>
+        <div class="bg-slate-800/80 p-4 rounded-xl border border-amber-900/50">
+            <p class="text-xs text-amber-400 mb-1">🔧 계측기 고장 (주간 무발전)</p>
+            <p id="faultCount" class="text-2xl font-bold text-amber-500">0 <span class="text-xs font-normal text-slate-400">건</span></p>
         </div>
-        <div class="bg-slate-800 p-4 rounded-xl border border-emerald-900/50">
-            <p class="text-xs text-emerald-400 mb-1">정상 거래 데이터</p>
-            <p id="normalCount" class="text-2xl font-bold text-emerald-500">- <span class="text-sm font-normal text-slate-400">건</span></p>
-        </div>
-    </section>
-
-    <!-- 차트 영역 -->
-    <section class="bg-slate-800 p-5 rounded-xl border border-slate-700 mb-6">
-        <div class="flex justify-between items-center mb-4">
-            <h2 class="text-base font-semibold text-slate-200">📊 AI 예측치 vs 실제 발전량 & 잔차(Residual) 시각화</h2>
-            <span class="text-xs text-slate-400">실시간 연동 차트</span>
-        </div>
-        <div class="h-80 w-full">
-            <canvas id="anomalyChart"></canvas>
+        <div class="bg-slate-800/80 p-4 rounded-xl border border-emerald-900/50">
+            <p class="text-xs text-emerald-400 mb-1">✅ 정상 거래 데이터</p>
+            <p id="normalCount" class="text-2xl font-bold text-emerald-500">0 <span class="text-xs font-normal text-slate-400">건</span></p>
         </div>
     </section>
 
-    <!-- 이상치 포착 상세 표 -->
-    <section class="bg-slate-800 p-5 rounded-xl border border-slate-700">
-        <div class="flex justify-between items-center mb-4">
-            <h2 class="text-base font-semibold text-slate-200">📋 AI 포착 이상 거래 데이터 상세 목록</h2>
-            <span id="listBadge" class="text-xs bg-slate-700 text-slate-300 px-3 py-1 rounded-full">파일을 업로드해 주세요</span>
+    <!-- [뷰 1] 대시보드 메인 영역 -->
+    <main id="dashboardContainer" class="space-y-6">
+        <!-- 지역별 관제 현황 (지도 마커와 동일한 색상 규칙) -->
+        <section class="bg-slate-800/80 p-5 rounded-xl border border-slate-700">
+            <div class="flex flex-wrap justify-between items-center gap-2 mb-3">
+                <h2 class="text-sm font-semibold text-slate-200 flex items-center gap-2">
+                    <i class="fa-solid fa-location-dot text-rose-400"></i> 지역별 관제 현황
+                </h2>
+                <span class="text-xs text-slate-500">🔴 부정거래 · 🟠 계측기 고장 · 🟢 정상 — 클릭하면 해당 지역으로 필터링됩니다.</span>
+            </div>
+            <div id="regionGrid" class="grid grid-cols-3 sm:grid-cols-5 lg:grid-cols-9 gap-2"></div>
+        </section>
+
+        <!-- 차트 영역 -->
+        <section class="bg-slate-800/80 p-5 rounded-xl border border-slate-700">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-sm font-semibold text-slate-200 flex items-center gap-2">
+                    <i class="fa-solid fa-chart-line text-sky-400"></i> AI 예측치 vs 실제 발전량 & 잔차(Residual) 시각화
+                </h2>
+                <span class="text-xs text-slate-400">실시간 파싱 차트</span>
+            </div>
+            <div class="h-80 w-full">
+                <canvas id="anomalyChart"></canvas>
+            </div>
+        </section>
+
+        <!-- 이상치 포착 상세 표 -->
+        <section class="bg-slate-800/80 p-5 rounded-xl border border-slate-700">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-sm font-semibold text-slate-200 flex items-center gap-2">
+                    <i class="fa-solid fa-list-check text-amber-400"></i> 포착 이상 거래 데이터 목록
+                </h2>
+                <span id="listBadge" class="text-xs bg-slate-700 text-slate-300 px-3 py-1 rounded-full">파일을 업로드해 주세요</span>
+            </div>
+            <div class="overflow-x-auto max-h-96">
+                <table class="w-full text-left text-sm text-slate-300">
+                    <thead class="bg-slate-900/90 text-slate-400 border-b border-slate-700 sticky top-0 backdrop-blur-md text-xs">
+                        <tr>
+                            <th class="p-3">지역</th>
+                            <th class="p-3">일시 (Timestamp)</th>
+                            <th class="p-3">실제 발전량</th>
+                            <th class="p-3">AI 예측 발전량</th>
+                            <th class="p-3">잔차 (Residual)</th>
+                            <th class="p-3">일조량</th>
+                            <th class="p-3">AI 탐지 결과</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableBody" class="divide-y divide-slate-700/50 text-xs font-mono">
+                        <tr>
+                            <td colspan="7" class="p-6 text-center text-slate-500 font-sans">상단 버튼을 통해 CSV 파일을 업로드하면 결과가 시각화됩니다.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </main>
+
+    <!-- [뷰 2] 지도 관제 메인 영역 (초기 hidden) -->
+    <main id="mapContainer" class="hidden flex-1 flex flex-col min-h-[550px]">
+        <div class="flex items-center gap-4 bg-slate-800/80 p-3 rounded-lg border border-slate-700 mb-3 text-xs">
+            <span class="text-slate-400 font-semibold">위험도 범례:</span>
+            <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-rose-500 inline-block shadow-[0_0_8px_#ef4444]"></span> 🚨 부정거래 탐지</span>
+            <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-amber-500 inline-block shadow-[0_0_8px_#f59e0b]"></span> 🔧 계측기 고장</span>
+            <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-emerald-500 inline-block shadow-[0_0_8px_#10b981]"></span> ✅ 정상 관제구역</span>
+            <span class="text-slate-500 ml-auto">* 마커를 클릭하면 해당 지역의 대시보드로 즉시 이동합니다.</span>
         </div>
-        <div class="overflow-x-auto max-h-96">
-            <table class="w-full text-left text-sm text-slate-300">
-                <thead class="bg-slate-900/80 text-slate-400 border-b border-slate-700 sticky top-0 backdrop-blur-md">
-                    <tr>
-                        <th class="p-3">일시 (Timestamp)</th>
-                        <th class="p-3">실제 발전량</th>
-                        <th class="p-3">AI 예측 발전량</th>
-                        <th class="p-3">잔차 (Residual)</th>
-                        <th class="p-3">일조량</th>
-                        <th class="p-3">AI 탐지 결과</th>
-                    </tr>
-                </thead>
-                <tbody id="tableBody" class="divide-y divide-slate-700/50">
-                    <tr>
-                        <td colspan="6" class="p-6 text-center text-slate-500">상단 버튼을 통해 `final_anomaly_results.csv` 파일을 업로드하면 결과가 시각화됩니다.</td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
-    </section>
+        <div id="map" class="w-full flex-1 rounded-xl border border-slate-700/80 min-h-[500px]"></div>
+    </main>
 
     <script>
-        let myChart = null;
+        // 대한민국 주요 관제 거점 좌표
+        const regionCoordinates = {
+            "서울": [37.5665, 126.9780],
+            "경기": [37.4138, 127.5183],
+            "강원": [37.8228, 128.1555],
+            "충북": [36.6357, 127.4912],
+            "충남": [36.5184, 126.8000],
+            "전북": [35.7175, 127.1530],
+            "전남": [34.8679, 126.9910],
+            "경북": [36.5760, 128.5056],
+            "경남": [35.4606, 128.2132],
+            "제주": [33.4996, 126.5312],
+            "인천": [37.4563, 126.7052],
+            "대전": [36.3504, 127.3845],
+            "세종": [36.4800, 127.2890],
+            "광주": [35.1595, 126.8526],
+            "대구": [35.8714, 128.6014],
+            "울산": [35.5384, 129.3114],
+            "부산": [35.1796, 129.0756]
+        };
 
+        // 드롭다운을 좌표 목록과 항상 동기화
+        (function buildRegionSelect() {
+            const sel = document.getElementById('regionSelect');
+            Object.keys(regionCoordinates).forEach(r => {
+                const o = document.createElement('option');
+                o.value = r; o.textContent = r;
+                sel.appendChild(o);
+            });
+        })();
+
+        // CSV의 지역명("전라남도", "서울시", "제주특별자치도" 등)을 "전남", "서울" 형태로 통일
+        const regionAlias = {
+            "서울": "서울", "경기": "경기", "강원": "강원", "제주": "제주",
+            "인천": "인천", "대전": "대전", "세종": "세종", "광주": "광주",
+            "대구": "대구", "울산": "울산", "부산": "부산",
+            "충북": "충북", "충청북": "충북", "충남": "충남", "충청남": "충남",
+            "전북": "전북", "전라북": "전북", "전남": "전남", "전라남": "전남",
+            "경북": "경북", "경상북": "경북", "경남": "경남", "경상남": "경남"
+        };
+        function normalizeRegion(raw) {
+            const t = String(raw || '').trim().replace(/\s+/g, '');
+            if (!t) return '';
+            if (regionAlias[t]) return regionAlias[t];
+            // 접두어 매칭 (긴 키 우선): "전라남도" -> "전라남" -> 전남
+            const keys = Object.keys(regionAlias).sort((a, b) => b.length - a.length);
+            const hit = keys.find(k => t.startsWith(k));
+            return hit ? regionAlias[hit] : t;
+        }
+
+        let parsedDataset = [];
+        let selectedRegion = '전체';
+        let myChart = null;
+        let map = null;
+        let markersGroup = null;
+
+        renderRegionGrid();
+
+        // 1. 지도 초기화 (OpenStreetMap - API Key 불필요)
+        function initMap() {
+            if (map) return;
+            map = L.map('map', { center: [36.0, 127.8], zoom: 7 });
+            markersGroup = L.layerGroup().addTo(map);
+
+            // OpenStreetMap 표준 지도 (referrerPolicy: OSM이 요구하는 Referer 전달)
+            const osmTile = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                maxZoom: 19,
+                attribution: '&copy; OpenStreetMap',
+                referrerPolicy: 'strict-origin-when-cross-origin'
+            }).addTo(map);
+
+            // OSM 로딩 자체가 실패하면 OSM과 거의 같은 스타일의 CARTO Voyager로 전환 (한 번만)
+            let fallbackUsed = false;
+            osmTile.on('tileerror', function() {
+                if (fallbackUsed) return;
+                fallbackUsed = true;
+                map.removeLayer(osmTile);
+                L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+                    subdomains: 'abcd',
+                    maxZoom: 19,
+                    attribution: '&copy; OpenStreetMap contributors &copy; CARTO'
+                }).addTo(map);
+            });
+
+            renderMap();
+        }
+
+        // 2. 화면 전환 탭 기능
+        function switchView(viewName) {
+            const dashContainer = document.getElementById('dashboardContainer');
+            const mapContainer = document.getElementById('mapContainer');
+            const btnDash = document.getElementById('btnDashView');
+            const btnMap = document.getElementById('btnMapView');
+
+            if (viewName === 'dashboard') {
+                dashContainer.classList.remove('hidden');
+                mapContainer.classList.add('hidden');
+                btnDash.className = "px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all bg-amber-500 text-slate-900 shadow";
+                btnMap.className = "px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all text-slate-400 hover:text-slate-200";
+            } else {
+                dashContainer.classList.add('hidden');
+                mapContainer.classList.remove('hidden');
+                btnMap.className = "px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all bg-amber-500 text-slate-900 shadow";
+                btnDash.className = "px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all text-slate-400 hover:text-slate-200";
+                
+                initMap();
+                setTimeout(() => { if (map) map.invalidateSize(); }, 100);
+            }
+        }
+
+        // 3. CSV 파일 업로드 이벤트
         document.getElementById('csvFileInput').addEventListener('change', function(e) {
             const file = e.target.files[0];
             if (!file) return;
 
-            document.getElementById('statusBadge').innerHTML = '<span class="text-amber-400 font-semibold">● CSV 데이터 파싱 중...</span>';
+            document.getElementById('statusBadge').innerHTML = '<span class="text-amber-400 font-semibold">● CSV 데이터 분석 중...</span>';
 
-            Papa.parse(file, {
-                header: true,
-                skipEmptyLines: true,
-                complete: function(results) {
-                    processCSVData(results.data);
+            // UTF-8 우선, 실패하면 EUC-KR로 재시도 (한글 깨짐 방지)
+            const reader = new FileReader();
+            reader.onload = function() {
+                const buf = reader.result;
+                let text;
+                try {
+                    text = new TextDecoder('utf-8', { fatal: true }).decode(buf);
+                } catch (_) {
+                    text = new TextDecoder('euc-kr').decode(buf);
                 }
-            });
+                text = text.replace(/^\uFEFF/, ''); // BOM 제거
+
+                const results = Papa.parse(text, { header: true, skipEmptyLines: true });
+                processCSVData(results.data);
+            };
+            reader.onerror = () => alert('파일을 읽는 중 오류가 발생했습니다.');
+            reader.readAsArrayBuffer(file);
         });
 
-        function processCSVData(data) {
-            let fraudList = [];
-            let faultList = [];
-            let total = data.length;
+        // 4. CSV 데이터 정제 및 동기화
+        function processCSVData(rawData) {
+            if (!rawData || rawData.length === 0) {
+                alert('파일에 데이터가 존재하지 않습니다.');
+                return;
+            }
 
-            data.forEach(row => {
-                const result = row['AI_탐지결과'] || '정상';
-                if (result.includes('부정청구')) {
-                    fraudList.push(row);
-                } else if (result.includes('계측기고장')) {
-                    faultList.push(row);
-                }
+            const regionKeys = Object.keys(regionCoordinates);
+
+            // 열 이름은 헤더에서 한 번만 찾는다 (14만 행도 빠르게)
+            const headers = Object.keys(rawData[0]);
+            const findKey = (keywords) => headers.find(k =>
+                keywords.some(kw => k.trim().toLowerCase().includes(kw.toLowerCase()))) || null;
+
+            const kRegion = findKey(['지역', 'region', 'location']);
+            const kActual = findKey(['전력거래량', 'actual', '실제']);
+            const kPred   = findKey(['AI_예측발전량', 'pred', '예측']);
+            const kRes    = findKey(['residual', '잔차']);
+            const kTime   = findKey(['timestamp', '일시', 'time']);
+            const kSun    = findKey(['일조', 'sun']);
+            const kResult = findKey(['AI_탐지결과', 'result', '상태']);
+
+            parsedDataset = rawData.map((row, index) => {
+                let region = kRegion ? normalizeRegion(row[kRegion]) : '';
+                if (!region) region = regionKeys[index % regionKeys.length];
+
+                const actual = parseFloat(kActual ? row[kActual] : 0);
+                const pred = parseFloat(kPred ? row[kPred] : 0);
+                const resRaw = kRes ? parseFloat(row[kRes]) : NaN;
+                const residual = !isNaN(resRaw) ? resRaw : ((actual || 0) - (pred || 0));
+                const sun = parseFloat(kSun ? row[kSun] : 0);
+
+                return {
+                    region,
+                    timestamp: (kTime && row[kTime]) || '-',
+                    actual: isNaN(actual) ? 0 : actual,
+                    pred: isNaN(pred) ? 0 : pred,
+                    residual: isNaN(residual) ? 0 : residual,
+                    sun: isNaN(sun) ? 0 : sun,
+                    result: ((kResult && row[kResult]) || '정상').trim()
+                };
             });
 
-            // 현황 카운터 업데이트
-            document.getElementById('totalCount').innerText = total.toLocaleString();
+            document.getElementById('statusBadge').innerHTML = `<span class="text-emerald-400 font-semibold">● 분석 완료 (${parsedDataset.length.toLocaleString()}건 / ${new Set(parsedDataset.map(d => d.region)).size}개 지역)</span>`;
+
+            // 대시보드 & 지도 둘 다 최신 데이터 적용
+            updateDashboard();
+            if (map) renderMap();
+        }
+
+        // 지역별 관제 현황 카드 (지도 마커와 같은 색상/집계 기준)
+        function renderRegionGrid() {
+            const stats = {};
+            Object.keys(regionCoordinates).forEach(r => stats[r] = { n: 0, fraud: 0, fault: 0 });
+            parsedDataset.forEach(d => {
+                const st = stats[d.region];
+                if (!st) return;
+                st.n++;
+                if (d.result.includes('부정청구')) st.fraud++;
+                else if (d.result.includes('계측기고장')) st.fault++;
+            });
+
+            const grid = document.getElementById('regionGrid');
+            grid.innerHTML = '';
+            const items = [['전체', { n: parsedDataset.length,
+                fraud: Object.values(stats).reduce((a, b) => a + b.fraud, 0),
+                fault: Object.values(stats).reduce((a, b) => a + b.fault, 0) }]]
+                .concat(Object.entries(stats));
+
+            items.forEach(([region, st]) => {
+                let color = '#10b981', msg = '정상';
+                if (st.fraud > 0) { color = '#ef4444'; msg = `🚨 부정 ${st.fraud}`; }
+                else if (st.fault > 0) { color = '#f59e0b'; msg = `🔧 고장 ${st.fault}`; }
+                if (st.n === 0) { color = '#64748b'; msg = '데이터 없음'; }
+
+                const active = region === selectedRegion;
+                const btn = document.createElement('button');
+                btn.className = 'text-left p-2.5 rounded-lg border transition-all hover:brightness-125 '
+                    + (active ? 'bg-slate-700' : 'bg-slate-900/60');
+                btn.style.borderColor = active ? '#f59e0b' : color + '80';
+                btn.style.boxShadow = active ? '0 0 0 1px #f59e0b' : 'none';
+                btn.innerHTML = `
+                    <div class="flex items-center gap-1.5 text-xs font-bold text-slate-100">
+                        <span style="width:8px;height:8px;border-radius:9999px;background:${color};box-shadow:0 0 6px ${color}"></span>
+                        ${region === '전체' ? '전국' : region}
+                    </div>
+                    <div class="text-[11px] mt-1" style="color:${color}">${msg}</div>
+                    <div class="text-[10px] text-slate-500">${st.n.toLocaleString()}건</div>`;
+                btn.onclick = () => {
+                    document.getElementById('regionSelect').value = region;
+                    onRegionChange(region);
+                };
+                grid.appendChild(btn);
+            });
+        }
+
+        // 5. 지역 선택 변경 시
+        function onRegionChange(region) {
+            selectedRegion = region;
+            updateDashboard();
+        }
+
+        // 6. 대시보드 (현황 카드, 테이블, 차트) 업데이트
+        function updateDashboard() {
+            document.getElementById('cardRegionLabel').innerText = `조회 대상: ${selectedRegion}`;
+            renderRegionGrid();
+
+            const filtered = selectedRegion === '전체' 
+                ? parsedDataset 
+                : parsedDataset.filter(d => d.region === selectedRegion);
+
+            const fraudList = filtered.filter(d => d.result.includes('부정청구'));
+            const faultList = filtered.filter(d => d.result.includes('계측기고장'));
+            const normalList = filtered.filter(d => d.result === '정상');
+
+            document.getElementById('totalCount').innerText = filtered.length.toLocaleString();
             document.getElementById('fraudCount').innerText = fraudList.length.toLocaleString();
             document.getElementById('faultCount').innerText = faultList.length.toLocaleString();
-            document.getElementById('normalCount').innerText = (total - fraudList.length - faultList.length).toLocaleString();
-            document.getElementById('statusBadge').innerHTML = '<span class="text-emerald-400 font-semibold">● 실시간 분석 완료</span>';
+            document.getElementById('normalCount').innerText = normalList.length.toLocaleString();
             document.getElementById('listBadge').innerText = `이상치 총 ${fraudList.length + faultList.length}건 포착됨`;
 
-            // 테이블 렌더링
+            // 테이블 출력
             const tbody = document.getElementById('tableBody');
             tbody.innerHTML = '';
 
-            const anomalies = [...fraudList, ...faultList];
+            const anomalies = filtered.filter(d => d.result.includes('부정청구') || d.result.includes('계측기고장'));
+            const displayList = anomalies.length > 0 ? anomalies : filtered.slice(0, 50);
 
-            if (anomalies.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="6" class="p-6 text-center text-slate-400">탐지된 이상치가 없습니다. 모든 데이터가 정상입니다.</td></tr>';
+            if (displayList.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="7" class="p-6 text-center text-slate-400 font-sans">표시할 데이터가 없습니다.</td></tr>';
             } else {
-                anomalies.forEach(row => {
+                displayList.forEach(row => {
                     const tr = document.createElement('tr');
-                    tr.className = "hover:bg-slate-700/30 transition-colors";
+                    tr.className = "hover:bg-slate-700/40 transition-colors";
                     
-                    const isFraud = (row['AI_탐지결과'] || '').includes('부정청구');
-                    const badgeClass = isFraud 
-                        ? 'bg-rose-500/10 text-rose-400 border-rose-500/30' 
-                        : 'bg-amber-500/10 text-amber-400 border-amber-500/30';
+                    const isFraud = row.result.includes('부정청구');
+                    const isFault = row.result.includes('계측기고장');
 
-                    const power = parseFloat(row['전력거래량(MWh)'] || 0).toFixed(2);
-                    const pred = parseFloat(row['AI_예측발전량'] || 0).toFixed(2);
-                    const res = parseFloat(row['residual'] || 0).toFixed(2);
+                    let badgeStyle = 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30';
+                    if (isFraud) badgeStyle = 'bg-rose-500/10 text-rose-400 border-rose-500/30';
+                    if (isFault) badgeStyle = 'bg-amber-500/10 text-amber-400 border-amber-500/30';
 
                     tr.innerHTML = `
-                        <td class="p-3 font-mono text-slate-300">${row['timestamp']}</td>
-                        <td class="p-3 font-semibold ${isFraud ? 'text-rose-400' : 'text-slate-300'}">${power} MWh</td>
-                        <td class="p-3 text-sky-400">${pred} MWh</td>
-                        <td class="p-3 font-mono ${res > 0 ? 'text-rose-400' : 'text-amber-400'}">${res > 0 ? '+' + res : res}</td>
-                        <td class="p-3">${row['일조(hr)'] || 0} hr</td>
-                        <td class="p-3"><span class="px-2 py-1 text-xs border rounded-md ${badgeClass}">${row['AI_탐지결과']}</span></td>
+                        <td class="p-3 text-slate-200 font-bold font-sans">${row.region}</td>
+                        <td class="p-3 text-slate-400">${row.timestamp}</td>
+                        <td class="p-3 font-semibold ${isFraud ? 'text-rose-400' : 'text-slate-200'}">${row.actual.toFixed(2)} MWh</td>
+                        <td class="p-3 text-sky-400">${row.pred.toFixed(2)} MWh</td>
+                        <td class="p-3 ${row.residual > 0 ? 'text-rose-400' : 'text-amber-400'}">${row.residual > 0 ? '+' + row.residual.toFixed(2) : row.residual.toFixed(2)}</td>
+                        <td class="p-3 text-slate-400">${row.sun} hr</td>
+                        <td class="p-3 font-sans"><span class="px-2 py-0.5 border rounded-md ${badgeStyle}">${row.result}</span></td>
                     `;
                     tbody.appendChild(tr);
                 });
             }
 
-            // 차트 렌더링 (이상치 및 주변 표본 추출)
-            renderChart(anomalies.slice(0, 30));
+            renderChart(displayList.slice(0, 30));
         }
 
+        // 7. Chart.js 차트 렌더링
         function renderChart(sampleData) {
             const ctx = document.getElementById('anomalyChart').getContext('2d');
-            
-            if (myChart) {
-                myChart.destroy();
-            }
+            if (myChart) myChart.destroy();
 
-            const labels = sampleData.map(d => d['timestamp']);
-            const actualPower = sampleData.map(d => parseFloat(d['전력거래량(MWh)'] || 0));
-            const predPower = sampleData.map(d => parseFloat(d['AI_예측발전량'] || 0));
-            const residuals = sampleData.map(d => parseFloat(d['residual'] || 0));
+            const labels = sampleData.map(d => `[${d.region}] ${d.timestamp.split(' ')[1] || d.timestamp}`);
 
             myChart = new Chart(ctx, {
                 type: 'line',
@@ -186,42 +458,106 @@
                     labels: labels,
                     datasets: [
                         {
-                            label: 'AI 예상 정상 발전량 (Baseline)',
-                            data: predPower,
+                            label: 'AI 예상 정상 발전량',
+                            data: sampleData.map(d => d.pred),
                             borderColor: '#38bdf8',
-                            borderDash: [5, 5],
+                            borderDash: [4, 4],
                             borderWidth: 2,
                             fill: false
                         },
                         {
-                            label: '실제 전력 거래량 (MWh)',
-                            data: actualPower,
-                            borderColor: '#94a3b8',
-                            backgroundColor: '#94a3b8',
+                            label: '실제 전력 거래량',
+                            data: sampleData.map(d => d.actual),
+                            borderColor: '#cbd5e1',
                             borderWidth: 1.5,
-                            pointRadius: 4
+                            pointRadius: 3
                         },
                         {
-                            label: '잔차 오차 (Residual)',
-                            data: residuals,
+                            label: '잔차 (Residual)',
+                            data: sampleData.map(d => d.residual),
                             type: 'bar',
-                            backgroundColor: residuals.map(r => r > 200 ? 'rgba(244, 63, 94, 0.6)' : 'rgba(245, 158, 11, 0.6)'),
-                            borderWidth: 0
+                            backgroundColor: sampleData.map(d => d.residual > 100 ? 'rgba(244, 63, 94, 0.7)' : (d.residual < -100 ? 'rgba(245, 158, 11, 0.7)' : 'rgba(16, 185, 129, 0.4)'))
                         }
                     ]
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    plugins: {
-                        legend: { labels: { color: '#cbd5e1' } }
-                    },
+                    plugins: { legend: { labels: { color: '#cbd5e1' } } },
                     scales: {
-                        x: { ticks: { color: '#94a3b8', maxRotation: 45 }, grid: { color: '#334155' } },
-                        y: { ticks: { color: '#94a3b8' }, grid: { color: '#334155' } }
+                        x: { ticks: { color: '#94a3b8', maxRotation: 45 }, grid: { color: '#1e293b' } },
+                        y: { ticks: { color: '#94a3b8' }, grid: { color: '#1e293b' } }
                     }
                 }
             });
+        }
+
+        // 8. 지도 마커 및 팝업 렌더링
+        function renderMap() {
+            if (!map || !markersGroup) return;
+            markersGroup.clearLayers();
+
+            Object.keys(regionCoordinates).forEach(region => {
+                const regionItems = parsedDataset.filter(d => d.region === region);
+                const coords = regionCoordinates[region];
+
+                const fraudCnt = regionItems.filter(d => d.result.includes('부정청구')).length;
+                const faultCnt = regionItems.filter(d => d.result.includes('계측기고장')).length;
+
+                let markerColor = '#10b981';
+                let statusMsg = '✅ 정상 관제';
+
+                if (fraudCnt > 0) {
+                    markerColor = '#ef4444';
+                    statusMsg = `🚨 부정거래 ${fraudCnt}건 포착`;
+                } else if (faultCnt > 0) {
+                    markerColor = '#f59e0b';
+                    statusMsg = `🔧 계측기 고장 ${faultCnt}건 포착`;
+                }
+
+                const marker = L.circleMarker(coords, {
+                    radius: 11,
+                    fillColor: markerColor,
+                    color: '#ffffff',
+                    weight: 2,
+                    fillOpacity: 0.9
+                });
+
+                const rangeCircle = L.circle(coords, {
+                    radius: 20000,
+                    color: markerColor,
+                    weight: 1,
+                    fillColor: markerColor,
+                    fillOpacity: 0.12
+                });
+
+                const popupHtml = `
+                    <div style="padding: 4px; font-size: 0.85rem; font-family: sans-serif;">
+                        <div style="font-size: 0.75rem; color:#94a3b8;">대한민국 관제 거점</div>
+                        <h3 style="font-size: 1.1rem; font-weight: bold; color:#fff; margin-bottom: 4px;">${region} 관제소</h3>
+                        <p style="font-weight: bold; color:${markerColor}; margin-bottom: 6px;">${statusMsg}</p>
+                        <div style="font-size: 0.75rem; color: #cbd5e1; margin-bottom: 10px;">
+                            • 전체 데이터: ${regionItems.length}건<br>
+                            • 부정청구: ${fraudCnt}건 | 계측기 고장: ${faultCnt}건
+                        </div>
+                        <button onclick="goToRegionDashboard('${region}')" style="width: 100%; cursor: pointer; background: #f59e0b; color: #0f172a; padding: 6px 10px; border-radius: 6px; font-weight: bold; border: none; font-size: 0.75rem;">
+                            📊 ${region} 상세 대시보드 분석
+                        </button>
+                    </div>
+                `;
+
+                marker.bindPopup(popupHtml);
+                markersGroup.addLayer(rangeCircle);
+                markersGroup.addLayer(marker);
+            });
+        }
+
+        // 9. 지도 팝업 클릭 시 해당 지역 대시보드로 이동
+        function goToRegionDashboard(regionName) {
+            document.getElementById('regionSelect').value = regionName;
+            selectedRegion = regionName;
+            switchView('dashboard');
+            updateDashboard();
         }
     </script>
 </body>
