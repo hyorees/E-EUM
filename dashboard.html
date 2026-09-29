@@ -61,6 +61,25 @@
         </div>
     </header>
 
+    <!-- 기간·시간대 필터 (대시보드/지도 공통 적용) -->
+    <section class="bg-slate-800/80 p-3 rounded-xl border border-slate-700 mb-4 flex flex-wrap items-center gap-3 text-xs">
+        <span class="text-slate-400 font-semibold"><i class="fa-regular fa-calendar text-sky-400"></i> 기간·시간대 필터</span>
+        <select id="monthSelect" onchange="onMonthChange(this.value)" class="bg-slate-900 border border-slate-700 text-slate-200 rounded-lg px-2.5 py-1.5 font-semibold outline-none focus:border-amber-500">
+            <option value="전체">전체 기간</option>
+        </select>
+        <div class="flex items-center gap-1.5 text-slate-400">
+            <select id="hourFrom" onchange="onHourChange()" class="bg-slate-900 border border-slate-700 text-slate-200 rounded-lg px-2.5 py-1.5 font-semibold outline-none focus:border-amber-500"></select> ~
+            <select id="hourTo" onchange="onHourChange()" class="bg-slate-900 border border-slate-700 text-slate-200 rounded-lg px-2.5 py-1.5 font-semibold outline-none focus:border-amber-500"></select>
+        </div>
+        <div class="flex gap-1.5">
+            <button onclick="setHourPreset(0,23)" class="px-2.5 py-1.5 rounded-lg bg-slate-900 border border-slate-700 text-slate-300 hover:border-amber-500 font-semibold transition-colors">전 시간</button>
+            <button onclick="setHourPreset(6,18)" class="px-2.5 py-1.5 rounded-lg bg-slate-900 border border-slate-700 text-slate-300 hover:border-amber-500 font-semibold transition-colors">☀️ 주간 06~18시</button>
+            <button onclick="setHourPreset(19,5)" class="px-2.5 py-1.5 rounded-lg bg-slate-900 border border-slate-700 text-slate-300 hover:border-amber-500 font-semibold transition-colors">🌙 야간 19~05시</button>
+            <button onclick="resetFilters()" class="px-2.5 py-1.5 rounded-lg bg-slate-900 border border-slate-700 text-slate-300 hover:border-amber-500 font-semibold transition-colors"><i class="fa-solid fa-rotate-left"></i> 초기화</button>
+        </div>
+        <span id="filterSummary" class="text-slate-500 ml-auto"></span>
+    </section>
+
     <!-- 요약 현황 카드 -->
     <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         <div class="bg-slate-800/80 p-4 rounded-xl border border-slate-700">
@@ -91,7 +110,25 @@
                 </h2>
                 <span class="text-xs text-slate-500">🔴 부정거래 · 🟠 계측기 고장 · 🟢 정상 — 클릭하면 해당 지역으로 필터링됩니다.</span>
             </div>
-            <div id="regionGrid" class="grid grid-cols-3 sm:grid-cols-5 lg:grid-cols-9 gap-2"></div>
+            <div id="regionGrid" class="grid grid-cols-3 sm:grid-cols-5 lg:grid-cols-10 gap-2"></div>
+        </section>
+
+        <!-- 월별 / 시간대별 추이 (막대 클릭 시 해당 월/시간으로 필터) -->
+        <section class="grid grid-cols-1 xl:grid-cols-2 gap-6">
+            <div class="bg-slate-800/80 p-5 rounded-xl border border-slate-700">
+                <div class="flex justify-between items-center mb-3">
+                    <h2 class="text-sm font-semibold text-slate-200 flex items-center gap-2"><i class="fa-solid fa-calendar-days text-sky-400"></i> 월별 이상 거래 · 평균 발전량</h2>
+                    <span class="text-xs text-slate-500">막대 클릭 = 해당 월 선택</span>
+                </div>
+                <div class="h-72 w-full"><canvas id="monthChart"></canvas></div>
+            </div>
+            <div class="bg-slate-800/80 p-5 rounded-xl border border-slate-700">
+                <div class="flex justify-between items-center mb-3">
+                    <h2 class="text-sm font-semibold text-slate-200 flex items-center gap-2"><i class="fa-solid fa-clock text-sky-400"></i> 시간대별 이상 거래 · 평균 발전량</h2>
+                    <span class="text-xs text-slate-500">막대 클릭 = 해당 시간 선택</span>
+                </div>
+                <div class="h-72 w-full"><canvas id="hourChart"></canvas></div>
+            </div>
         </section>
 
         <!-- 차트 영역 -->
@@ -100,7 +137,7 @@
                 <h2 class="text-sm font-semibold text-slate-200 flex items-center gap-2">
                     <i class="fa-solid fa-chart-line text-sky-400"></i> AI 예측치 vs 실제 발전량 & 잔차(Residual) 시각화
                 </h2>
-                <span class="text-xs text-slate-400">실시간 파싱 차트</span>
+                <span id="chartModeLabel" class="text-xs text-slate-400">실시간 파싱 차트</span>
             </div>
             <div class="h-80 w-full">
                 <canvas id="anomalyChart"></canvas>
@@ -159,7 +196,8 @@
             "충북": [36.6357, 127.4912],
             "충남": [36.5184, 126.8000],
             "전북": [35.7175, 127.1530],
-            "전남": [34.8679, 126.9910],
+            "순천": [34.9507, 127.4872],
+            "목포": [34.8118, 126.3922],
             "경북": [36.5760, 128.5056],
             "경남": [35.4606, 128.2132],
             "제주": [33.4996, 126.5312],
@@ -206,6 +244,8 @@
         let myChart = null;
         let map = null;
         let markersGroup = null;
+        let selectedMonth = '전체', hourFrom = 0, hourTo = 23;
+        let allMonths = [], tfCache = {}, monthChart = null, hourChart = null;
 
         renderRegionGrid();
 
@@ -307,10 +347,17 @@
             const kRes    = findKey(['residual', '잔차']);
             const kTime   = findKey(['timestamp', '일시', 'time']);
             const kSun    = findKey(['일조', 'sun']);
+            const kStation = findKey(['지점명', 'station']);
             const kResult = findKey(['AI_탐지결과', 'result', '상태']);
+            const kHour = headers.find(k => k.trim().toLowerCase() === 'hour') || null;
 
             parsedDataset = rawData.map((row, index) => {
                 let region = kRegion ? normalizeRegion(row[kRegion]) : '';
+                // 전남은 지점명(순천/목포)으로 분리
+                if (region === '전남') {
+                    const st = String((kStation && row[kStation]) || '');
+                    region = st.includes('순천') ? '순천' : st.includes('목포') ? '목포' : region;
+                }
                 if (!region) region = regionKeys[index % regionKeys.length];
 
                 const actual = parseFloat(kActual ? row[kActual] : 0);
@@ -322,6 +369,7 @@
                 return {
                     region,
                     timestamp: (kTime && row[kTime]) || '-',
+                    ...parseTs(kTime ? row[kTime] : '', kHour ? row[kHour] : null),
                     actual: isNaN(actual) ? 0 : actual,
                     pred: isNaN(pred) ? 0 : pred,
                     residual: isNaN(residual) ? 0 : residual,
@@ -332,6 +380,7 @@
 
             document.getElementById('statusBadge').innerHTML = `<span class="text-emerald-400 font-semibold">● 분석 완료 (${parsedDataset.length.toLocaleString()}건 / ${new Set(parsedDataset.map(d => d.region)).size}개 지역)</span>`;
 
+            tfCache = {}; selectedMonth = '전체'; buildMonthSelect();
             // 대시보드 & 지도 둘 다 최신 데이터 적용
             updateDashboard();
             if (map) renderMap();
@@ -341,7 +390,7 @@
         function renderRegionGrid() {
             const stats = {};
             Object.keys(regionCoordinates).forEach(r => stats[r] = { n: 0, fraud: 0, fault: 0 });
-            parsedDataset.forEach(d => {
+            getTimeFiltered().forEach(d => {
                 const st = stats[d.region];
                 if (!st) return;
                 st.n++;
@@ -351,7 +400,7 @@
 
             const grid = document.getElementById('regionGrid');
             grid.innerHTML = '';
-            const items = [['전체', { n: parsedDataset.length,
+            const items = [['전체', { n: getTimeFiltered().length,
                 fraud: Object.values(stats).reduce((a, b) => a + b.fraud, 0),
                 fault: Object.values(stats).reduce((a, b) => a + b.fault, 0) }]]
                 .concat(Object.entries(stats));
@@ -391,12 +440,10 @@
 
         // 6. 대시보드 (현황 카드, 테이블, 차트) 업데이트
         function updateDashboard() {
-            document.getElementById('cardRegionLabel').innerText = `조회 대상: ${selectedRegion}`;
+            document.getElementById('cardRegionLabel').innerText = `조회 대상: ${filterLabel()}`;
             renderRegionGrid();
 
-            const filtered = selectedRegion === '전체' 
-                ? parsedDataset 
-                : parsedDataset.filter(d => d.region === selectedRegion);
+            const filtered = getFiltered();
 
             const fraudList = filtered.filter(d => d.result.includes('부정청구'));
             const faultList = filtered.filter(d => d.result.includes('계측기고장'));
@@ -442,55 +489,87 @@
                 });
             }
 
-            renderChart(displayList.slice(0, 30));
+            renderChart(buildMainSeries(filtered));
+            renderTrendCharts();
         }
 
         // 7. Chart.js 차트 렌더링
-        function renderChart(sampleData) {
+        function buildMainSeries(rows) {
+            // 월 선택 시: 시간 단위(해당 월 1일 00:00부터) / 전체 기간: 일 단위 평균
+            const daily = selectedMonth === '전체';
+            const groups = new Map();
+            rows.forEach(d => {
+                if (d.t == null) return;
+                const k = daily ? Math.floor(d.t / 24) : d.t;
+                let g = groups.get(k);
+                if (!g) {
+                    g = { k, n: 0, a: 0, p: 0, r: 0, fraud: 0, fault: 0,
+                          label: daily ? `${d.ym}-${d.dy}` : `${d.ym.slice(5)}-${d.dy} ${String(d.hr).padStart(2, '0')}:00` };
+                    groups.set(k, g);
+                }
+                g.n++; g.a += d.actual; g.p += d.pred; g.r += d.residual;
+                if (d.result.includes('부정청구')) g.fraud++;
+                else if (d.result.includes('계측기고장')) g.fault++;
+            });
+            return { daily, points: [...groups.values()].sort((x, y) => x.k - y.k) };
+        }
+
+        function renderChart(series) {
             const ctx = document.getElementById('anomalyChart').getContext('2d');
             if (myChart) myChart.destroy();
+            const pts = series.points;
+            document.getElementById('chartModeLabel').textContent = series.daily
+                ? '일별 평균 (월을 선택하면 00:00부터 시간별로 표시)'
+                : `${fmtMonth(selectedMonth)} 시간별 (1일 00:00부터)`;
 
-            const labels = sampleData.map(d => `[${d.region}] ${d.timestamp.split(' ')[1] || d.timestamp}`);
+            const isAnom = g => g.fraud > 0 || g.fault > 0;
+            const anomColor = g => g.fraud > 0 ? '#f43f5e' : '#f59e0b';
 
             myChart = new Chart(ctx, {
                 type: 'line',
                 data: {
-                    labels: labels,
+                    labels: pts.map(g => g.label),
                     datasets: [
                         {
                             label: 'AI 예상 정상 발전량',
-                            data: sampleData.map(d => d.pred),
-                            borderColor: '#38bdf8',
-                            borderDash: [4, 4],
-                            borderWidth: 2,
-                            fill: false
+                            data: pts.map(g => g.p / g.n),
+                            borderColor: '#38bdf8', borderDash: [4, 4], borderWidth: 2, pointRadius: 0, fill: false
                         },
                         {
                             label: '실제 전력 거래량',
-                            data: sampleData.map(d => d.actual),
-                            borderColor: '#cbd5e1',
-                            borderWidth: 1.5,
-                            pointRadius: 3
+                            data: pts.map(g => g.a / g.n),
+                            borderColor: '#cbd5e1', borderWidth: 1.5,
+                            pointRadius: pts.map(g => isAnom(g) ? 5 : 0),
+                            pointBackgroundColor: pts.map(g => isAnom(g) ? anomColor(g) : '#cbd5e1'),
+                            pointBorderColor: pts.map(g => isAnom(g) ? '#fff' : '#cbd5e1')
                         },
                         {
                             label: '잔차 (Residual)',
-                            data: sampleData.map(d => d.residual),
+                            data: pts.map(g => g.r / g.n),
                             type: 'bar',
-                            backgroundColor: sampleData.map(d => d.residual > 100 ? 'rgba(244, 63, 94, 0.7)' : (d.residual < -100 ? 'rgba(245, 158, 11, 0.7)' : 'rgba(16, 185, 129, 0.4)'))
+                            backgroundColor: pts.map(g => g.fraud > 0 ? 'rgba(244,63,94,0.8)' : g.fault > 0 ? 'rgba(245,158,11,0.8)' : 'rgba(16,185,129,0.35)')
                         }
                     ]
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    plugins: { legend: { labels: { color: '#cbd5e1' } } },
+                    interaction: { mode: 'index', intersect: false },
+                    plugins: {
+                        legend: { labels: { color: '#cbd5e1' } },
+                        tooltip: { callbacks: { afterBody: items => {
+                            const g = pts[items[0].dataIndex];
+                            return isAnom(g) ? [`🚨 부정청구 ${g.fraud}건 · 🔧 계측기 고장 ${g.fault}건`] : [];
+                        } } }
+                    },
                     scales: {
-                        x: { ticks: { color: '#94a3b8', maxRotation: 45 }, grid: { color: '#1e293b' } },
+                        x: { ticks: { color: '#94a3b8', maxRotation: 45, autoSkip: true, maxTicksLimit: 24 }, grid: { color: '#1e293b' } },
                         y: { ticks: { color: '#94a3b8' }, grid: { color: '#1e293b' } }
                     }
                 }
             });
         }
+
 
         // 8. 지도 마커 및 팝업 렌더링
         function renderMap() {
@@ -498,7 +577,7 @@
             markersGroup.clearLayers();
 
             Object.keys(regionCoordinates).forEach(region => {
-                const regionItems = parsedDataset.filter(d => d.region === region);
+                const regionItems = getTimeFiltered().filter(d => d.region === region);
                 const coords = regionCoordinates[region];
 
                 const fraudCnt = regionItems.filter(d => d.result.includes('부정청구')).length;
@@ -551,6 +630,143 @@
                 markersGroup.addLayer(marker);
             });
         }
+
+        // ===== 기간·시간대 필터 =====
+        function parseTs(ts, hourCol) {
+            const m = String(ts || '').match(/(\d{4})[-\/.](\d{1,2})[-\/.](\d{1,2})[ T]+(\d{1,2})/);
+            let hr = m ? +m[4] : (hourCol != null && hourCol !== '' ? parseInt(hourCol) : -1);
+            if (isNaN(hr)) hr = -1;
+            return {
+                ym: m ? m[1] + '-' + m[2].padStart(2, '0') : null,
+                dy: m ? m[3].padStart(2, '0') : '',
+                hr,
+                t: m ? Date.UTC(+m[1], +m[2] - 1, +m[3], Math.max(hr, 0)) / 3600000 : null  // 시간순 정렬용
+            };
+        }
+        function fmtMonth(ym) { const [y, m] = ym.split('-'); return `${y}년 ${+m}월`; }
+        // 시작 > 끝이면 자정을 넘기는 구간(예: 19시~5시)으로 처리
+        function inHourRange(h) {
+            return hourFrom <= hourTo ? (h >= hourFrom && h <= hourTo) : (h >= hourFrom || h <= hourTo);
+        }
+        function getTimeFiltered(skipMonth = false, skipHour = false) {
+            const key = `${skipMonth}|${skipHour}|${selectedMonth}|${hourFrom}|${hourTo}`;
+            if (tfCache[key]) return tfCache[key];
+            const allHours = hourFrom === 0 && hourTo === 23;
+            return tfCache[key] = parsedDataset.filter(d =>
+                (skipMonth || selectedMonth === '전체' || d.ym === selectedMonth) &&
+                (skipHour || allHours || inHourRange(d.hr)));
+        }
+        const byRegion = rows => selectedRegion === '전체' ? rows : rows.filter(d => d.region === selectedRegion);
+        function getFiltered() { return byRegion(getTimeFiltered()); }
+
+        function filterLabel() {
+            const parts = [selectedRegion];
+            if (selectedMonth !== '전체') parts.push(fmtMonth(selectedMonth));
+            if (!(hourFrom === 0 && hourTo === 23)) {
+                parts.push(hourFrom === hourTo ? `${hourFrom}시` : `${hourFrom}시~${hourTo}시${hourFrom > hourTo ? '(익일)' : ''}`);
+            }
+            return parts.join(' · ');
+        }
+        function buildHourSelects() {
+            const opts = Array.from({ length: 24 }, (_, h) => `<option value="${h}">${h}시</option>`).join('');
+            document.getElementById('hourFrom').innerHTML = opts;
+            document.getElementById('hourTo').innerHTML = opts;
+            syncHourSelects();
+        }
+        function syncHourSelects() {
+            document.getElementById('hourFrom').value = hourFrom;
+            document.getElementById('hourTo').value = hourTo;
+        }
+        function buildMonthSelect() {
+            allMonths = [...new Set(parsedDataset.map(d => d.ym))].filter(Boolean).sort();
+            const sel = document.getElementById('monthSelect');
+            sel.innerHTML = '<option value="전체">전체 기간</option>' +
+                allMonths.map(m => `<option value="${m}">${fmtMonth(m)}</option>`).join('');
+            sel.value = selectedMonth;
+        }
+        function applyFilters() {
+            if (!parsedDataset.length) return;
+            updateDashboard();
+            if (map) renderMap();
+        }
+        function onMonthChange(v) { selectedMonth = v; applyFilters(); }
+        function onHourChange() {
+            hourFrom = +document.getElementById('hourFrom').value;
+            hourTo = +document.getElementById('hourTo').value;
+            applyFilters();
+        }
+        function setHourPreset(a, b) { hourFrom = a; hourTo = b; syncHourSelects(); applyFilters(); }
+        function resetFilters() {
+            selectedMonth = '전체'; hourFrom = 0; hourTo = 23;
+            document.getElementById('monthSelect').value = '전체';
+            syncHourSelects(); applyFilters();
+        }
+
+        // ===== 월별 / 시간대별 집계 차트 =====
+        function aggregate(rows, keyFn, keys) {
+            const m = new Map(keys.map(k => [k, { n: 0, fraud: 0, fault: 0, a: 0, p: 0 }]));
+            rows.forEach(d => {
+                const s = m.get(keyFn(d));
+                if (!s) return;
+                s.n++; s.a += d.actual; s.p += d.pred;
+                if (d.result.includes('부정청구')) s.fraud++;
+                else if (d.result.includes('계측기고장')) s.fault++;
+            });
+            return keys.map(k => m.get(k));
+        }
+        function buildTrend(canvasId, prev, labels, stats, isActive, onPick) {
+            if (prev) prev.destroy();
+            const dim = c => labels.map((_, i) => isActive(i) ? c : c.replace(/[\d.]+\)$/, '0.2)'));
+            const grid = { color: '#1e293b' };
+            return new Chart(document.getElementById(canvasId), {
+                data: {
+                    labels,
+                    datasets: [
+                        { type: 'bar', label: '🚨 부정청구', data: stats.map(s => s.fraud), backgroundColor: dim('rgba(244,63,94,0.85)'), stack: 'c', yAxisID: 'y' },
+                        { type: 'bar', label: '🔧 계측기 고장', data: stats.map(s => s.fault), backgroundColor: dim('rgba(245,158,11,0.85)'), stack: 'c', yAxisID: 'y' },
+                        { type: 'line', label: '평균 실제 발전량', data: stats.map(s => s.n ? s.a / s.n : 0), borderColor: '#cbd5e1', borderWidth: 1.5, pointRadius: 2, tension: 0.25, yAxisID: 'y1' },
+                        { type: 'line', label: '평균 AI 예측', data: stats.map(s => s.n ? s.p / s.n : 0), borderColor: '#38bdf8', borderDash: [4, 4], borderWidth: 2, pointRadius: 0, tension: 0.25, yAxisID: 'y1' }
+                    ]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    interaction: { mode: 'index', intersect: false },
+                    onClick: (e, els) => { if (els.length) onPick(els[0].index); },
+                    plugins: { legend: { labels: { color: '#cbd5e1', boxWidth: 12 } } },
+                    scales: {
+                        x: { stacked: true, ticks: { color: '#94a3b8', maxRotation: 45 }, grid },
+                        y: { stacked: true, position: 'left', beginAtZero: true, ticks: { color: '#94a3b8', precision: 0 }, grid, title: { display: true, text: '이상 건수', color: '#64748b' } },
+                        y1: { position: 'right', beginAtZero: true, ticks: { color: '#94a3b8' }, grid: { drawOnChartArea: false }, title: { display: true, text: '평균 발전량 (MWh)', color: '#64748b' } }
+                    }
+                }
+            });
+        }
+        function renderTrendCharts() {
+            // 월별: 월 필터는 무시(전체 월 표시, 선택 월 강조) / 시간별: 시간 필터는 무시(24시간 표시, 선택 구간 강조)
+            const mStats = aggregate(byRegion(getTimeFiltered(true, false)), d => d.ym, allMonths);
+            monthChart = buildTrend('monthChart', monthChart, allMonths, mStats,
+                i => selectedMonth === '전체' || allMonths[i] === selectedMonth,
+                i => {
+                    selectedMonth = selectedMonth === allMonths[i] ? '전체' : allMonths[i];
+                    document.getElementById('monthSelect').value = selectedMonth;
+                    applyFilters();
+                });
+
+            const hours = Array.from({ length: 24 }, (_, h) => h);
+            const hStats = aggregate(byRegion(getTimeFiltered(false, true)), d => d.hr, hours);
+            hourChart = buildTrend('hourChart', hourChart, hours.map(h => h + '시'), hStats,
+                i => inHourRange(i),
+                i => {
+                    if (hourFrom === i && hourTo === i) { hourFrom = 0; hourTo = 23; }
+                    else { hourFrom = hourTo = i; }
+                    syncHourSelects();
+                    applyFilters();
+                });
+
+            document.getElementById('filterSummary').textContent =
+                `적용 중: ${filterLabel()} · ${getFiltered().length.toLocaleString()}건`;
+        }
+        buildHourSelects();
 
         // 9. 지도 팝업 클릭 시 해당 지역 대시보드로 이동
         function goToRegionDashboard(regionName) {
