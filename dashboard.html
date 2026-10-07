@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VOLTIS - AI 이상 거래 지도 & 대시보드 통합 관제</title>
+    <title>VOLTIS - 이상 거래 통합 관제</title>
     <!-- Chart.js, PapaParse, Leaflet.js, FontAwesome, Tailwind CSS -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
@@ -14,160 +14,151 @@
 
     <style>
         .leaflet-popup-content-wrapper {
-            background: rgba(15, 23, 42, 0.95) !important;
-            color: #f8fafc !important;
-            border: 1px solid rgba(255, 255, 255, 0.15);
-            border-radius: 12px !important;
+            background: #ffffff !important;
+            color: #1e293b !important;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px !important;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
         }
-        .leaflet-popup-tip { background: rgba(15, 23, 42, 0.95) !important; }
+        .leaflet-popup-tip { background: #ffffff !important; }
     </style>
 </head>
-<body class="bg-slate-900 text-slate-100 font-sans min-h-screen p-4 md:p-6 flex flex-col">
+<body class="bg-slate-100 text-slate-800 font-sans min-h-screen p-3 md:p-5 flex flex-col gap-4">
 
-    <!-- 상단 헤더 -->
-    <header class="flex flex-col lg:flex-row justify-between items-start lg:items-center pb-5 border-b border-slate-800 mb-6 gap-4">
-        <div>
-            <h1 class="text-2xl font-bold text-amber-400 flex items-center gap-2">
-                ⚡ VOLTIS <span class="text-lg font-normal text-slate-300">| 태양광 P2P 이상 거래 통합 관제</span>
+    <!-- 1. 상단 헤더 -->
+    <header class="flex flex-col lg:flex-row justify-between items-start lg:items-center pb-3 border-b border-slate-200 bg-white p-3.5 rounded-lg shadow-sm gap-3">
+        <div class="flex items-center gap-3">
+            <h1 class="text-xl font-bold text-amber-600 flex items-center gap-2">
+                ⚡ VOLTIS <span class="text-sm font-medium text-slate-600">| 태양광 P2P 이상 거래 통합 관제</span>
             </h1>
-            <p class="text-sm text-slate-400 mt-1">파일 업로드 시 지도의 관제 마커와 대시보드 차트가 실시간 동기화됩니다.</p>
+            <span class="text-xs text-slate-400 border-l pl-3 border-slate-300">실시간 관제 리포트 시스템</span>
         </div>
         
-        <!-- 우측 컨트롤 영역 (화면 전환, 지역 필터, 파일 업로드) -->
-        <div class="flex flex-wrap items-center gap-2.5">
-            <!-- 뷰 전환 탭 -->
-            <div class="bg-slate-800 p-1 rounded-xl border border-slate-700 flex items-center">
-                <button id="btnDashView" onclick="switchView('dashboard')" class="px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all bg-amber-500 text-slate-900 shadow">
-                    📊 대시보드
-                </button>
-                <button id="btnMapView" onclick="switchView('map')" class="px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all text-slate-400 hover:text-slate-200">
-                    🗺️ 지도 관제
-                </button>
-            </div>
-
-            <!-- 지역 선택 셀렉트 -->
-            <select id="regionSelect" onchange="onRegionChange(this.value)" class="bg-slate-800 border border-slate-700 text-slate-200 text-xs rounded-lg px-3 py-2 font-semibold outline-none focus:border-amber-500">
+        <div class="flex flex-wrap items-center gap-2">
+            <select id="regionSelect" onchange="onRegionChange(this.value)" class="bg-white border border-slate-300 text-slate-700 text-xs rounded-lg px-2.5 py-1.5 font-semibold outline-none focus:border-amber-500 shadow-sm">
                 <option value="전체">전국 전체 보기</option>
             </select>
 
-            <!-- CSV 파일 업로드 버튼 -->
-            <label class="cursor-pointer bg-amber-500 hover:bg-amber-600 text-slate-900 font-bold px-3.5 py-2 rounded-lg text-xs transition-colors flex items-center gap-1.5 shadow-md">
+            <label class="cursor-pointer bg-amber-500 hover:bg-amber-600 text-white font-bold px-3.5 py-1.5 rounded-lg text-xs transition-colors flex items-center gap-1.5 shadow-sm">
                 <i class="fa-solid fa-file-arrow-up"></i> 결과 CSV 업로드
                 <input type="file" id="csvFileInput" accept=".csv" class="hidden">
             </label>
-            <div id="statusBadge" class="bg-slate-800 px-3 py-2 rounded-lg border border-slate-700 text-xs text-slate-400">
+            <div id="statusBadge" class="bg-slate-50 px-2.5 py-1.5 rounded-lg border border-slate-200 text-xs text-slate-500">
                 상태: 대기 중
             </div>
         </div>
     </header>
 
-    <!-- 기간·시간대 필터 (대시보드/지도 공통 적용) -->
-    <section class="bg-slate-800/80 p-3 rounded-xl border border-slate-700 mb-4 flex flex-wrap items-center gap-3 text-xs">
-        <span class="text-slate-400 font-semibold"><i class="fa-regular fa-calendar text-sky-400"></i> 기간·시간대 필터</span>
-        <select id="monthSelect" onchange="onMonthChange(this.value)" class="bg-slate-900 border border-slate-700 text-slate-200 rounded-lg px-2.5 py-1.5 font-semibold outline-none focus:border-amber-500">
-            <option value="전체">전체 기간</option>
+    <!-- 2. 상단 필터 바 -->
+    <section class="bg-white p-2.5 rounded-lg border border-slate-200 shadow-sm flex flex-wrap items-center gap-3 text-xs">
+        <span class="text-slate-500 font-semibold"><i class="fa-solid fa-filter text-amber-500"></i> 관제 필터:</span>
+        
+        <select id="yearSelect" onchange="onYearChange(this.value)" class="bg-slate-50 border border-slate-300 text-slate-700 font-bold rounded px-2.5 py-1 outline-none">
+            <option value="ALL">전체 연도</option>
+            <option value="2025">2025년</option>
+            <option value="2026">2026년</option>
         </select>
-        <div class="flex items-center gap-1.5 text-slate-400">
-            <select id="hourFrom" onchange="onHourChange()" class="bg-slate-900 border border-slate-700 text-slate-200 rounded-lg px-2.5 py-1.5 font-semibold outline-none focus:border-amber-500"></select> ~
-            <select id="hourTo" onchange="onHourChange()" class="bg-slate-900 border border-slate-700 text-slate-200 rounded-lg px-2.5 py-1.5 font-semibold outline-none focus:border-amber-500"></select>
-        </div>
-        <div class="flex gap-1.5">
-            <button onclick="setHourPreset(0,23)" class="px-2.5 py-1.5 rounded-lg bg-slate-900 border border-slate-700 text-slate-300 hover:border-amber-500 font-semibold transition-colors">전 시간</button>
-            <button onclick="setHourPreset(6,18)" class="px-2.5 py-1.5 rounded-lg bg-slate-900 border border-slate-700 text-slate-300 hover:border-amber-500 font-semibold transition-colors">☀️ 주간 06~18시</button>
-            <button onclick="setHourPreset(19,5)" class="px-2.5 py-1.5 rounded-lg bg-slate-900 border border-slate-700 text-slate-300 hover:border-amber-500 font-semibold transition-colors">🌙 야간 19~05시</button>
-            <button onclick="resetFilters()" class="px-2.5 py-1.5 rounded-lg bg-slate-900 border border-slate-700 text-slate-300 hover:border-amber-500 font-semibold transition-colors"><i class="fa-solid fa-rotate-left"></i> 초기화</button>
-        </div>
-        <span id="filterSummary" class="text-slate-500 ml-auto"></span>
+
+        <select id="monthSelect" onchange="onMonthChange(this.value)" class="bg-slate-50 border border-slate-300 text-slate-700 rounded px-2.5 py-1 outline-none">
+            <option value="ALL">전체 월</option>
+            <option value="1">1월</option><option value="2">2월</option><option value="3">3월</option>
+            <option value="4">4월</option><option value="5">5월</option><option value="6">6월</option>
+            <option value="7">7월</option><option value="8">8월</option><option value="9">9월</option>
+            <option value="10">10월</option><option value="11">11월</option><option value="12">12월</option>
+        </select>
+
+        <span class="text-slate-400">|</span>
+        <span class="text-slate-500">시간대: 00시 ~ 23시 전시간 관제</span>
     </section>
 
-    <!-- 요약 현황 카드 -->
-    <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-        <div class="bg-slate-800/80 p-4 rounded-xl border border-slate-700">
-            <p class="text-xs text-slate-400 mb-1" id="cardRegionLabel">조회 대상: 전체</p>
-            <p id="totalCount" class="text-2xl font-bold text-slate-100">0 <span class="text-xs font-normal text-slate-400">건</span></p>
+    <!-- 3. 핵심 현황 요약 카드 -->
+    <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+        <div class="bg-white p-3.5 rounded-lg border border-slate-200 shadow-sm">
+            <p class="text-xs text-slate-400 mb-1" id="cardRegionLabel">조회 대상: 전체 (전체 연도)</p>
+            <p id="totalCount" class="text-xl font-bold text-slate-800">0 <span class="text-xs font-normal text-slate-400">건</span></p>
         </div>
-        <div class="bg-slate-800/80 p-4 rounded-xl border border-rose-900/50">
-            <p class="text-xs text-rose-400 mb-1">🚨 부정청구 (야간 조작)</p>
-            <p id="fraudCount" class="text-2xl font-bold text-rose-500">0 <span class="text-xs font-normal text-slate-400">건</span></p>
+        <div class="bg-white p-3.5 rounded-lg border border-rose-200 shadow-sm">
+            <p class="text-xs text-rose-500 font-semibold mb-1">🚨 부정청구 (야간 발전 조작)</p>
+            <p id="fraudCount" class="text-xl font-bold text-rose-600">0 <span class="text-xs font-normal text-slate-400">건</span></p>
         </div>
-        <div class="bg-slate-800/80 p-4 rounded-xl border border-amber-900/50">
-            <p class="text-xs text-amber-400 mb-1">🔧 계측기 고장 (주간 무발전)</p>
-            <p id="faultCount" class="text-2xl font-bold text-amber-500">0 <span class="text-xs font-normal text-slate-400">건</span></p>
+        <div class="bg-white p-3.5 rounded-lg border border-amber-200 shadow-sm">
+            <p class="text-xs text-amber-600 font-semibold mb-1">🔧 계측기 고장 (주간 무발전)</p>
+            <p id="faultCount" class="text-xl font-bold text-amber-600">0 <span class="text-xs font-normal text-slate-400">건</span></p>
         </div>
-        <div class="bg-slate-800/80 p-4 rounded-xl border border-emerald-900/50">
-            <p class="text-xs text-emerald-400 mb-1">✅ 정상 거래 데이터</p>
-            <p id="normalCount" class="text-2xl font-bold text-emerald-500">0 <span class="text-xs font-normal text-slate-400">건</span></p>
+        <div class="bg-white p-3.5 rounded-lg border border-emerald-200 shadow-sm">
+            <p class="text-xs text-emerald-600 font-semibold mb-1">✅ 정상 거래 데이터</p>
+            <p id="normalCount" class="text-xl font-bold text-emerald-600">0 <span class="text-xs font-normal text-slate-400">건</span></p>
         </div>
     </section>
 
-    <!-- [뷰 1] 대시보드 메인 영역 -->
-    <main id="dashboardContainer" class="space-y-6">
-        <!-- 지역별 관제 현황 (지도 마커와 동일한 색상 규칙) -->
-        <section class="bg-slate-800/80 p-5 rounded-xl border border-slate-700">
-            <div class="flex flex-wrap justify-between items-center gap-2 mb-3">
-                <h2 class="text-sm font-semibold text-slate-200 flex items-center gap-2">
-                    <i class="fa-solid fa-location-dot text-rose-400"></i> 지역별 관제 현황
+    <!-- 4. 메인 대시보드 레이아웃 -->
+    <main id="dashboardContainer" class="flex flex-col gap-4">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-4">
+            <!-- 좌측: 관제 지도 -->
+            <div class="lg:col-span-4 bg-white p-3.5 rounded-lg border border-slate-200 shadow-sm flex flex-col">
+                <h2 class="text-xs font-bold text-slate-700 mb-2 flex items-center gap-1.5">
+                    <i class="fa-solid fa-map-location-dot text-amber-500"></i> 지역별 관제 지도
                 </h2>
-                <span class="text-xs text-slate-500">🔴 부정거래 · 🟠 계측기 고장 · 🟢 정상 — 클릭하면 해당 지역으로 필터링됩니다.</span>
+                <div id="map" class="w-full flex-1 min-h-[340px] rounded border border-slate-200"></div>
             </div>
-            <div id="regionGrid" class="grid grid-cols-3 sm:grid-cols-5 lg:grid-cols-10 gap-2"></div>
-        </section>
 
-        <!-- 월별 / 시간대별 추이 (막대 클릭 시 해당 월/시간으로 필터) -->
-        <section class="grid grid-cols-1 xl:grid-cols-2 gap-6">
-            <div class="bg-slate-800/80 p-5 rounded-xl border border-slate-700">
-                <div class="flex justify-between items-center mb-3">
-                    <h2 class="text-sm font-semibold text-slate-200 flex items-center gap-2"><i class="fa-solid fa-calendar-days text-sky-400"></i> 월별 이상 거래 · 평균 발전량</h2>
-                    <span class="text-xs text-slate-500">막대 클릭 = 해당 월 선택</span>
+            <!-- 우측: 개요 차트 -->
+            <div class="lg:col-span-8 flex flex-col gap-4">
+                <div class="bg-white p-3.5 rounded-lg border border-slate-200 shadow-sm">
+                    <h2 class="text-xs font-bold text-slate-700 mb-2">지역별 관제 현황 (전국 + 17개 지자체)</h2>
+                    <!-- 🔥 18개 카드가 9열/6열/3열로 깔끔하게 떨어지도록 grid 설정 -->
+                    <div id="regionGrid" class="grid grid-cols-3 sm:grid-cols-6 md:grid-cols-9 gap-1.5"></div>
                 </div>
-                <div class="h-72 w-full"><canvas id="monthChart"></canvas></div>
-            </div>
-            <div class="bg-slate-800/80 p-5 rounded-xl border border-slate-700">
-                <div class="flex justify-between items-center mb-3">
-                    <h2 class="text-sm font-semibold text-slate-200 flex items-center gap-2"><i class="fa-solid fa-clock text-sky-400"></i> 시간대별 이상 거래 · 평균 발전량</h2>
-                    <span class="text-xs text-slate-500">막대 클릭 = 해당 시간 선택</span>
-                </div>
-                <div class="h-72 w-full"><canvas id="hourChart"></canvas></div>
-            </div>
-        </section>
 
-        <!-- 차트 영역 -->
-        <section class="bg-slate-800/80 p-5 rounded-xl border border-slate-700">
-            <div class="flex justify-between items-center mb-4">
-                <h2 class="text-sm font-semibold text-slate-200 flex items-center gap-2">
-                    <i class="fa-solid fa-chart-line text-sky-400"></i> AI 예측치 vs 실제 발전량 & 잔차(Residual) 시각화
+                <div class="bg-white p-3.5 rounded-lg border border-slate-200 shadow-sm flex-1">
+                    <div class="flex justify-between items-center mb-2">
+                        <h2 class="text-xs font-bold text-slate-700">AI 모델 성과 및 이상 거래 종합 개요</h2>
+                        <span class="text-[11px] text-slate-400">CSV 업로드 시 월별 추이 시각화</span>
+                    </div>
+                    <div class="h-56 w-full">
+                        <canvas id="overviewChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 하단 차트: 24시간 패턴 통계 차트 -->
+        <section class="bg-white p-3.5 rounded-lg border border-slate-200 shadow-sm pb-5">
+            <div class="flex justify-between items-center mb-2">
+                <h2 class="text-xs font-bold text-slate-700 flex items-center gap-1.5" id="hourlyChartTitle">
+                    <i class="fa-solid fa-chart-line text-sky-500"></i> AI 예상치 vs 실제 발전량 / 24시간 평균 패턴 & 잔차 통계
                 </h2>
-                <span id="chartModeLabel" class="text-xs text-slate-400">실시간 파싱 차트</span>
+                <span class="text-[11px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded border border-slate-200">00:00 ~ 23:00 고정 패턴</span>
             </div>
-            <div class="h-80 w-full">
+            <div class="h-64 w-full">
                 <canvas id="anomalyChart"></canvas>
             </div>
         </section>
 
-        <!-- 이상치 포착 상세 표 -->
-        <section class="bg-slate-800/80 p-5 rounded-xl border border-slate-700">
-            <div class="flex justify-between items-center mb-4">
-                <h2 class="text-sm font-semibold text-slate-200 flex items-center gap-2">
-                    <i class="fa-solid fa-list-check text-amber-400"></i> 포착 이상 거래 데이터 목록
+        <!-- 포착 이상 거래 데이터 목록 -->
+        <section class="bg-white p-3.5 rounded-lg border border-slate-200 shadow-sm">
+            <div class="flex justify-between items-center mb-3">
+                <h2 class="text-xs font-bold text-slate-700 flex items-center gap-1.5">
+                    <i class="fa-solid fa-list-check text-amber-500"></i> 포착 이상 거래 데이터 목록
                 </h2>
-                <span id="listBadge" class="text-xs bg-slate-700 text-slate-300 px-3 py-1 rounded-full">파일을 업로드해 주세요</span>
+                <span id="listBadge" class="text-[11px] bg-slate-100 text-slate-600 px-2.5 py-0.5 rounded-full border border-slate-200">파일 대기 중</span>
             </div>
-            <div class="overflow-x-auto max-h-96">
-                <table class="w-full text-left text-sm text-slate-300">
-                    <thead class="bg-slate-900/90 text-slate-400 border-b border-slate-700 sticky top-0 backdrop-blur-md text-xs">
+            <div class="overflow-x-auto max-h-72">
+                <table class="w-full text-center text-xs text-slate-700 border-collapse">
+                    <thead class="bg-slate-50 text-slate-500 border-b border-slate-200 sticky top-0">
                         <tr>
-                            <th class="p-3">지역</th>
-                            <th class="p-3">일시 (Timestamp)</th>
-                            <th class="p-3">실제 발전량</th>
-                            <th class="p-3">AI 예측 발전량</th>
-                            <th class="p-3">잔차 (Residual)</th>
-                            <th class="p-3">일조량</th>
-                            <th class="p-3">AI 탐지 결과</th>
+                            <th class="p-2.5 text-center">지역/거점</th>
+                            <th class="p-2.5 text-center">일시 (Timestamp)</th>
+                            <th class="p-2.5 text-center">실제 발전량</th>
+                            <th class="p-2.5 text-center">AI 예측 발전량</th>
+                            <th class="p-2.5 text-center">잔차 (Residual)</th>
+                            <th class="p-2.5 text-center">일조량</th>
+                            <th class="p-2.5 text-center">AI 탐지 결과</th>
                         </tr>
                     </thead>
-                    <tbody id="tableBody" class="divide-y divide-slate-700/50 text-xs font-mono">
+                    <tbody id="tableBody" class="divide-y divide-slate-100 font-mono text-[11px] text-center">
                         <tr>
-                            <td colspan="7" class="p-6 text-center text-slate-500 font-sans">상단 버튼을 통해 CSV 파일을 업로드하면 결과가 시각화됩니다.</td>
+                            <td colspan="7" class="p-5 text-center text-slate-400 font-sans">결과 CSV 파일이 업로드되면 목록이 표출됩니다.</td>
                         </tr>
                     </tbody>
                 </table>
@@ -175,42 +166,16 @@
         </section>
     </main>
 
-    <!-- [뷰 2] 지도 관제 메인 영역 (초기 hidden) -->
-    <main id="mapContainer" class="hidden flex-1 flex flex-col min-h-[550px]">
-        <div class="flex items-center gap-4 bg-slate-800/80 p-3 rounded-lg border border-slate-700 mb-3 text-xs">
-            <span class="text-slate-400 font-semibold">위험도 범례:</span>
-            <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-rose-500 inline-block shadow-[0_0_8px_#ef4444]"></span> 🚨 부정거래 탐지</span>
-            <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-amber-500 inline-block shadow-[0_0_8px_#f59e0b]"></span> 🔧 계측기 고장</span>
-            <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-emerald-500 inline-block shadow-[0_0_8px_#10b981]"></span> ✅ 정상 관제구역</span>
-            <span class="text-slate-500 ml-auto">* 마커를 클릭하면 해당 지역의 대시보드로 즉시 이동합니다.</span>
-        </div>
-        <div id="map" class="w-full flex-1 rounded-xl border border-slate-700/80 min-h-[500px]"></div>
-    </main>
-
     <script>
-        // 대한민국 주요 관제 거점 좌표
         const regionCoordinates = {
-            "서울": [37.5665, 126.9780],
-            "경기": [37.4138, 127.5183],
-            "강원": [37.8228, 128.1555],
-            "충북": [36.6357, 127.4912],
-            "충남": [36.5184, 126.8000],
-            "전북": [35.7175, 127.1530],
-            "순천": [34.9507, 127.4872],
-            "목포": [34.8118, 126.3922],
-            "경북": [36.5760, 128.5056],
-            "경남": [35.4606, 128.2132],
-            "제주": [33.4996, 126.5312],
-            "인천": [37.4563, 126.7052],
-            "대전": [36.3504, 127.3845],
-            "세종": [36.4800, 127.2890],
-            "광주": [35.1595, 126.8526],
-            "대구": [35.8714, 128.6014],
-            "울산": [35.5384, 129.3114],
-            "부산": [35.1796, 129.0756]
+            "서울": [37.5665, 126.9780], "경기": [37.4138, 127.5183], "강원": [37.8228, 128.1555],
+            "충북": [36.6357, 127.4912], "충남": [36.5184, 126.8000], "전북": [35.7175, 127.1530],
+            "순천": [34.9507, 127.4872], "목포": [34.8118, 126.3922], "경북": [36.5760, 128.5056],
+            "경남": [35.4606, 128.2132], "제주": [33.4996, 126.5312], "인천": [37.4563, 126.7052],
+            "대전": [36.3504, 127.3845], "세종": [36.4800, 127.2890], "광주": [35.1595, 126.8526],
+            "대구": [35.8714, 128.6014], "울산": [35.5384, 129.3114], "부산": [35.1796, 129.0756]
         };
 
-        // 드롭다운을 좌표 목록과 항상 동기화
         (function buildRegionSelect() {
             const sel = document.getElementById('regionSelect');
             Object.keys(regionCoordinates).forEach(r => {
@@ -220,95 +185,70 @@
             });
         })();
 
-        // CSV의 지역명("전라남도", "서울시", "제주특별자치도" 등)을 "전남", "서울" 형태로 통일
-        const regionAlias = {
-            "서울": "서울", "경기": "경기", "강원": "강원", "제주": "제주",
-            "인천": "인천", "대전": "대전", "세종": "세종", "광주": "광주",
-            "대구": "대구", "울산": "울산", "부산": "부산",
-            "충북": "충북", "충청북": "충북", "충남": "충남", "충청남": "충남",
-            "전북": "전북", "전라북": "전북", "전남": "전남", "전라남": "전남",
-            "경북": "경북", "경상북": "경북", "경남": "경남", "경상남": "경남"
-        };
-        function normalizeRegion(raw) {
-            const t = String(raw || '').trim().replace(/\s+/g, '');
-            if (!t) return '';
-            if (regionAlias[t]) return regionAlias[t];
-            // 접두어 매칭 (긴 키 우선): "전라남도" -> "전라남" -> 전남
-            const keys = Object.keys(regionAlias).sort((a, b) => b.length - a.length);
-            const hit = keys.find(k => t.startsWith(k));
-            return hit ? regionAlias[hit] : t;
+        // CSV 파일의 풀네임(경상북도, 경상남도 등)과 지점명(안동, 창원 등) 매칭
+        function normalizeRegion(raw, row) {
+            const t = String(raw || '').trim();
+            const fullText = JSON.stringify(row || {});
+
+            if (t.includes('경북') || t.includes('경상북도') || fullText.includes('안동')) return '경북';
+            if (t.includes('경남') || t.includes('경상남도') || fullText.includes('창원')) return '경남';
+            if (t.includes('충북') || t.includes('충청북도') || fullText.includes('청주')) return '충북';
+            if (t.includes('충남') || t.includes('충청남도') || fullText.includes('홍성')) return '충남';
+            if (t.includes('전북') || t.includes('전라북도') || fullText.includes('전주')) return '전북';
+            
+            if (fullText.includes('순천') || t.includes('순천')) return '순천';
+            if (fullText.includes('목포') || t.includes('목포')) return '목포';
+            if (t.includes('전남') || t.includes('전라남도')) return '순천';
+
+            if (t.includes('서울') || fullText.includes('서울')) return '서울';
+            if (t.includes('경기') || fullText.includes('경기')) return '경기';
+            if (t.includes('강원') || fullText.includes('강원')) return '강원';
+            if (t.includes('제주') || fullText.includes('제주')) return '제주';
+            if (t.includes('인천') || fullText.includes('인천')) return '인천';
+            if (t.includes('대전') || fullText.includes('대전')) return '대전';
+            if (t.includes('세종') || fullText.includes('세종')) return '세종';
+            if (t.includes('광주') || fullText.includes('광주')) return '광주';
+            if (t.includes('대구') || fullText.includes('대구')) return '대구';
+            if (t.includes('울산') || fullText.includes('울산')) return '울산';
+            if (t.includes('부산') || fullText.includes('부산')) return '부산';
+
+            return t || '기타';
         }
 
         let parsedDataset = [];
         let selectedRegion = '전체';
-        let myChart = null;
+        let selectedYear = 'ALL';
+        let selectedMonth = 'ALL';
+        let overviewChart = null;
+        let anomalyChart = null;
         let map = null;
         let markersGroup = null;
-        let selectedMonth = '전체', hourFrom = 0, hourTo = 23;
-        let allMonths = [], tfCache = {}, monthChart = null, hourChart = null;
 
-        renderRegionGrid();
+        window.onload = function() {
+            initMap();
+            renderRegionGrid();
+            initCharts();
+        };
 
-        // 1. 지도 초기화 (OpenStreetMap - API Key 불필요)
         function initMap() {
             if (map) return;
-            map = L.map('map', { center: [36.0, 127.8], zoom: 7 });
+            map = L.map('map', { center: [35.8, 127.8], zoom: 6 });
             markersGroup = L.layerGroup().addTo(map);
 
-            // OpenStreetMap 표준 지도 (referrerPolicy: OSM이 요구하는 Referer 전달)
-            const osmTile = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                 maxZoom: 19,
-                attribution: '&copy; OpenStreetMap',
-                referrerPolicy: 'strict-origin-when-cross-origin'
+                attribution: '&copy; OpenStreetMap'
             }).addTo(map);
-
-            // OSM 로딩 자체가 실패하면 OSM과 거의 같은 스타일의 CARTO Voyager로 전환 (한 번만)
-            let fallbackUsed = false;
-            osmTile.on('tileerror', function() {
-                if (fallbackUsed) return;
-                fallbackUsed = true;
-                map.removeLayer(osmTile);
-                L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
-                    subdomains: 'abcd',
-                    maxZoom: 19,
-                    attribution: '&copy; OpenStreetMap contributors &copy; CARTO'
-                }).addTo(map);
-            });
 
             renderMap();
         }
 
-        // 2. 화면 전환 탭 기능
-        function switchView(viewName) {
-            const dashContainer = document.getElementById('dashboardContainer');
-            const mapContainer = document.getElementById('mapContainer');
-            const btnDash = document.getElementById('btnDashView');
-            const btnMap = document.getElementById('btnMapView');
-
-            if (viewName === 'dashboard') {
-                dashContainer.classList.remove('hidden');
-                mapContainer.classList.add('hidden');
-                btnDash.className = "px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all bg-amber-500 text-slate-900 shadow";
-                btnMap.className = "px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all text-slate-400 hover:text-slate-200";
-            } else {
-                dashContainer.classList.add('hidden');
-                mapContainer.classList.remove('hidden');
-                btnMap.className = "px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all bg-amber-500 text-slate-900 shadow";
-                btnDash.className = "px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all text-slate-400 hover:text-slate-200";
-                
-                initMap();
-                setTimeout(() => { if (map) map.invalidateSize(); }, 100);
-            }
-        }
-
-        // 3. CSV 파일 업로드 이벤트
         document.getElementById('csvFileInput').addEventListener('change', function(e) {
             const file = e.target.files[0];
             if (!file) return;
 
-            document.getElementById('statusBadge').innerHTML = '<span class="text-amber-400 font-semibold">● CSV 데이터 분석 중...</span>';
+            document.getElementById('statusBadge').innerText = '파싱 중...';
 
-            // UTF-8 우선, 실패하면 EUC-KR로 재시도 (한글 깨짐 방지)
             const reader = new FileReader();
             reader.onload = function() {
                 const buf = reader.result;
@@ -318,47 +258,37 @@
                 } catch (_) {
                     text = new TextDecoder('euc-kr').decode(buf);
                 }
-                text = text.replace(/^\uFEFF/, ''); // BOM 제거
+                text = text.replace(/^\uFEFF/, '');
 
                 const results = Papa.parse(text, { header: true, skipEmptyLines: true });
                 processCSVData(results.data);
             };
-            reader.onerror = () => alert('파일을 읽는 중 오류가 발생했습니다.');
             reader.readAsArrayBuffer(file);
         });
 
-        // 4. CSV 데이터 정제 및 동기화
         function processCSVData(rawData) {
-            if (!rawData || rawData.length === 0) {
-                alert('파일에 데이터가 존재하지 않습니다.');
-                return;
-            }
+            if (!rawData || rawData.length === 0) return;
 
-            const regionKeys = Object.keys(regionCoordinates);
-
-            // 열 이름은 헤더에서 한 번만 찾는다 (14만 행도 빠르게)
             const headers = Object.keys(rawData[0]);
             const findKey = (keywords) => headers.find(k =>
                 keywords.some(kw => k.trim().toLowerCase().includes(kw.toLowerCase()))) || null;
 
             const kRegion = findKey(['지역', 'region', 'location']);
             const kActual = findKey(['전력거래량', 'actual', '실제']);
-            const kPred   = findKey(['AI_예측발전량', 'pred', '예측']);
+            const kPred   = findKey(['예측발전량', 'pred', '예측']);
             const kRes    = findKey(['residual', '잔차']);
             const kTime   = findKey(['timestamp', '일시', 'time']);
             const kSun    = findKey(['일조', 'sun']);
-            const kStation = findKey(['지점명', 'station']);
             const kResult = findKey(['AI_탐지결과', 'result', '상태']);
-            const kHour = headers.find(k => k.trim().toLowerCase() === 'hour') || null;
 
             parsedDataset = rawData.map((row, index) => {
-                let region = kRegion ? normalizeRegion(row[kRegion]) : '';
-                // 전남은 지점명(순천/목포)으로 분리
-                if (region === '전남') {
-                    const st = String((kStation && row[kStation]) || '');
-                    region = st.includes('순천') ? '순천' : st.includes('목포') ? '목포' : region;
-                }
-                if (!region) region = regionKeys[index % regionKeys.length];
+                let region = normalizeRegion(kRegion ? row[kRegion] : '', row);
+                const timeStr = (kTime && row[kTime]) || '';
+                const dateObj = new Date(timeStr);
+                
+                const year = !isNaN(dateObj.getFullYear()) ? dateObj.getFullYear() : 2025;
+                const month = !isNaN(dateObj.getMonth()) ? (dateObj.getMonth() + 1) : 1;
+                const hour = !isNaN(dateObj.getHours()) ? dateObj.getHours() : (index % 24);
 
                 const actual = parseFloat(kActual ? row[kActual] : 0);
                 const pred = parseFloat(kPred ? row[kPred] : 0);
@@ -367,9 +297,8 @@
                 const sun = parseFloat(kSun ? row[kSun] : 0);
 
                 return {
-                    region,
-                    timestamp: (kTime && row[kTime]) || '-',
-                    ...parseTs(kTime ? row[kTime] : '', kHour ? row[kHour] : null),
+                    region, year, month, hour,
+                    timestamp: timeStr || '-',
                     actual: isNaN(actual) ? 0 : actual,
                     pred: isNaN(pred) ? 0 : pred,
                     residual: isNaN(residual) ? 0 : residual,
@@ -378,402 +307,297 @@
                 };
             });
 
-            document.getElementById('statusBadge').innerHTML = `<span class="text-emerald-400 font-semibold">● 분석 완료 (${parsedDataset.length.toLocaleString()}건 / ${new Set(parsedDataset.map(d => d.region)).size}개 지역)</span>`;
-
-            tfCache = {}; selectedMonth = '전체'; buildMonthSelect();
-            // 대시보드 & 지도 둘 다 최신 데이터 적용
+            document.getElementById('statusBadge').innerText = `완료 (${parsedDataset.length.toLocaleString()}건)`;
             updateDashboard();
             if (map) renderMap();
         }
 
-        // 지역별 관제 현황 카드 (지도 마커와 같은 색상/집계 기준)
+        // 🔥 [수정] slice(0, 12) 삭제하여 전국 + 17개 관제 지역 전체 카드 표출
         function renderRegionGrid() {
             const stats = {};
             Object.keys(regionCoordinates).forEach(r => stats[r] = { n: 0, fraud: 0, fault: 0 });
-            getTimeFiltered().forEach(d => {
+            
+            parsedDataset.forEach(d => {
+                if (selectedYear !== 'ALL' && d.year !== parseInt(selectedYear)) return;
+                if (selectedMonth !== 'ALL' && d.month !== parseInt(selectedMonth)) return;
                 const st = stats[d.region];
                 if (!st) return;
                 st.n++;
-                if (d.result.includes('부정청구')) st.fraud++;
-                else if (d.result.includes('계측기고장')) st.fault++;
+                if (d.result.includes('부정청구') || d.result.includes('Abnormal')) st.fraud++;
+                else if (d.result.includes('계측기고장') || d.result.includes('Sensor')) st.fault++;
             });
 
             const grid = document.getElementById('regionGrid');
             grid.innerHTML = '';
-            const items = [['전체', { n: getTimeFiltered().length,
+            
+            const totalItems = parsedDataset.filter(d => 
+                (selectedYear === 'ALL' || d.year === parseInt(selectedYear)) &&
+                (selectedMonth === 'ALL' || d.month === parseInt(selectedMonth))
+            );
+
+            const items = [['전체', { n: totalItems.length,
                 fraud: Object.values(stats).reduce((a, b) => a + b.fraud, 0),
                 fault: Object.values(stats).reduce((a, b) => a + b.fault, 0) }]]
                 .concat(Object.entries(stats));
 
             items.forEach(([region, st]) => {
                 let color = '#10b981', msg = '정상';
-                if (st.fraud > 0) { color = '#ef4444'; msg = `🚨 부정 ${st.fraud}`; }
-                else if (st.fault > 0) { color = '#f59e0b'; msg = `🔧 고장 ${st.fault}`; }
-                if (st.n === 0) { color = '#64748b'; msg = '데이터 없음'; }
+                if (st.fraud > 0) { color = '#ef4444'; msg = `부정 ${st.fraud}`; }
+                else if (st.fault > 0) { color = '#f59e0b'; msg = `고장 ${st.fault}`; }
 
                 const active = region === selectedRegion;
                 const btn = document.createElement('button');
-                btn.className = 'text-left p-2.5 rounded-lg border transition-all hover:brightness-125 '
-                    + (active ? 'bg-slate-700' : 'bg-slate-900/60');
-                btn.style.borderColor = active ? '#f59e0b' : color + '80';
-                btn.style.boxShadow = active ? '0 0 0 1px #f59e0b' : 'none';
+                btn.className = 'text-left p-1.5 rounded border transition-all ' + (active ? 'bg-amber-50 border-amber-400' : 'bg-slate-50 border-slate-200');
                 btn.innerHTML = `
-                    <div class="flex items-center gap-1.5 text-xs font-bold text-slate-100">
-                        <span style="width:8px;height:8px;border-radius:9999px;background:${color};box-shadow:0 0 6px ${color}"></span>
+                    <div class="flex items-center gap-1 text-[11px] font-bold text-slate-700 truncate">
+                        <span style="width:6px;height:6px;border-radius:9999px;background:${color}"></span>
                         ${region === '전체' ? '전국' : region}
                     </div>
-                    <div class="text-[11px] mt-1" style="color:${color}">${msg}</div>
-                    <div class="text-[10px] text-slate-500">${st.n.toLocaleString()}건</div>`;
-                btn.onclick = () => {
-                    document.getElementById('regionSelect').value = region;
-                    onRegionChange(region);
-                };
+                    <div class="text-[10px] text-slate-500 mt-0.5">${st.n.toLocaleString()}건</div>`;
+                btn.onclick = () => onRegionChange(region);
                 grid.appendChild(btn);
             });
         }
 
-        // 5. 지역 선택 변경 시
-        function onRegionChange(region) {
-            selectedRegion = region;
-            updateDashboard();
-        }
+        function onRegionChange(r) { selectedRegion = r; updateDashboard(); }
+        function onYearChange(y) { selectedYear = y; updateDashboard(); }
+        function onMonthChange(m) { selectedMonth = m; updateDashboard(); }
 
-        // 6. 대시보드 (현황 카드, 테이블, 차트) 업데이트
         function updateDashboard() {
-            document.getElementById('cardRegionLabel').innerText = `조회 대상: ${filterLabel()}`;
             renderRegionGrid();
 
-            const filtered = getFiltered();
+            let filtered = parsedDataset;
+            if (selectedRegion !== '전체') filtered = filtered.filter(d => d.region === selectedRegion);
+            if (selectedYear !== 'ALL') filtered = filtered.filter(d => d.year === parseInt(selectedYear));
+            if (selectedMonth !== 'ALL') filtered = filtered.filter(d => d.month === parseInt(selectedMonth));
 
-            const fraudList = filtered.filter(d => d.result.includes('부정청구'));
-            const faultList = filtered.filter(d => d.result.includes('계측기고장'));
-            const normalList = filtered.filter(d => d.result === '정상');
+            const yrText = selectedYear === 'ALL' ? '전체 연도' : `${selectedYear}년`;
+            const mnText = selectedMonth === 'ALL' ? '전체 월' : `${selectedMonth}월`;
+            document.getElementById('cardRegionLabel').innerText = `조회 대상: ${selectedRegion} (${yrText} ${mnText})`;
+            document.getElementById('hourlyChartTitle').innerHTML = `<i class="fa-solid fa-chart-line text-sky-500"></i> [${selectedRegion}] ${yrText} ${mnText} 24시간 평균 AI 발전 패턴 & 잔차 통계`;
+
+            const fraudList = filtered.filter(d => d.result.includes('부정청구') || d.result.includes('Abnormal'));
+            const faultList = filtered.filter(d => d.result.includes('계측기고장') || d.result.includes('Sensor'));
 
             document.getElementById('totalCount').innerText = filtered.length.toLocaleString();
             document.getElementById('fraudCount').innerText = fraudList.length.toLocaleString();
             document.getElementById('faultCount').innerText = faultList.length.toLocaleString();
-            document.getElementById('normalCount').innerText = normalList.length.toLocaleString();
-            document.getElementById('listBadge').innerText = `이상치 총 ${fraudList.length + faultList.length}건 포착됨`;
+            document.getElementById('normalCount').innerText = (filtered.length - fraudList.length - faultList.length).toLocaleString();
+            document.getElementById('listBadge').innerText = `이상치 총 ${fraudList.length + faultList.length}건`;
 
-            // 테이블 출력
+            // 테이블 렌더링
             const tbody = document.getElementById('tableBody');
             tbody.innerHTML = '';
-
-            const anomalies = filtered.filter(d => d.result.includes('부정청구') || d.result.includes('계측기고장'));
-            const displayList = anomalies.length > 0 ? anomalies : filtered.slice(0, 50);
+            const anomalies = [...fraudList, ...faultList];
+            const displayList = anomalies.length > 0 ? anomalies : filtered.slice(0, 30);
 
             if (displayList.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="7" class="p-6 text-center text-slate-400 font-sans">표시할 데이터가 없습니다.</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="7" class="p-4 text-center text-slate-400 font-sans">표시할 데이터가 없습니다.</td></tr>';
             } else {
                 displayList.forEach(row => {
                     const tr = document.createElement('tr');
-                    tr.className = "hover:bg-slate-700/40 transition-colors";
-                    
-                    const isFraud = row.result.includes('부정청구');
-                    const isFault = row.result.includes('계측기고장');
+                    tr.className = "hover:bg-slate-50 transition-colors";
+                    const isFraud = row.result.includes('부정청구') || row.result.includes('Abnormal');
+                    const isFault = row.result.includes('계측기고장') || row.result.includes('Sensor');
 
-                    let badgeStyle = 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30';
-                    if (isFraud) badgeStyle = 'bg-rose-500/10 text-rose-400 border-rose-500/30';
-                    if (isFault) badgeStyle = 'bg-amber-500/10 text-amber-400 border-amber-500/30';
+                    let badge = 'bg-emerald-50 text-emerald-600 border-emerald-200';
+                    if (isFraud) badge = 'bg-rose-50 text-rose-600 border-rose-200';
+                    if (isFault) badge = 'bg-amber-50 text-amber-600 border-amber-200';
 
                     tr.innerHTML = `
-                        <td class="p-3 text-slate-200 font-bold font-sans">${row.region}</td>
-                        <td class="p-3 text-slate-400">${row.timestamp}</td>
-                        <td class="p-3 font-semibold ${isFraud ? 'text-rose-400' : 'text-slate-200'}">${row.actual.toFixed(2)} MWh</td>
-                        <td class="p-3 text-sky-400">${row.pred.toFixed(2)} MWh</td>
-                        <td class="p-3 ${row.residual > 0 ? 'text-rose-400' : 'text-amber-400'}">${row.residual > 0 ? '+' + row.residual.toFixed(2) : row.residual.toFixed(2)}</td>
-                        <td class="p-3 text-slate-400">${row.sun} hr</td>
-                        <td class="p-3 font-sans"><span class="px-2 py-0.5 border rounded-md ${badgeStyle}">${row.result}</span></td>
+                        <td class="p-2.5 text-center font-bold font-sans text-slate-700">${row.region}</td>
+                        <td class="p-2.5 text-center text-slate-500">${row.timestamp}</td>
+                        <td class="p-2.5 text-center font-semibold ${isFraud ? 'text-rose-600' : 'text-slate-700'}">${row.actual.toFixed(2)}</td>
+                        <td class="p-2.5 text-center text-sky-600">${row.pred.toFixed(2)}</td>
+                        <td class="p-2.5 text-center ${row.residual > 0 ? 'text-rose-600' : 'text-amber-600'}">${row.residual > 0 ? '+' + row.residual.toFixed(2) : row.residual.toFixed(2)}</td>
+                        <td class="p-2.5 text-center text-slate-500">${row.sun}</td>
+                        <td class="p-2.5 text-center font-sans"><span class="px-2 py-0.5 text-[10px] border rounded ${badge}">${row.result}</span></td>
                     `;
                     tbody.appendChild(tr);
                 });
             }
 
-            renderChart(buildMainSeries(filtered));
-            renderTrendCharts();
+            renderMonthlyOverviewChart(filtered);
+            render24HourPatternChart(filtered);
+            if (map) renderMap();
         }
 
-        // 7. Chart.js 차트 렌더링
-        function buildMainSeries(rows) {
-            // 월 선택 시: 시간 단위(해당 월 1일 00:00부터) / 전체 기간: 일 단위 평균
-            const daily = selectedMonth === '전체';
-            const groups = new Map();
-            rows.forEach(d => {
-                if (d.t == null) return;
-                const k = daily ? Math.floor(d.t / 24) : d.t;
-                let g = groups.get(k);
-                if (!g) {
-                    g = { k, n: 0, a: 0, p: 0, r: 0, fraud: 0, fault: 0,
-                          label: daily ? `${d.ym}-${d.dy}` : `${d.ym.slice(5)}-${d.dy} ${String(d.hr).padStart(2, '0')}:00` };
-                    groups.set(k, g);
-                }
-                g.n++; g.a += d.actual; g.p += d.pred; g.r += d.residual;
-                if (d.result.includes('부정청구')) g.fraud++;
-                else if (d.result.includes('계측기고장')) g.fault++;
-            });
-            return { daily, points: [...groups.values()].sort((x, y) => x.k - y.k) };
-        }
-
-        function renderChart(series) {
-            const ctx = document.getElementById('anomalyChart').getContext('2d');
-            if (myChart) myChart.destroy();
-            const pts = series.points;
-            document.getElementById('chartModeLabel').textContent = series.daily
-                ? '일별 평균 (월을 선택하면 00:00부터 시간별로 표시)'
-                : `${fmtMonth(selectedMonth)} 시간별 (1일 00:00부터)`;
-
-            const isAnom = g => g.fraud > 0 || g.fault > 0;
-            const anomColor = g => g.fraud > 0 ? '#f43f5e' : '#f59e0b';
-
-            myChart = new Chart(ctx, {
+        function initCharts() {
+            const ctx1 = document.getElementById('overviewChart').getContext('2d');
+            overviewChart = new Chart(ctx1, {
                 type: 'line',
                 data: {
-                    labels: pts.map(g => g.label),
-                    datasets: [
-                        {
-                            label: 'AI 예상 정상 발전량',
-                            data: pts.map(g => g.p / g.n),
-                            borderColor: '#38bdf8', borderDash: [4, 4], borderWidth: 2, pointRadius: 0, fill: false
-                        },
-                        {
-                            label: '실제 전력 거래량',
-                            data: pts.map(g => g.a / g.n),
-                            borderColor: '#cbd5e1', borderWidth: 1.5,
-                            pointRadius: pts.map(g => isAnom(g) ? 5 : 0),
-                            pointBackgroundColor: pts.map(g => isAnom(g) ? anomColor(g) : '#cbd5e1'),
-                            pointBorderColor: pts.map(g => isAnom(g) ? '#fff' : '#cbd5e1')
-                        },
-                        {
-                            label: '잔차 (Residual)',
-                            data: pts.map(g => g.r / g.n),
-                            type: 'bar',
-                            backgroundColor: pts.map(g => g.fraud > 0 ? 'rgba(244,63,94,0.8)' : g.fault > 0 ? 'rgba(245,158,11,0.8)' : 'rgba(16,185,129,0.35)')
-                        }
-                    ]
+                    labels: ['1월', '2월', '3월', '4월', '5월', '6월', '7월', '8월', '9월', '10월', '11월', '12월'],
+                    datasets: []
                 },
                 options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
+                    responsive: true, maintainAspectRatio: false,
                     interaction: { mode: 'index', intersect: false },
-                    plugins: {
-                        legend: { labels: { color: '#cbd5e1' } },
-                        tooltip: { callbacks: { afterBody: items => {
-                            const g = pts[items[0].dataIndex];
-                            return isAnom(g) ? [`🚨 부정청구 ${g.fraud}건 · 🔧 계측기 고장 ${g.fault}건`] : [];
-                        } } }
-                    },
+                    plugins: { legend: { labels: { color: '#475569', font: { size: 10 } } } },
                     scales: {
-                        x: { ticks: { color: '#94a3b8', maxRotation: 45, autoSkip: true, maxTicksLimit: 24 }, grid: { color: '#1e293b' } },
-                        y: { ticks: { color: '#94a3b8' }, grid: { color: '#1e293b' } }
+                        x: { ticks: { color: '#64748b', font: { size: 9 } }, grid: { color: '#f1f5f9' } },
+                        y: { ticks: { color: '#64748b', font: { size: 9 } }, grid: { color: '#f1f5f9' } }
+                    }
+                }
+            });
+
+            const ctx2 = document.getElementById('anomalyChart').getContext('2d');
+            anomalyChart = new Chart(ctx2, {
+                type: 'line',
+                data: {
+                    labels: Array.from({length: 24}, (_, i) => `${String(i).padStart(2, '0')}:00`),
+                    datasets: []
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    interaction: { mode: 'index', intersect: false },
+                    plugins: { legend: { labels: { color: '#475569', font: { size: 10 } } } },
+                    scales: {
+                        x: { 
+                            title: { display: false }, 
+                            ticks: { color: '#64748b', font: { size: 9 }, padding: 8 }, 
+                            grid: { color: '#f1f5f9' } 
+                        },
+                        y: { ticks: { color: '#64748b', font: { size: 9 } }, grid: { color: '#f1f5f9' } }
                     }
                 }
             });
         }
 
+        function renderMonthlyOverviewChart(dataset) {
+            if (!overviewChart) return;
 
-        // 8. 지도 마커 및 팝업 렌더링
+            const monthlyPred = new Array(12).fill(0);
+            const monthlyActual = new Array(12).fill(0);
+            const monthlyCount = new Array(12).fill(0);
+
+            dataset.forEach(d => {
+                const m = d.month - 1;
+                if (m >= 0 && m < 12) {
+                    monthlyPred[m] += d.pred;
+                    monthlyActual[m] += d.actual;
+                    monthlyCount[m]++;
+                }
+            });
+
+            const avgPred = monthlyPred.map((sum, i) => monthlyCount[i] > 0 ? (sum / monthlyCount[i]) : 0);
+            const avgActual = monthlyActual.map((sum, i) => monthlyCount[i] > 0 ? (sum / monthlyCount[i]) : 0);
+
+            overviewChart.data.datasets = [
+                {
+                    label: '평균 AI 예측 발전량',
+                    data: avgPred,
+                    borderColor: '#0284c7',
+                    borderWidth: 2,
+                    pointRadius: 2.5,
+                    pointHoverRadius: 7,
+                    hitRadius: 15,
+                    fill: false
+                },
+                {
+                    label: '실제 발전 기록량',
+                    data: avgActual,
+                    borderColor: '#64748b',
+                    borderWidth: 1.5,
+                    pointRadius: 2.5,
+                    pointHoverRadius: 7,
+                    hitRadius: 15
+                }
+            ];
+            overviewChart.update();
+        }
+
+        function render24HourPatternChart(dataset) {
+            if (!anomalyChart) return;
+
+            const hourlyPred = new Array(24).fill(0);
+            const hourlyActual = new Array(24).fill(0);
+            const hourlyResidual = new Array(24).fill(0);
+            const hourlyCount = new Array(24).fill(0);
+
+            dataset.forEach(d => {
+                const h = d.hour;
+                if (h >= 0 && h < 24) {
+                    hourlyPred[h] += d.pred;
+                    hourlyActual[h] += d.actual;
+                    hourlyResidual[h] += d.residual;
+                    hourlyCount[h]++;
+                }
+            });
+
+            const avgPred = hourlyPred.map((sum, i) => hourlyCount[i] > 0 ? (sum / hourlyCount[i]) : 0);
+            const avgActual = hourlyActual.map((sum, i) => hourlyCount[i] > 0 ? (sum / hourlyCount[i]) : 0);
+            const avgResidual = hourlyResidual.map((sum, i) => hourlyCount[i] > 0 ? (sum / hourlyCount[i]) : 0);
+
+            const hoursLabels = Array.from({length: 24}, (_, i) => `${String(i).padStart(2, '0')}:00`);
+
+            anomalyChart.data.labels = hoursLabels;
+            anomalyChart.data.datasets = [
+                {
+                    label: 'AI 예상 발전량 (Baseline)',
+                    data: avgPred,
+                    borderColor: '#0284c7',
+                    borderDash: [3, 3],
+                    borderWidth: 2,
+                    pointRadius: 2.5,
+                    pointHoverRadius: 7,
+                    hitRadius: 15,
+                    fill: false
+                },
+                {
+                    label: '실제 발전량 평균',
+                    data: avgActual,
+                    borderColor: '#64748b',
+                    borderWidth: 1.5,
+                    pointRadius: 2.5,
+                    pointHoverRadius: 7,
+                    hitRadius: 15
+                },
+                {
+                    label: '평균 잔차 (Residual)',
+                    data: avgResidual,
+                    type: 'bar',
+                    backgroundColor: avgResidual.map(r => r > 50 ? 'rgba(225, 29, 72, 0.6)' : (r < -20 ? 'rgba(217, 119, 6, 0.5)' : 'rgba(16, 185, 129, 0.3)'))
+                }
+            ];
+            anomalyChart.update();
+        }
+
         function renderMap() {
             if (!map || !markersGroup) return;
             markersGroup.clearLayers();
 
             Object.keys(regionCoordinates).forEach(region => {
-                const regionItems = getTimeFiltered().filter(d => d.region === region);
+                const regionItems = parsedDataset.filter(d => 
+                    d.region === region &&
+                    (selectedYear === 'ALL' || d.year === parseInt(selectedYear)) &&
+                    (selectedMonth === 'ALL' || d.month === parseInt(selectedMonth))
+                );
                 const coords = regionCoordinates[region];
 
-                const fraudCnt = regionItems.filter(d => d.result.includes('부정청구')).length;
-                const faultCnt = regionItems.filter(d => d.result.includes('계측기고장')).length;
+                const fraudCnt = regionItems.filter(d => d.result.includes('부정청구') || d.result.includes('Abnormal')).length;
+                const faultCnt = regionItems.filter(d => d.result.includes('계측기고장') || d.result.includes('Sensor')).length;
 
                 let markerColor = '#10b981';
-                let statusMsg = '✅ 정상 관제';
+                let statusMsg = '정상 관제';
 
-                if (fraudCnt > 0) {
-                    markerColor = '#ef4444';
-                    statusMsg = `🚨 부정거래 ${fraudCnt}건 포착`;
-                } else if (faultCnt > 0) {
-                    markerColor = '#f59e0b';
-                    statusMsg = `🔧 계측기 고장 ${faultCnt}건 포착`;
-                }
+                if (fraudCnt > 0) { markerColor = '#ef4444'; statusMsg = `부정 ${fraudCnt}건`; }
+                else if (faultCnt > 0) { markerColor = '#f59e0b'; statusMsg = `고장 ${faultCnt}건`; }
 
                 const marker = L.circleMarker(coords, {
-                    radius: 11,
-                    fillColor: markerColor,
-                    color: '#ffffff',
-                    weight: 2,
-                    fillOpacity: 0.9
-                });
-
-                const rangeCircle = L.circle(coords, {
-                    radius: 20000,
-                    color: markerColor,
-                    weight: 1,
-                    fillColor: markerColor,
-                    fillOpacity: 0.12
+                    radius: 8, fillColor: markerColor, color: '#ffffff', weight: 1.5, fillOpacity: 0.85
                 });
 
                 const popupHtml = `
-                    <div style="padding: 4px; font-size: 0.85rem; font-family: sans-serif;">
-                        <div style="font-size: 0.75rem; color:#94a3b8;">대한민국 관제 거점</div>
-                        <h3 style="font-size: 1.1rem; font-weight: bold; color:#fff; margin-bottom: 4px;">${region} 관제소</h3>
-                        <p style="font-weight: bold; color:${markerColor}; margin-bottom: 6px;">${statusMsg}</p>
-                        <div style="font-size: 0.75rem; color: #cbd5e1; margin-bottom: 10px;">
-                            • 전체 데이터: ${regionItems.length}건<br>
-                            • 부정청구: ${fraudCnt}건 | 계측기 고장: ${faultCnt}건
-                        </div>
-                        <button onclick="goToRegionDashboard('${region}')" style="width: 100%; cursor: pointer; background: #f59e0b; color: #0f172a; padding: 6px 10px; border-radius: 6px; font-weight: bold; border: none; font-size: 0.75rem;">
-                            📊 ${region} 상세 대시보드 분석
-                        </button>
+                    <div style="padding: 2px; font-size: 0.8rem;">
+                        <h3 style="font-weight: bold; color:#1e293b;">${region} 관제소</h3>
+                        <p style="font-weight: bold; color:${markerColor}; margin-top: 2px;">${statusMsg}</p>
                     </div>
                 `;
 
                 marker.bindPopup(popupHtml);
-                markersGroup.addLayer(rangeCircle);
                 markersGroup.addLayer(marker);
             });
-        }
-
-        // ===== 기간·시간대 필터 =====
-        function parseTs(ts, hourCol) {
-            const m = String(ts || '').match(/(\d{4})[-\/.](\d{1,2})[-\/.](\d{1,2})[ T]+(\d{1,2})/);
-            let hr = m ? +m[4] : (hourCol != null && hourCol !== '' ? parseInt(hourCol) : -1);
-            if (isNaN(hr)) hr = -1;
-            return {
-                ym: m ? m[1] + '-' + m[2].padStart(2, '0') : null,
-                dy: m ? m[3].padStart(2, '0') : '',
-                hr,
-                t: m ? Date.UTC(+m[1], +m[2] - 1, +m[3], Math.max(hr, 0)) / 3600000 : null  // 시간순 정렬용
-            };
-        }
-        function fmtMonth(ym) { const [y, m] = ym.split('-'); return `${y}년 ${+m}월`; }
-        // 시작 > 끝이면 자정을 넘기는 구간(예: 19시~5시)으로 처리
-        function inHourRange(h) {
-            return hourFrom <= hourTo ? (h >= hourFrom && h <= hourTo) : (h >= hourFrom || h <= hourTo);
-        }
-        function getTimeFiltered(skipMonth = false, skipHour = false) {
-            const key = `${skipMonth}|${skipHour}|${selectedMonth}|${hourFrom}|${hourTo}`;
-            if (tfCache[key]) return tfCache[key];
-            const allHours = hourFrom === 0 && hourTo === 23;
-            return tfCache[key] = parsedDataset.filter(d =>
-                (skipMonth || selectedMonth === '전체' || d.ym === selectedMonth) &&
-                (skipHour || allHours || inHourRange(d.hr)));
-        }
-        const byRegion = rows => selectedRegion === '전체' ? rows : rows.filter(d => d.region === selectedRegion);
-        function getFiltered() { return byRegion(getTimeFiltered()); }
-
-        function filterLabel() {
-            const parts = [selectedRegion];
-            if (selectedMonth !== '전체') parts.push(fmtMonth(selectedMonth));
-            if (!(hourFrom === 0 && hourTo === 23)) {
-                parts.push(hourFrom === hourTo ? `${hourFrom}시` : `${hourFrom}시~${hourTo}시${hourFrom > hourTo ? '(익일)' : ''}`);
-            }
-            return parts.join(' · ');
-        }
-        function buildHourSelects() {
-            const opts = Array.from({ length: 24 }, (_, h) => `<option value="${h}">${h}시</option>`).join('');
-            document.getElementById('hourFrom').innerHTML = opts;
-            document.getElementById('hourTo').innerHTML = opts;
-            syncHourSelects();
-        }
-        function syncHourSelects() {
-            document.getElementById('hourFrom').value = hourFrom;
-            document.getElementById('hourTo').value = hourTo;
-        }
-        function buildMonthSelect() {
-            allMonths = [...new Set(parsedDataset.map(d => d.ym))].filter(Boolean).sort();
-            const sel = document.getElementById('monthSelect');
-            sel.innerHTML = '<option value="전체">전체 기간</option>' +
-                allMonths.map(m => `<option value="${m}">${fmtMonth(m)}</option>`).join('');
-            sel.value = selectedMonth;
-        }
-        function applyFilters() {
-            if (!parsedDataset.length) return;
-            updateDashboard();
-            if (map) renderMap();
-        }
-        function onMonthChange(v) { selectedMonth = v; applyFilters(); }
-        function onHourChange() {
-            hourFrom = +document.getElementById('hourFrom').value;
-            hourTo = +document.getElementById('hourTo').value;
-            applyFilters();
-        }
-        function setHourPreset(a, b) { hourFrom = a; hourTo = b; syncHourSelects(); applyFilters(); }
-        function resetFilters() {
-            selectedMonth = '전체'; hourFrom = 0; hourTo = 23;
-            document.getElementById('monthSelect').value = '전체';
-            syncHourSelects(); applyFilters();
-        }
-
-        // ===== 월별 / 시간대별 집계 차트 =====
-        function aggregate(rows, keyFn, keys) {
-            const m = new Map(keys.map(k => [k, { n: 0, fraud: 0, fault: 0, a: 0, p: 0 }]));
-            rows.forEach(d => {
-                const s = m.get(keyFn(d));
-                if (!s) return;
-                s.n++; s.a += d.actual; s.p += d.pred;
-                if (d.result.includes('부정청구')) s.fraud++;
-                else if (d.result.includes('계측기고장')) s.fault++;
-            });
-            return keys.map(k => m.get(k));
-        }
-        function buildTrend(canvasId, prev, labels, stats, isActive, onPick) {
-            if (prev) prev.destroy();
-            const dim = c => labels.map((_, i) => isActive(i) ? c : c.replace(/[\d.]+\)$/, '0.2)'));
-            const grid = { color: '#1e293b' };
-            return new Chart(document.getElementById(canvasId), {
-                data: {
-                    labels,
-                    datasets: [
-                        { type: 'bar', label: '🚨 부정청구', data: stats.map(s => s.fraud), backgroundColor: dim('rgba(244,63,94,0.85)'), stack: 'c', yAxisID: 'y' },
-                        { type: 'bar', label: '🔧 계측기 고장', data: stats.map(s => s.fault), backgroundColor: dim('rgba(245,158,11,0.85)'), stack: 'c', yAxisID: 'y' },
-                        { type: 'line', label: '평균 실제 발전량', data: stats.map(s => s.n ? s.a / s.n : 0), borderColor: '#cbd5e1', borderWidth: 1.5, pointRadius: 2, tension: 0.25, yAxisID: 'y1' },
-                        { type: 'line', label: '평균 AI 예측', data: stats.map(s => s.n ? s.p / s.n : 0), borderColor: '#38bdf8', borderDash: [4, 4], borderWidth: 2, pointRadius: 0, tension: 0.25, yAxisID: 'y1' }
-                    ]
-                },
-                options: {
-                    responsive: true, maintainAspectRatio: false,
-                    interaction: { mode: 'index', intersect: false },
-                    onClick: (e, els) => { if (els.length) onPick(els[0].index); },
-                    plugins: { legend: { labels: { color: '#cbd5e1', boxWidth: 12 } } },
-                    scales: {
-                        x: { stacked: true, ticks: { color: '#94a3b8', maxRotation: 45 }, grid },
-                        y: { stacked: true, position: 'left', beginAtZero: true, ticks: { color: '#94a3b8', precision: 0 }, grid, title: { display: true, text: '이상 건수', color: '#64748b' } },
-                        y1: { position: 'right', beginAtZero: true, ticks: { color: '#94a3b8' }, grid: { drawOnChartArea: false }, title: { display: true, text: '평균 발전량 (MWh)', color: '#64748b' } }
-                    }
-                }
-            });
-        }
-        function renderTrendCharts() {
-            // 월별: 월 필터는 무시(전체 월 표시, 선택 월 강조) / 시간별: 시간 필터는 무시(24시간 표시, 선택 구간 강조)
-            const mStats = aggregate(byRegion(getTimeFiltered(true, false)), d => d.ym, allMonths);
-            monthChart = buildTrend('monthChart', monthChart, allMonths, mStats,
-                i => selectedMonth === '전체' || allMonths[i] === selectedMonth,
-                i => {
-                    selectedMonth = selectedMonth === allMonths[i] ? '전체' : allMonths[i];
-                    document.getElementById('monthSelect').value = selectedMonth;
-                    applyFilters();
-                });
-
-            const hours = Array.from({ length: 24 }, (_, h) => h);
-            const hStats = aggregate(byRegion(getTimeFiltered(false, true)), d => d.hr, hours);
-            hourChart = buildTrend('hourChart', hourChart, hours.map(h => h + '시'), hStats,
-                i => inHourRange(i),
-                i => {
-                    if (hourFrom === i && hourTo === i) { hourFrom = 0; hourTo = 23; }
-                    else { hourFrom = hourTo = i; }
-                    syncHourSelects();
-                    applyFilters();
-                });
-
-            document.getElementById('filterSummary').textContent =
-                `적용 중: ${filterLabel()} · ${getFiltered().length.toLocaleString()}건`;
-        }
-        buildHourSelects();
-
-        // 9. 지도 팝업 클릭 시 해당 지역 대시보드로 이동
-        function goToRegionDashboard(regionName) {
-            document.getElementById('regionSelect').value = regionName;
-            selectedRegion = regionName;
-            switchView('dashboard');
-            updateDashboard();
         }
     </script>
 </body>
