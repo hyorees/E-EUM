@@ -15,7 +15,7 @@ const LBL = { pop: "영향 인구", fac: "응급의료기관", wx: "기상 위�
 const WL = { ok: "양호", warn: "주의", danger: "위험" };
 
 const OUT_DEMO = { 1: 40, 2: 60, 3: 30, 4: 25, 5: 15, 6: 0, 7: 50 };  // 예시값(권역 id → 정전 비율 %)
-const S = { t: M.last, w: { pop: 40, fac: 30, wx: 30 }, crews: 3, sc: "A", sel: null, out: { ...OUT_DEMO } };
+const S = { t: M.last, w: { pop: 40, fac: 30, wx: 30 }, crews: 3, sc: "A", sel: null, out: { ...OUT_DEMO }, ovr: {}, mode: "auto" };  // mode: auto(기상 추정) / manual(직접 입력) / mixed(추정+보정)
 let ROWS = [], SC = {}, REC = "A", map = null, markers = [];
 
 /* ── 기상: 선택 시점 S.t 기준 최근 24시간 ── */
@@ -35,14 +35,28 @@ function extreme(name) {
   return EXT[name] = { w, ws: ST[h.wms[wi]], wt: fmt(wi), r, rs: ST[h.rs[ri]], rt: fmt(ri) };
 }
 
+/* ── 기상 → 정전 비율 추정 (임의 가정 곡선: 실제 정전 이력으로 보정 전) ── */
+const lin = (v, p) => { if (v <= p[0][0]) return p[0][1]; for (let i = 1; i < p.length; i++) if (v <= p[i][0]) { const [a, b] = p[i - 1], [c, d] = p[i]; return b + (d - b) * (v - a) / (c - a); } return p[p.length - 1][1]; };
+function estOut(wx) {
+  const w = lin(wx.pw, [[9, 0], [14, 25], [21, 70], [25, 90]]), r = lin(wx.pr, [[10, 0], [30, 15], [50, 30], [100, 50]]);
+  return Math.min(95, Math.round((Math.max(w, r) + .3 * Math.min(w, r)) / 5) * 5);   // 큰 값 + 작은 값의 30%, 5% 단위
+}
+const MODE_LBL = { auto: "기상 자동 추정", manual: "직접 입력", mixed: "추정 + 직접 보정" };
+function outInfo(o) {
+  const wx = wxAt(o.region, S.t), est = estOut(wx); let pct = est, src = "기상 추정";
+  if (S.mode === "manual") { pct = S.out[o.id]; src = "직접 입력"; }
+  else if (S.mode === "mixed" && S.ovr[o.id] != null) { pct = S.ovr[o.id]; src = `직접 보정(추정 ${est}%)`; }
+  return { wx, est, pct, src };
+}
+
 /* ── 우선순위 모델 ── */
 function model() {
   const mp = Math.max(...outageData.map(o => o.pop)), mf = Math.max(...outageData.map(o => o.hosp));
   const W = S.w, sw = (W.pop + W.fac + W.wx) || 1;
-  const rows = outageData.filter(o => S.out[o.id] > 0).map(o0 => {
-    const pct = S.out[o0.id], k = pct / 100;
-    const o = { ...o0, pct, totPop: o0.pop, totHosp: o0.hosp, pop: o0.pop * k, hosp: Math.max(1, Math.round(o0.hosp * k)) };  // 이후 pop·hosp = 정전 영향분
-    const wx = wxAt(o.region, S.t), pN = o.pop / mp, fN = o.hosp / mf;
+  const rows = outageData.map(o0 => ({ o0, info: outInfo(o0) })).filter(x => x.info.pct > 0).map(({ o0, info }) => {
+    const pct = info.pct, k = pct / 100;
+    const o = { ...o0, pct, src: info.src, totPop: o0.pop, totHosp: o0.hosp, pop: o0.pop * k, hosp: Math.max(1, Math.round(o0.hosp * k)) };  // 이후 pop·hosp = 정전 영향분
+    const wx = info.wx, pN = o.pop / mp, fN = o.hosp / mf;
     const xN = Math.max(Math.min(1, wx.pw / 21), Math.min(1, wx.pr / 50));
     const part = { pop: 100 * W.pop / sw * pN, fac: 100 * W.fac / sw * fN, wx: 100 * W.wx / sw * xN };
     const score = part.pop + part.fac + part.wx, sc = (pN + fN) / 2;
@@ -54,7 +68,7 @@ function model() {
   rows.forEach((r, i) => r.rank = i + 1);
   rows.forEach(r => {
     const top = Object.entries(r.part).sort((a, b) => b[1] - a[1])[0][0];
-    let s = `정전 ${r.pct}% → 영향 인구 ${man(r.pop)}(권역 ${man(r.totPop)}) · 응급의료기관 ${r.hosp}개소(권역 ${r.totHosp}) · 최근 24h 최대풍속 ${r.wx.pw}m/s, 시간강수 ${r.wx.pr}mm → 점수 기여가 가장 큰 항목은 ${LBL[top]}(${r.part[top].toFixed(1)}점).`;
+    let s = `정전 ${r.pct}%(${r.src}) → 영향 인구 ${man(r.pop)}(권역 ${man(r.totPop)}) · 응급의료기관 ${r.hosp}개소(권역 ${r.totHosp}) · 최근 24h 최대풍속 ${r.wx.pw}m/s, 시간강수 ${r.wx.pr}mm → 점수 기여가 가장 큰 항목은 ${LBL[top]}(${r.part[top].toFixed(1)}점).`;
     const nb = rows[r.rank - 2] || rows[1];
     if (nb && nb !== r) {
       const d = Object.keys(LBL).map(k => [k, r.part[k] - nb.part[k]]);
@@ -98,7 +112,7 @@ function renderBanner() {
   const mw = [...ROWS].sort((a, b) => b.wx.pw - a.wx.pw)[0], mr = [...ROWS].sort((a, b) => b.wx.pr - a.wx.pr)[0];
   const bad = ROWS.filter(r => r.wl !== "ok").length;
   setText("#alertTitle", `${fmtFull(S.t)} 기준 기상·정전 영향 분석`);
-  setText("#alertSub", `최근 24시간 최대풍속 ${mw.wx.pw}m/s(${mw.wx.pws}) · 최대 시간강수 ${mr.wx.pr}mm(${mr.wx.prs}) · 기상 주의 이상 ${bad}개 권역`);
+  setText("#alertSub", `최근 24시간 최대풍속 ${mw.wx.pw}m/s(${mw.wx.pws}) · 최대 시간강수 ${mr.wx.pr}mm(${mr.wx.prs}) · 기상 주의 이상 ${bad}개 권역 · 정전 비율: ${MODE_LBL[S.mode]}`);
   setText("#aZones", ROWS.length); setText("#aFac", ROWS.reduce((s, r) => s + r.hosp, 0));
   setText("#aPop", man(ROWS.reduce((s, r) => s + r.pop, 0)).replace(" 명", ""));
   const rec = SC[REC];
@@ -113,7 +127,7 @@ function renderBanner() {
 function renderMap() {
   if (!map) return; markers.forEach(m => map.removeLayer(m)); markers = [];
   ROWS.forEach(r => {
-    const icon = L.divIcon({ className: `custom-map-marker ${r.level}${r.wl !== "ok" ? " wx-" + r.wl : ""}`, html: `<span>${Math.round(r.score)}</span>`, iconSize: [28, 28] });
+    const icon = L.divIcon({ className: `custom-map-marker ${r.level}`, html: `<span>${Math.round(r.score)}</span>`, iconSize: [28, 28] });
     const m = L.marker([r.lat, r.lng], { icon }).addTo(map);
     m.bindTooltip(`<div class="wx-tip"><b>${r.region}</b> · ${r.rank}위 (${r.score.toFixed(1)}점)<br>풍속 최대 ${r.wx.pw}m/s · 시간강수 ${r.wx.pr}mm · 기상 ${WL[r.wl]}</div>`, { direction: "top", offset: [0, -10] });
     m.on("click", () => selectOutage(r.id)); markers.push(m);
@@ -208,12 +222,23 @@ function renderAll() {
   $("#wxTime").value = toInput(S.t);
   const p = weatherEvents.findIndex(e => e.i === S.t); $("#wxPreset").value = p >= 0 ? p : "";
 }
-function refreshOutLabels() { outageData.forEach(o => { const p = S.out[o.id]; setText("#outV" + o.id, p ? `${p}% · ${man(o.pop * p / 100)}` : "정전 없음"); }); }
-function renderOutInputs() {
-  setHTML("#outageInputs", outageData.map(o => `<div class="out-row"><b>${o.region}</b><input type="range" min="0" max="100" step="5" value="${S.out[o.id]}" data-id="${o.id}"><span id="outV${o.id}"></span></div>`).join(""));
-  $$("#outageInputs input").forEach(i => i.addEventListener("input", e => { S.out[+e.target.dataset.id] = +e.target.value; update(); }));
+function refreshOutLabels() {
+  outageData.forEach(o => {
+    const i = outInfo(o), el = document.querySelector(`#outageInputs input[data-id="${o.id}"]`);
+    if (el) { el.value = i.pct; el.disabled = S.mode === "auto"; }
+    setText("#outV" + o.id, i.pct ? `${i.pct}% · ${man(o.pop * i.pct / 100)} · ${i.src}` : `정전 없음 (추정 ${i.est}%)`);
+  });
 }
-function setOut(f) { outageData.forEach(o => S.out[o.id] = f(o)); renderOutInputs(); update(); }
+function renderOutInputs() {
+  setHTML("#outageInputs", outageData.map(o => `<div class="out-row"><b>${o.region}</b><input type="range" min="0" max="100" step="5" value="0" data-id="${o.id}"><span id="outV${o.id}"></span></div>`).join(""));
+  $$("#outageInputs input").forEach(i => i.addEventListener("input", e => {
+    const id = +e.target.dataset.id, v = +e.target.value;
+    if (S.mode === "manual") S.out[id] = v; else if (S.mode === "mixed") S.ovr[id] = v;
+    update();
+  }));
+}
+function setMode(m) { S.mode = m; $$('input[name="outMode"]').forEach(r => r.checked = r.value === m); update(); }
+function setOut(f) { outageData.forEach(o => S.out[o.id] = f(o)); setMode("manual"); }
 function renderEmpty() {
   const msg = `<div class="empty-msg">정전이 입력된 권역이 없습니다. '복구 우선순위' 탭에서 정전 상황을 입력하세요.</div>`;
   setText("#alertTitle", `${fmtFull(S.t)} 기준 · 정전 구역 없음`); setText("#alertSub", "정전 비율을 입력하면 우선순위와 시나리오가 계산됩니다.");
@@ -248,8 +273,10 @@ function bind() {
 }
 function bindOut() {
   renderOutInputs();
+  $$('input[name="outMode"]').forEach(r => r.addEventListener("change", e => setMode(e.target.value)));
   $("#outAll").addEventListener("click", () => setOut(() => 100));
   $("#outNone").addEventListener("click", () => setOut(() => 0));
   $("#outDemo").addEventListener("click", () => setOut(o => OUT_DEMO[o.id]));
+  $("#outReset").addEventListener("click", () => { S.ovr = {}; update(); });
 }
 window.addEventListener("DOMContentLoaded", () => { bind(); bindOut(); initMap(); update(); });
