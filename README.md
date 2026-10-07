@@ -1,2 +1,4 @@
-# VOLTIS
-2026 한전 kdn 빛가람 AI · ICT 경진대회 AI 기반 소규모 P2P 전력 거래 데이터 부정치·오류 실시간 탐지 시스템
+# E-EUM
+Electricity Effective Urgency Matching System (전력 복구 효율적 긴급도 매칭 시스템)
+
+공공데이터 기반 사회적 영향도를 분석하여 최적의 복구 순서를 제안하는 AI-GIS 관제 플랫폼
