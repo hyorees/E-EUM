@@ -1,140 +1,109 @@
-import os
-import json
+import os, json
+import numpy as np
 import pandas as pd
 
-# 1. 파일 및 저장 경로 설정
-CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))    # project/data 폴더
-PROJECT_DIR = os.path.dirname(CURRENT_DIR)                  # project 폴더
-OUTPUT_JS_PATH = os.path.join(PROJECT_DIR, 'js', 'data.js')  # project/js/data.js
+HERE = os.path.dirname(os.path.abspath(__file__))
+JS_DIR = os.path.join(os.path.dirname(HERE), 'js')
+os.makedirs(JS_DIR, exist_ok=True)
 
-pop_csv_path = os.path.join(CURRENT_DIR, 'population.csv')
-hosp_csv_path = os.path.join(CURRENT_DIR, 'hospitals.csv')
+regions = ["부산 권역", "광주·전남 권역", "대구·경북 권역", "충청 권역", "수도권 남부", "강원 권역", "전북 권역"]
+coords = {"부산 권역": (35.17955, 129.0756), "광주·전남 권역": (35.15954, 126.8526), "대구·경북 권역": (35.87143, 128.6014),
+          "충청 권역": (36.35041, 127.3845), "수도권 남부": (37.26357, 127.0286), "강원 권역": (37.88536, 127.7298),
+          "전북 권역": (35.82422, 127.148)}
 
-# 2. 7개 권역 및 좌표 설정
-regions = [
-    "부산 권역", "광주·전남 권역", "대구·경북 권역", 
-    "충청 권역", "수도권 남부", "강원 권역", "전북 권역"
-]
+# 시·도 → 권역 (경남·울산은 부산 권역, 제주는 권역 없음)
+prov = {"부산광역시": 0, "울산광역시": 0, "경상남도": 0, "전남광주통합특별시": 1, "광주광역시": 1, "전라남도": 1,
+        "대구광역시": 2, "경상북도": 2, "대전광역시": 3, "세종특별자치시": 3, "충청북도": 3, "충청남도": 3,
+        "서울특별시": 4, "경기도": 4, "인천광역시": 4, "강원특별자치도": 5, "강원도": 5, "전북특별자치도": 6, "전라북도": 6}
 
-coordinates = {
-    "부산 권역": {"lat": 35.17955, "lng": 129.0756},
-    "광주·전남 권역": {"lat": 35.15954, "lng": 126.8526},
-    "대구·경북 권역": {"lat": 35.87143, "lng": 128.6014},
-    "충청 권역": {"lat": 36.35041, "lng": 127.3845},
-    "수도권 남부": {"lat": 37.26357, "lng": 127.0286},
-    "강원 권역": {"lat": 37.88536, "lng": 127.7298},
-    "전북 권역": {"lat": 35.82422, "lng": 127.1480}
-}
+stations = {
+    0: "부산 북부산 김해시 양산시 울산 창원 북창원 통영 진주 거제 밀양 산청 거창 합천 함양군 의령군 남해",
+    1: "광주 목포 여수 완도 순천 해남 진도군 보성군 강진군 장흥 고흥 광양시 영광군 흑산도",
+    2: "대구 포항 안동 상주 구미 영천 경주시 영주 문경 의성 봉화 청송군 영덕 울진 울릉도",
+    3: "대전 청주 서청주 충주 제천 보은 천안 서산 보령 부여 금산 세종 홍성 추풍령",
+    4: "서울 인천 수원 이천 양평 강화 동두천 파주 백령도",
+    5: "속초 북춘천 철원 대관령 춘천 북강릉 강릉 동해 영월 인제 홍천 태백 정선군 원주",
+    6: "전주 군산 고창 정읍 남원 부안 임실 장수 순창군 고창군"}
+stn2reg = {s: r for r, v in stations.items() for s in v.split()}
 
-# CSV 파싱 실패 시 사용할 권역별 현실적인 기본 수치 (차등 부여)
-default_stats = {
-    "부산 권역": {"people": 3300000, "hospitals": 28},
-    "광주·전남 권역": {"people": 3200000, "hospitals": 22},
-    "대구·경북 권역": {"people": 4900000, "hospitals": 31},
-    "충청 권역": {"people": 5500000, "hospitals": 35},
-    "수도권 남부": {"people": 9800000, "hospitals": 58},
-    "강원 권역": {"people": 1500000, "hospitals": 14},
-    "전북 권역": {"people": 1750000, "hospitals": 16}
-}
+def read_any(path):
+    for enc in ("utf-8-sig", "cp949"):
+        try: return pd.read_csv(path, encoding=enc)
+        except UnicodeDecodeError: pass
+    raise ValueError(path)
 
-region_stats = {
-    reg: {"people": default_stats[reg]["people"], "hospitals": default_stats[reg]["hospitals"], "shelters": 0} 
-    for reg in regions
-}
+pop = [0] * 7; hosp = [0] * 7
+d = read_any(os.path.join(HERE, 'population.csv'))
+for _, r in d.iterrows():
+    k = prov.get(str(r.iloc[0]).strip().split(" ")[0])
+    if k is not None:
+        try: pop[k] += int(float(str(r.iloc[1]).replace(',', '')))
+        except ValueError: pass
+for a in read_any(os.path.join(HERE, 'hospitals.csv'))["주소"]:
+    k = prov.get(str(a).strip().split(" ")[0])
+    if k is not None: hosp[k] += 1
 
-def get_region_key(row_values):
-    text = " ".join([str(v) for v in row_values])
-    if "부산" in text: return "부산 권역"
-    if "광주" in text or "전남" in text: return "광주·전남 권역"
-    if "대구" in text or "경북" in text: return "대구·경북 권역"
-    if "충청" in text or "대전" in text or "충남" in text or "충북" in text: return "충청 권역"
-    if "수도권" in text or "경기" in text or "인천" in text or "서울" in text: return "수도권 남부"
-    if "강원" in text: return "강원 권역"
-    if "전북" in text: return "전북 권역"
-    return None
+outage = [{"id": i + 1, "region": n, "lat": coords[n][0], "lng": coords[n][1],
+           "pop": pop[i], "hosp": hosp[i], "shelters": 0} for i, n in enumerate(regions)]
 
-# 3. population.csv 읽기 시도
-if os.path.exists(pop_csv_path):
-    try:
-        df_pop = pd.read_csv(pop_csv_path)
-        for _, row in df_pop.iterrows():
-            reg = get_region_key(row.values)
-            if reg:
-                for val in row.values:
-                    try:
-                        num = float(str(val).replace(',', ''))
-                        if num > 10000: # 인구 수
-                            region_stats[reg]["people"] = int(num)
-                            break
-                    except ValueError:
-                        continue
-    except Exception as e:
-        print(f"인구 CSV 읽기 참고: {e}")
+# ---- 기상청: 권역별 '시간 단위' 집계 (화면에서 원하는 시점을 고를 수 있도록 전체 기간 보관)
+k = read_any(os.path.join(HERE, 'kma_weather.csv')).rename(
+    columns={"기온(°C)": "temp", "강수량(mm)": "rain", "풍속(m/s)": "wind", "일시": "dt", "지점명": "stn"})
+k.loc[k["기온 QC플래그"] == 9, "temp"] = np.nan
+k.loc[k["풍속 QC플래그"] == 9, "wind"] = np.nan
+k["rain"] = k["rain"].fillna(0.0)          # 강수량 공란 = 무강수
+k["dt"] = pd.to_datetime(k["dt"])
+k = k[k["stn"].isin(stn2reg)]
+idx = pd.date_range(k["dt"].min(), k["dt"].max(), freq="h")
+allst = sorted(stn2reg)
+sidx = {s: i for i, s in enumerate(allst)}
+P = {c: k.pivot_table(index="dt", columns="stn", values=c, aggfunc="first").reindex(idx) for c in ("temp", "rain", "wind")}
+R24 = P["rain"].fillna(0).rolling(24, min_periods=1).sum()
 
-# 4. hospitals.csv 읽기 시도
-if os.path.exists(hosp_csv_path):
-    try:
-        df_hosp = pd.read_csv(hosp_csv_path)
-        for _, row in df_hosp.iterrows():
-            reg = get_region_key(row.values)
-            if reg:
-                for val in row.values:
-                    try:
-                        num = int(float(str(val).replace(',', '')))
-                        if 1 <= num <= 80: # 권역별 적정 병원 수 범위
-                            region_stats[reg]["hospitals"] = num
-                            break
-                    except ValueError:
-                        continue
-    except Exception as e:
-        print(f"병원 CSV 읽기 참고: {e}")
+def r1(a): return [None if (v is None or np.isnan(v)) else round(float(v), 1) for v in a]
+def top(df):  # 권역 내 최대값과 그 지점 번호
+    a = df.fillna(-1).values; m = a.max(axis=1); j = a.argmax(axis=1)
+    cols = list(df.columns)
+    return np.where(m < 0, 0, m), [sidx[cols[x]] for x in j]
 
-# 5. outage_data 목록 생성 및 점수 계산
-outage_data = []
-for idx, reg_name in enumerate(regions, start=1):
-    stats = region_stats[reg_name]
-    pop_man = round(stats["people"] / 10000, 1)
-    hosp_cnt = stats["hospitals"]
-    shelter_cnt = stats["shelters"]
-    
-    # 균중하게 60~95점 사이 분포하도록 가중치 설정
-    raw_score = int(52 + (hosp_cnt * 0.45) + (pop_man * 0.03))
-    score = min(max(raw_score, 58), 96)
-    
-    level = "critical" if score >= 85 else "high" if score >= 75 else "mid" if score >= 65 else "low"
-    
-    reason_parts = [f"응급의료기관 {hosp_cnt}개소"]
-    if shelter_cnt > 0:
-        reason_parts.append(f"대피소 {shelter_cnt}개소")
-    reason_parts.append(f"영향 인구 {pop_man}만 명 기반 AI 산출")
-    
-    outage_data.append({
-        "id": idx,
-        "region": reg_name,
-        "lat": coordinates[reg_name]["lat"],
-        "lng": coordinates[reg_name]["lng"],
-        "score": score,
-        "level": level,
-        "people": f"{pop_man}만 명",
-        "facilities": hosp_cnt,
-        "shelters": shelter_cnt,
-        "time": f"{round(score / 15, 1)}시간",
-        "cascade": "매우 높음" if score >= 85 else "높음" if score >= 75 else "보통",
-        "reason": " · ".join(reason_parts)
-    })
+hourly = {}
+for ri, name in enumerate(regions):
+    cols = [s for s in allst if stn2reg[s] == ri]
+    wm, wms = top(P["wind"][cols]); rm, rms = top(P["rain"][cols]); r24, r24s = top(R24[cols])
+    hourly[name] = {"t": r1(P["temp"][cols].mean(axis=1)), "w": r1(P["wind"][cols].mean(axis=1)),
+                    "wm": r1(wm), "wms": wms, "r": r1(rm), "rs": rms, "r24": r1(r24), "r24s": r24s, "n": len(cols)}
 
-# 6. project/js/data.js로 파일 저장
-os.makedirs(os.path.dirname(OUTPUT_JS_PATH), exist_ok=True)
+# ---- 대표 사례(프리셋): 전국에서 강풍 3건 + 호우 3건 (72시간 이상 간격)
+def peaks(kind, n=3):
+    best = np.zeros(len(idx)); info = [None] * len(idx)
+    for name in regions:
+        h = hourly[name]; key, skey = ("wm", "wms") if kind == "wind" else ("r", "rs")
+        for i in range(len(idx)):
+            v = h[key][i] or 0
+            if v > best[i]: best[i] = v; info[i] = (name, v, allst[h[skey][i]])
+    out = []
+    for i in np.argsort(-best):
+        if all(abs(i - e["i"]) >= 72 for e in out):
+            nm, v, st = info[i]
+            lbl = f"최대풍속 {v}m/s" if kind == "wind" else f"시간강수 {v}mm"
+            out.append({"i": int(i), "label": f"{'🌀' if kind == 'wind' else '🌧'} {idx[i]:%m/%d %H시} · {nm} {lbl}({st})"})
+        if len(out) == n: break
+    return out
+events = peaks("wind") + peaks("rain")
 
-js_content = f"const outageData = {json.dumps(outage_data, ensure_ascii=False, indent=2)};\n\n"
-js_content += """const scenarioData = {
-  A:{name:"A. 사회적 피해 최소화", score:"82.4", time:"4.1시간", people:"51.2만 명", desc:"영향 인구와 중요시설을 동시에 고려하여 사회적 피해가 가장 작도록 복구 순서를 배치합니다."},
-  B:{name:"B. 중요시설 우선", score:"74.8", time:"4.6시간", people:"58.7만 명", desc:"병원·소방·상수도·통신 등 중요시설을 우선 복구하는 시나리오입니다."},
-  C:{name:"C. 네트워크 효율 우선", score:"69.2", time:"3.7시간", people:"64.3만 명", desc:"복구 작업량과 전력망 효율을 우선하여 전체 정전 복구시간을 단축하는 시나리오입니다."}
+meta = {"start": f"{idx[0]:%Y-%m-%d %H:%M}", "n": len(idx), "stations": allst, "last": len(idx) - 1}
+with open(os.path.join(JS_DIR, 'weather.js'), 'w', encoding='utf-8') as f:
+    f.write("const weatherMeta = " + json.dumps(meta, ensure_ascii=False) + ";\n")
+    f.write("const weatherEvents = " + json.dumps(events, ensure_ascii=False) + ";\n")
+    f.write("const weatherHourly = " + json.dumps(hourly, ensure_ascii=False, separators=(',', ':')) + ";\n")
+
+with open(os.path.join(JS_DIR, 'data.js'), 'w', encoding='utf-8') as f:
+    f.write("// make_data.py 가 생성 (직접 수정 X)\nconst outageData = " + json.dumps(outage, ensure_ascii=False, indent=1) + ";\n\n")
+    f.write('''const scenarioData = {
+  A:{name:"A. 사회적 피해 최소화", short:"피해 최소화", rule:"우선순위 점수 ÷ 복구 소요시간이 큰 구역부터", desc:"영향 인구·중요시설·기상 위험을 종합한 우선순위 점수가 높고 빨리 끝나는 구역부터 복구해, 정전 상태로 머무는 인구·시간을 줄입니다."},
+  B:{name:"B. 중요시설 우선", short:"중요시설 우선", rule:"응급의료기관이 많은 구역부터", desc:"병원 등 응급의료기관이 많은 구역을 먼저 복구해 생명·안전과 직결된 시설의 정전 시간을 줄입니다."},
+  C:{name:"C. 네트워크 효율 우선", short:"효율 우선", rule:"복구 소요시간이 짧은 구역부터", desc:"작업량이 적은 구역부터 끝내 복구 완료 구역 수를 빠르게 늘립니다."}
 };
-"""
-
-with open(OUTPUT_JS_PATH, 'w', encoding='utf-8') as f:
-    f.write(js_content)
-
-print(f"✅ 생성 성공: {OUTPUT_JS_PATH}")
+''')
+print("병원", hosp, "인구", pop)
+print("기상:", meta["n"], "시간,", len(allst), "지점 / 대표 사례:", [e["label"] for e in events])
