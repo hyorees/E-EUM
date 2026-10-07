@@ -410,3 +410,55 @@ footer{display:flex;justify-content:space-between;color:#94a3b8;font-size:10px;p
   .weather-grid{grid-template-columns:1fr}
   .wx-tiles{grid-template-columns:repeat(3,1fr)}
 }
+
+/* ===== 시점 선택 / 우선순위 근거 / 시나리오 ===== */
+.time-ctl{display:flex;align-items:center;gap:6px;background:#fff;border:1px solid #e2e8f0;border-radius:8px;padding:5px 8px}
+.time-ctl label{font-size:10px;font-weight:700;color:#0284c7}
+.time-ctl input,.time-ctl select{font-size:11px;border:1px solid #cbd5e1;border-radius:5px;padding:4px;max-width:210px;font-family:inherit}
+.time-ctl button{border:1px solid #0284c7;background:#fff;color:#0284c7;border-radius:5px;padding:4px 8px;font-size:11px;font-weight:700;cursor:pointer}
+.stack{display:flex;height:7px;width:100%;max-width:160px;background:#e2e8f0;border-radius:4px;overflow:hidden;margin-top:4px}
+.stack i,.stack-legend i{display:inline-block}
+.stack i{height:100%}
+.s-pop{background:#0284c7}.s-fac{background:#f97316}.s-wx{background:#7c3aed}
+.stack-legend{font-size:10px;color:#64748b;margin:4px 0 6px}
+.stack-legend i{width:8px;height:8px;border-radius:2px;margin:0 3px 0 8px}
+.stack-legend i:first-child{margin-left:0}
+.reason{line-height:1.5}
+.weights{display:flex;gap:22px;align-items:center;flex-wrap:wrap;margin:14px 0;padding:12px 14px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;font-size:12px}
+.weights label,.sim-ctl label{display:flex;align-items:center;gap:8px;font-weight:600;color:#334155}
+.weights b,.sim-ctl b{min-width:26px;color:#0284c7}
+.why-table td.why{white-space:normal;text-align:left;min-width:300px;font-size:11px;color:#475569;line-height:1.5}
+.sim-ctl{display:flex;justify-content:space-between;align-items:center;gap:16px;margin:14px 0;flex-wrap:wrap;font-size:12px}
+.sc-tabs{display:flex;gap:6px}
+.sc-tab{border:1px solid #cbd5e1;background:#fff;color:#475569;border-radius:6px;padding:7px 12px;font-size:12px;font-weight:700;cursor:pointer}
+.sc-tab.active{background:#0284c7;border-color:#0284c7;color:#fff}
+.sub-h{margin:22px 0 8px;font-size:13px;color:#0f172a}
+.gantt{border:1px solid #e2e8f0;border-radius:8px;padding:10px 12px;background:#fff}
+.g-row{display:flex;align-items:center;gap:10px;margin:6px 0;font-size:11px;color:#64748b}
+.g-row>span{width:56px;flex-shrink:0}
+.g-track,.g-axis{position:relative;flex:1;height:28px;background:#f1f5f9;border-radius:5px}
+.g-axis{height:16px;background:none;display:flex;justify-content:space-between}
+.g-axis em{font-style:normal;font-size:10px;color:#94a3b8}
+.g-bar{position:absolute;top:2px;bottom:2px;border-radius:4px;color:#fff;font-style:normal;display:flex;align-items:center;justify-content:center;overflow:hidden;font-size:10px;border:1px solid rgba(255,255,255,.6)}
+.g-bar.critical{background:#e11d48}.g-bar.high{background:#f97316}.g-bar.mid{background:#0284c7}.g-bar.low{background:#16a34a}
+.why-box{margin-top:16px;padding:14px 16px;background:#f0f9ff;border:1px solid #bae6fd;border-radius:8px;font-size:12px;color:#334155;line-height:1.6}
+.why-box ul{margin:6px 0 0;padding-left:18px}
+.impact-chart2{padding:8px 12px 0;height:190px}
+.impact-chart2 svg{width:100%;height:150px;display:block}
+
+/* 정전 입력 */
+.outage-box{display:grid;grid-template-columns:1fr auto;gap:16px;align-items:start;margin:12px 0;padding:12px 14px;background:#fff7ed;border:1px solid #fed7aa;border-radius:8px}
+.out-row{display:grid;grid-template-columns:110px 1fr 150px;gap:10px;align-items:center;font-size:12px;padding:3px 0}
+.out-row span{color:#c2410c;font-weight:700;font-size:11px}
+.out-btns{display:flex;flex-direction:column;gap:6px}
+.out-btns button,.link-btn{border:1px solid #0284c7;background:#fff;color:#0284c7;border-radius:5px;padding:5px 10px;font-size:11px;font-weight:700;cursor:pointer}
+.link-btn{margin-top:6px;display:block;font-size:10px;padding:3px 8px}
+.empty-msg{padding:18px;text-align:center;color:#94a3b8;font-size:12px}
+
+/* 지도 마커: 우선순위 등급 색 하나로 통일 (범례와 동일) */
+.custom-map-marker,.custom-map-marker.critical,.custom-map-marker.high,.custom-map-marker.mid,.custom-map-marker.low{
+  border:2px solid #fff;color:#fff;box-shadow:0 2px 6px rgba(0,0,0,.35)}
+.custom-map-marker.critical{background:#e11d48}
+.custom-map-marker.high{background:#f97316}
+.custom-map-marker.mid{background:#0284c7}
+.custom-map-marker.low{background:#16a34a}
