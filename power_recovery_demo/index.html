@@ -3,188 +3,246 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>AI 재난 전력복구 의사결정 지원시스템</title>
+<title>재난 전력복구 의사결정 지원 시스템</title>
+<!-- OpenStreetMap 기반 Leaflet 지도 라이브러리 -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
 <div class="app">
-  <aside class="sidebar">
+  <!-- 사이드바 -->
+  <aside class="sidebar" id="sidebar">
     <div class="brand">
-      <div class="brand-icon">⚡</div>
-      <div>
-        <strong>전력복구 AI</strong>
-        <span>의사결정 지원시스템</span>
+      <button class="toggle-btn" id="sidebarToggle" title="사이드바 토글">☰</button>
+      <div class="brand-text">
+        <strong>전력복구 관제</strong>
+        <span>의사결정 지원 시스템</span>
       </div>
     </div>
-    <nav>
-      <button class="nav active">▣ <span>전국 정전 상황</span></button>
-      <button class="nav">⌖ <span>피해 영향 분석</span></button>
-      <button class="nav">✦ <span>AI 복구 우선순위</span></button>
-      <button class="nav">◫ <span>복구 시나리오</span></button>
-      <button class="nav">◉ <span>시설 상세</span></button>
+    <nav class="nav-menu">
+      <button class="nav-item active" data-tab="tab-dashboard">
+        <span class="nav-label">전국 정전 현황</span>
+      </button>
+      <button class="nav-item" data-tab="tab-impact">
+        <span class="nav-label">피해 영향 분석</span>
+      </button>
+      <button class="nav-item" data-tab="tab-priority">
+        <span class="nav-label">복구 우선순위</span>
+      </button>
+      <button class="nav-item" data-tab="tab-scenario">
+        <span class="nav-label">복구 시나리오</span>
+      </button>
+      <button class="nav-item" data-tab="tab-facility">
+        <span class="nav-label">시설 상세 정보</span>
+      </button>
     </nav>
     <div class="side-bottom">
-      <div class="system-ok"><i></i> AI 분석 시스템 정상</div>
-      <small>시연용 데이터 · 2026.10.06</small>
+      <div class="system-ok"><i></i> 시스템 연계 정상</div>
+      <small>관제 센터 서버 v2.4</small>
     </div>
   </aside>
 
-  <main>
+  <!-- 메인 콘텐츠 영역 -->
+  <main class="main-content">
     <header class="topbar">
-      <div>
-        <div class="eyebrow">DISASTER POWER RESTORATION</div>
-        <h1>전국 재난 전력복구 상황판</h1>
+      <div class="topbar-left">
+        <div class="eyebrow">DISASTER POWER RESTORATION SYSTEM</div>
+        <h1 id="pageTitle">전국 재난 전력복구 상황판</h1>
       </div>
       <div class="top-actions">
-        <span class="live"><i></i> LIVE</span>
-        <span>최종 분석 14:32:08</span>
-        <div class="avatar">관제</div>
+        <span class="live"><i></i> 실시간 수신 중</span>
+        <span>최신 업데이트: 14:35:00</span>
+        <div class="avatar">관제자</div>
       </div>
     </header>
 
-    <section class="disaster-alert">
-      <div class="alert-icon">⚠</div>
-      <div class="alert-copy">
-        <b>제18호 태풍으로 전국 정전 피해 발생</b>
-        <span>강풍·집중호우로 다수 지역의 배전설비가 손상되었습니다. AI가 정전 영향도와 복구 우선순위를 분석하고 있습니다.</span>
-      </div>
-      <div class="alert-stats">
-        <div><b>23</b><span>정전 지역</span></div>
-        <div><b>187</b><span>피해 시설</span></div>
-        <div><b>68.4만</b><span>영향 인구</span></div>
-      </div>
-    </section>
-
-    <section class="kpis">
-      <div class="kpi"><span>예상 사회적 영향</span><strong>78.6만</strong><em>명</em><small>▲ 12.4% 증가</small></div>
-      <div class="kpi"><span>긴급 복구 필요</span><strong>42</strong><em>개 시설</em><small>중요시설 18개 포함</small></div>
-      <div class="kpi"><span>AI 분석 완료</span><strong>187</strong><em>건</em><small>실시간 재산정 중</small></div>
-      <div class="kpi"><span>예상 평균 복구</span><strong>4.8</strong><em>시간</em><small>시나리오별 비교 가능</small></div>
-    </section>
-
-    <section class="main-grid">
-      <div class="panel map-panel">
-        <div class="panel-head">
-          <div>
-            <span class="section-label">NATIONAL OUTAGE MAP</span>
-            <h2>전국 정전 피해 및 AI 복구 우선순위</h2>
-          </div>
-          <div class="legend">
-            <span><i class="dot critical"></i>긴급</span>
-            <span><i class="dot high"></i>높음</span>
-            <span><i class="dot mid"></i>보통</span>
-            <span><i class="dot low"></i>낮음</span>
-          </div>
+    <!-- TAB 1: 메인 대시보드 -->
+    <div id="tab-dashboard" class="tab-content active">
+      <!-- 정전 피해 상단 배너 -->
+      <section class="disaster-alert">
+        <div class="alert-icon">!</div>
+        <div class="alert-copy">
+          <b>제18호 태풍 영향에 따른 전국 정전 피해 발생</b>
+          <span>강풍 및 호우로 인한 배전 설비 손상. 시설별 영향도 분석 및 복구 순서 산출 진행 중.</span>
         </div>
-        <div class="map-wrap">
-          <svg id="koreaMap" viewBox="0 0 760 560" aria-label="대한민국 정전 피해 지도">
-            <defs>
-              <linearGradient id="land" x1="0" y1="0" x2="1" y2="1">
-                <stop offset="0" stop-color="#1a3350"/>
-                <stop offset="1" stop-color="#0d2137"/>
-              </linearGradient>
-              <filter id="glow"><feGaussianBlur stdDeviation="5" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
-            </defs>
-            <path class="land" d="M330 45 L385 65 L418 110 L455 125 L480 175 L520 192 L548 238 L535 280 L570 330 L548 375 L510 390 L492 435 L450 456 L420 500 L370 480 L345 430 L300 405 L278 365 L300 320 L278 275 L300 235 L285 190 L305 150 L295 105 Z"/>
-            <path class="land south" d="M330 300 L290 330 L260 365 L215 390 L175 425 L210 452 L265 445 L315 420 L350 390 L380 360 Z"/>
-            <path class="borderline" d="M292 248 L345 270 L410 285 L470 300 L530 325"/>
-            <g class="map-label"><text x="370" y="175">강원</text><text x="330" y="250">충북</text><text x="405" y="255">경북</text><text x="315" y="330">전북</text><text x="405" y="345">경남</text><text x="270" y="390">전남</text><text x="475" y="210">울산</text><text x="475" y="260">대구</text><text x="300" y="205">충남</text><text x="355" y="115">경기</text></g>
-            <g id="markers"></g>
-          </svg>
-          <div class="map-note">※ 위치·수치는 공모전 시연을 위한 가상 데이터입니다.</div>
+        <div class="alert-stats">
+          <div class="stat-box"><b>23</b><span>정전 구역</span></div>
+          <div class="stat-box"><b>187</b><span>피해 시설</span></div>
+          <div class="stat-box"><b>68.4만</b><span>영향 인구</span></div>
         </div>
-      </div>
+      </section>
 
-      <div class="right-stack">
-        <div class="panel priority-panel">
-          <div class="panel-head compact">
-            <div><span class="section-label">AI PRIORITY</span><h2>복구 우선순위 TOP 5</h2></div>
-            <span class="ai-badge">✦ AI 분석</span>
-          </div>
-          <div id="priorityList" class="priority-list"></div>
-        </div>
+      <!-- KPI 지표 -->
+      <section class="kpis">
+        <div class="kpi"><span>총 예상 사회적 영향</span><strong>78.6만</strong><em>명</em><small>▲ 12.4% (전시 대비)</small></div>
+        <div class="kpi"><span>긴급 복구 필요 시설</span><strong>42</strong><em>개소</em><small>주요 취약시설 18개 포함</small></div>
+        <div class="kpi"><span>영향도 산출 완료</span><strong>187</strong><em>건</em><small>실시간 상태 반영</small></div>
+        <div class="kpi"><span>예상 평균 복구시간</span><strong>4.8</strong><em>시간</em><small>시나리오 최적화 기준</small></div>
+      </section>
 
-        <div class="panel selected-panel">
-          <div class="panel-head compact">
-            <div><span class="section-label">SELECTED OUTAGE</span><h2 id="selectedTitle">부산 권역 정전</h2></div>
-            <span id="selectedRank" class="rank-badge">1순위</span>
-          </div>
-          <div class="selected-body">
-            <div class="score-ring"><strong id="selectedScore">96</strong><span>AI 점수</span></div>
-            <div class="facts">
-              <div><span>영향 인구</span><b id="selectedPeople">18.2만 명</b></div>
-              <div><span>중요시설</span><b id="selectedFacilities">31개</b></div>
-              <div><span>예상 복구</span><b id="selectedTime">6.2시간</b></div>
-              <div><span>연쇄 영향</span><b id="selectedCascade">매우 높음</b></div>
+      <!-- 메인 지도 및 오른쪽 리스트 -->
+      <section class="main-grid">
+        <div class="panel map-panel">
+          <div class="panel-head">
+            <div>
+              <span class="section-label">GIS POWER MAP</span>
+              <h2>전국 정전 피해 및 복구 우선순위 지도</h2>
+            </div>
+            <div class="legend">
+              <span><i class="dot critical"></i>긴급</span>
+              <span><i class="dot high"></i>높음</span>
+              <span><i class="dot mid"></i>보통</span>
+              <span><i class="dot low"></i>낮음</span>
             </div>
           </div>
-          <div class="reason"><b>AI 판단 근거</b><span id="selectedReason">대형 병원·상수도 시설 밀집 + 높은 영향 인구 + 주요 선로 연계</span></div>
+          <!-- Leaflet 상세 지도 컴포넌트 -->
+          <div id="leafletMap" class="map-wrap"></div>
         </div>
-      </div>
-    </section>
 
-    <section class="lower-grid">
-      <div class="panel impact-panel">
-        <div class="panel-head compact">
-          <div><span class="section-label">IMPACT FORECAST</span><h2>정전 영향도 예측</h2></div>
-          <span class="forecast-tag">향후 6시간</span>
-        </div>
-        <div class="impact-chart">
-          <div class="ylabels"><span>80만</span><span>60만</span><span>40만</span><span>20만</span><span>0</span></div>
-          <div class="chart-area">
-            <div class="gridline g1"></div><div class="gridline g2"></div><div class="gridline g3"></div><div class="gridline g4"></div>
-            <svg viewBox="0 0 620 180" preserveAspectRatio="none">
-              <defs><linearGradient id="area" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#4db7ff" stop-opacity=".38"/><stop offset="1" stop-color="#4db7ff" stop-opacity="0"/></linearGradient></defs>
-              <path d="M0 145 C70 125 85 130 135 105 S205 90 260 102 S325 65 380 70 S450 45 505 57 S565 35 620 20 L620 180 L0 180 Z" fill="url(#area)"/>
-              <path d="M0 145 C70 125 85 130 135 105 S205 90 260 102 S325 65 380 70 S450 45 505 57 S565 35 620 20" fill="none" stroke="#4db7ff" stroke-width="3"/>
-            </svg>
-            <div class="xlabels"><span>현재</span><span>+1h</span><span>+2h</span><span>+3h</span><span>+4h</span><span>+5h</span><span>+6h</span></div>
+        <div class="right-stack">
+          <div class="panel priority-panel">
+            <div class="panel-head compact">
+              <div><span class="section-label">RESTORATION RANKING</span><h2>복구 우선순위 TOP 5</h2></div>
+            </div>
+            <div id="priorityList" class="priority-list"></div>
           </div>
-        </div>
-        <div class="impact-summary"><b>최대 예상 영향</b><strong>82.1만 명</strong><span>복구 지연 시 사회적 피해가 급격히 증가할 것으로 예측됩니다.</span></div>
-      </div>
 
-      <div class="panel scenario-panel">
-        <div class="panel-head compact">
-          <div><span class="section-label">RESTORATION SIMULATION</span><h2>복구 시나리오 비교</h2></div>
-          <span class="scenario-note">3개 시나리오 자동 생성</span>
-        </div>
-        <div class="scenario-cards">
-          <div class="scenario recommended">
-            <div class="scenario-top"><b>A. 사회적 피해 최소화</b><span>AI 추천</span></div>
-            <strong>82.4점</strong>
-            <div class="scenario-row"><span>예상 복구</span><b>4.1시간</b></div>
-            <div class="scenario-row"><span>누적 영향인구</span><b>51.2만 명</b></div>
-            <div class="scenario-row"><span>중요시설 복구</span><b>28개</b></div>
-            <button onclick="selectScenario('A')">상세 시뮬레이션</button>
-          </div>
-          <div class="scenario">
-            <div class="scenario-top"><b>B. 중요시설 우선</b><span>비교</span></div>
-            <strong>74.8점</strong>
-            <div class="scenario-row"><span>예상 복구</span><b>4.6시간</b></div>
-            <div class="scenario-row"><span>누적 영향인구</span><b>58.7만 명</b></div>
-            <div class="scenario-row"><span>중요시설 복구</span><b>35개</b></div>
-            <button onclick="selectScenario('B')">상세 시뮬레이션</button>
-          </div>
-          <div class="scenario">
-            <div class="scenario-top"><b>C. 네트워크 효율 우선</b><span>비교</span></div>
-            <strong>69.2점</strong>
-            <div class="scenario-row"><span>예상 복구</span><b>3.7시간</b></div>
-            <div class="scenario-row"><span>누적 영향인구</span><b>64.3만 명</b></div>
-            <div class="scenario-row"><span>중요시설 복구</span><b>22개</b></div>
-            <button onclick="selectScenario('C')">상세 시뮬레이션</button>
+          <div class="panel selected-panel">
+            <div class="panel-head compact">
+              <div><span class="section-label">SELECTED OUTAGE</span><h2 id="selectedTitle">부산 권역 정전</h2></div>
+              <span id="selectedRank" class="rank-badge">1순위</span>
+            </div>
+            <div class="selected-body">
+              <div class="score-ring"><strong id="selectedScore">96</strong><span>영향도 점수</span></div>
+              <div class="facts">
+                <div><span>영향 인구</span><b id="selectedPeople">18.2만 명</b></div>
+                <div><span>중요 시설</span><b id="selectedFacilities">31개</b></div>
+                <div><span>예상 복구시간</span><b id="selectedTime">6.2시간</b></div>
+                <div><span>연쇄 파급성</span><b id="selectedCascade">매우 높음</b></div>
+              </div>
+            </div>
+            <div class="reason"><b>우선순위 산출 근거</b><span id="selectedReason">대형 병원·상수도 시설 밀집 + 높은 영향 인구 + 주요 선로 연계</span></div>
           </div>
         </div>
+      </section>
+
+      <!-- 하단 그래프 & 시나리오 -->
+      <section class="lower-grid">
+        <div class="panel impact-panel">
+          <div class="panel-head compact">
+            <div><span class="section-label">IMPACT FORECAST</span><h2>정전 영향도 예측</h2></div>
+            <span class="forecast-tag">향후 6시간 추이</span>
+          </div>
+          <div class="impact-chart">
+            <div class="ylabels"><span>80만</span><span>60만</span><span>40만</span><span>20만</span><span>0</span></div>
+            <div class="chart-area">
+              <div class="gridline g1"></div><div class="gridline g2"></div><div class="gridline g3"></div><div class="gridline g4"></div>
+              <svg viewBox="0 0 620 180" preserveAspectRatio="none">
+                <defs><linearGradient id="area" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#0284c7" stop-opacity=".3"/><stop offset="1" stop-color="#0284c7" stop-opacity="0"/></linearGradient></defs>
+                <path d="M0 145 C70 125 85 130 135 105 S205 90 260 102 S325 65 380 70 S450 45 505 57 S565 35 620 20 L620 180 L0 180 Z" fill="url(#area)"/>
+                <path d="M0 145 C70 125 85 130 135 105 S205 90 260 102 S325 65 380 70 S450 45 505 57 S565 35 620 20" fill="none" stroke="#0284c7" stroke-width="3"/>
+              </svg>
+              <div class="xlabels"><span>현재</span><span>+1h</span><span>+2h</span><span>+3h</span><span>+4h</span><span>+5h</span><span>+6h</span></div>
+            </div>
+          </div>
+          <div class="impact-summary"><b>최대 예상 영향</b><strong>82.1만 명</strong><span>복구 지연 시 사회적 피해가 급격히 증가할 것으로 분석됩니다.</span></div>
+        </div>
+
+        <div class="panel scenario-panel">
+          <div class="panel-head compact">
+            <div><span class="section-label">RESTORATION SIMULATION</span><h2>복구 시나리오 비교</h2></div>
+            <span class="scenario-note">3개 방안 비교</span>
+          </div>
+          <div class="scenario-cards">
+            <div class="scenario recommended">
+              <div class="scenario-top"><b>A. 사회적 피해 최소화</b><span>최적안</span></div>
+              <strong>82.4점</strong>
+              <div class="scenario-row"><span>예상 복구시간</span><b>4.1시간</b></div>
+              <div class="scenario-row"><span>누적 영향인구</span><b>51.2만 명</b></div>
+              <div class="scenario-row"><span>중요시설 복구</span><b>28개</b></div>
+              <button onclick="goToScenarioDetail('A')">상세 시뮬레이션</button>
+            </div>
+            <div class="scenario">
+              <div class="scenario-top"><b>B. 중요시설 우선</b><span>비교</span></div>
+              <strong>74.8점</strong>
+              <div class="scenario-row"><span>예상 복구시간</span><b>4.6시간</b></div>
+              <div class="scenario-row"><span>누적 영향인구</span><b>58.7만 명</b></div>
+              <div class="scenario-row"><span>중요시설 복구</span><b>35개</b></div>
+              <button onclick="goToScenarioDetail('B')">상세 시뮬레이션</button>
+            </div>
+            <div class="scenario">
+              <div class="scenario-top"><b>C. 네트워크 효율 우선</b><span>비교</span></div>
+              <strong>69.2점</strong>
+              <div class="scenario-row"><span>예상 복구시간</span><b>3.7시간</b></div>
+              <div class="scenario-row"><span>누적 영향인구</span><b>64.3만 명</b></div>
+              <div class="scenario-row"><span>중요시설 복구</span><b>22개</b></div>
+              <button onclick="goToScenarioDetail('C')">상세 시뮬레이션</button>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <!-- TAB 2: 피해 영향 분석 페이지 -->
+    <div id="tab-impact" class="tab-content">
+      <div class="panel full-page-panel">
+        <h2>피해 영향 분석 상세</h2>
+        <p>전국 권역별 정전 피해 영향도 및 시간대별 확산 예측 상세 데이터 페이지입니다.</p>
+        <div class="placeholder-box">권역별 세부 지표 및 공공데이터(이재민, 병원) 결합 그래프 표시 영역</div>
       </div>
-    </section>
+    </div>
+
+    <!-- TAB 3: 복구 우선순위 페이지 -->
+    <div id="tab-priority" class="tab-content">
+      <div class="panel full-page-panel">
+        <h2>전체 복구 우선순위 리스트</h2>
+        <p>선로 및 취약시설 기반으로 산출된 전체 정전 지역 우선순위 목록입니다.</p>
+        <div class="placeholder-box">전국 23개 정전 구역 전체 산출 내역 및 가중치 조정 기능 표시 영역</div>
+      </div>
+    </div>
+
+    <!-- TAB 4: 복구 시나리오 (상세 시뮬레이션) 페이지 -->
+    <div id="tab-scenario" class="tab-content">
+      <div class="panel full-page-panel">
+        <h2>복구 시나리오 상세 시뮬레이션</h2>
+        <p id="scenarioDetailDesc">선택한 시나리오에 따른 자원 배치 및 예상 복구 순서 시뮬레이션 결과입니다.</p>
+        
+        <div class="sim-display-grid">
+          <div class="sim-card">
+            <h3>선택된 시나리오</h3>
+            <div id="simName" class="sim-title">A. 사회적 피해 최소화</div>
+            <div class="sim-metric"><span id="simScore">82.4</span>점</div>
+          </div>
+          <div class="sim-details">
+            <div class="sim-row"><span>예상 총 복구시간:</span> <strong id="simTime">4.1시간</strong></div>
+            <div class="sim-row"><span>누적 영향 인구:</span> <strong id="simPeople">51.2만 명</strong></div>
+            <div class="sim-row"><span>시뮬레이션 설명:</span> <p id="simDesc">영향 인구와 중요시설을 동시에 고려하여 사회적 피해가 가장 작도록 복구 순서를 배치합니다.</p></div>
+          </div>
+        </div>
+        <div class="placeholder-box" style="margin-top:20px;">비상전원 차량 및 복구반 이동 경로 시뮬레이션 타임라인 표시 영역</div>
+      </div>
+    </div>
+
+    <!-- TAB 5: 시설 상세 정보 페이지 -->
+    <div id="tab-facility" class="tab-content">
+      <div class="panel full-page-panel">
+        <h2>전력 취약시설 상세 조회</h2>
+        <p>병원, 대피소, 통신소, 공공시설 등 정전 영향 취약시설 데이터베이스입니다.</p>
+        <div class="placeholder-box">공공데이터 API 연동 시설 검색 및 비상발전기 보유 현황 표시 영역</div>
+      </div>
+    </div>
 
     <footer>
-      <span>AI 기반 재난 전력복구 의사결정 지원시스템 · DEMO</span>
-      <span>AI는 복구 담당자의 의사결정을 지원하며 최종 복구 결정은 담당자가 수행합니다.</span>
+      <span>재난 전력복구 의사결정 지원 시스템 관제모드</span>
+      <span>최종 복구 명령 및 자원 투입은 현장 관리자의 확인 후 수행됩니다.</span>
     </footer>
   </main>
 </div>
+
 <div id="toast"></div>
+
+<!-- Leaflet JS -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="js/data.js"></script>
 <script src="js/app.js"></script>
 </body>
