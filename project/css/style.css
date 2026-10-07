@@ -109,8 +109,8 @@ main{
 .top-actions{display:flex;align-items:center;gap:16px;color:#64748b;font-size:11px}
 .live{color:#16a34a;font-weight:700}
 .avatar{
-  width:32px;
-  height:32px;
+  width:45px;
+  height:45px;
   border-radius:50%;
   background:#e2e8f0;
   display:grid;
@@ -192,6 +192,7 @@ main{
   overflow:hidden;
   box-shadow:0 1px 3px rgba(0,0,0,0.02);
 }
+.map-panel{display:flex;flex-direction:column}
 .panel-head{
   padding:14px 16px;
   display:flex;
@@ -209,7 +210,8 @@ main{
 .low{background:#16a34a}
 
 .map-wrap{
-  height:500px;
+  flex:1;
+  min-height:500px;
   width:100%;
   background:#e2e8f0;
   z-index:1;

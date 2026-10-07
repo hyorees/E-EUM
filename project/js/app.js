@@ -258,6 +258,10 @@ function initMap() {
   map = L.map("leafletMap").setView([36.2, 127.8], 7);
   L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", { maxZoom: 18, attribution: "© OpenStreetMap" }).addTo(map);
   fetch("data/korea.json").then(r => r.json()).then(g => L.geoJSON(g, { style: { color: "#0284c7", weight: 2.5, opacity: .9, fillColor: "#0284c7", fillOpacity: .12 } }).addTo(map)).catch(e => console.log("GeoJSON 로드 실패:", e));
+  // initMap() 함수 끝 부분에 추가
+  setTimeout(() => {
+    if (map) map.invalidateSize();
+  }, 200);
 }
 function bind() {
   $$(".nav-item").forEach(b => b.addEventListener("click", () => openTab(b.dataset.tab)));
