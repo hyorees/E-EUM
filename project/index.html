@@ -51,7 +51,7 @@
       </div>
       <div class="top-actions">
         <span class="live"><i></i> 실시간 수신 중</span>
-        <span>최신 업데이트: 14:35:00</span>
+        <span id="topUpdate">최신 업데이트: 14:35:00</span>
         <div class="avatar">관제자</div>
       </div>
     </header>
@@ -126,6 +126,47 @@
         </div>
       </section>
 
+
+      <!-- 기상청(KMA) 관측 현황 -->
+      <section class="weather-grid">
+        <div class="panel weather-panel">
+          <div class="panel-head compact">
+            <div><span class="section-label">KMA WEATHER OBSERVATION</span><h2 id="weatherTitle">기상 현황</h2></div>
+            <div class="weather-head-right">
+              <span id="weatherLevel" class="wx-badge ok">-</span>
+              <span id="weatherTime" class="forecast-tag">-</span>
+            </div>
+          </div>
+          <div class="wx-tiles">
+            <div class="wx-tile"><span>현재 기온</span><b id="wxTemp">-</b><small id="wxTempSub">권역 평균</small></div>
+            <div class="wx-tile"><span>현재 풍속</span><b id="wxWind">-</b><small id="wxWindSub">-</small></div>
+            <div class="wx-tile"><span>현재 강수량</span><b id="wxRain">-</b><small>시간당 · 권역 평균</small></div>
+            <div class="wx-tile"><span>24시간 최대 풍속</span><b id="wxPeakWind">-</b><small id="wxPeakWindSub">-</small></div>
+            <div class="wx-tile"><span>24시간 최대 강수</span><b id="wxPeakRain">-</b><small id="wxPeakRainSub">-</small></div>
+          </div>
+          <div class="wx-chart-head">
+            <b>최근 24시간 풍속·강수 추이</b>
+            <span class="wx-legend"><i class="lg-bar"></i>강수(권역 내 최대 지점)<i class="lg-line"></i>풍속 최대<i class="lg-dash"></i>풍속 평균</span>
+          </div>
+          <div id="weatherChart" class="wx-chart"></div>
+          <div class="reason"><b>관측기간 극값</b><span id="wxExtreme">-</span></div>
+        </div>
+
+        <div class="panel weather-table-panel">
+          <div class="panel-head compact">
+            <div><span class="section-label">REGIONAL COMPARISON</span><h2>권역별 기상 비교</h2></div>
+            <span class="forecast-tag" id="wxSource">기상청 ASOS 시간자료</span>
+          </div>
+          <div class="wx-table-wrap">
+            <table class="wx-table">
+              <thead><tr><th>권역</th><th>기온</th><th>풍속</th><th>24h 최대풍속</th><th>24h 최대강수</th><th>상태</th></tr></thead>
+              <tbody id="weatherTable"></tbody>
+            </table>
+          </div>
+          <div class="reason"><b>위험도 기준</b><span>위험: 풍속 14m/s 이상 또는 시간당 30mm 이상 · 주의: 풍속 9m/s 이상 또는 시간당 10mm 이상 (최근 24시간 기준)</span></div>
+        </div>
+      </section>
+
       <!-- 하단 그래프 & 시나리오 -->
       <section class="lower-grid">
         <div class="panel impact-panel">
@@ -187,7 +228,15 @@
     <div id="tab-impact" class="tab-content">
       <div class="panel full-page-panel">
         <h2>피해 영향 분석 상세</h2>
-        <p>전국 권역별 정전 피해 영향도 및 시간대별 확산 예측 상세 데이터 페이지입니다.</p>
+        <p>전국 권역별 정전 영향도와 기상청 관측 데이터를 결합한 상세 지표입니다. 행을 누르면 대시보드에서 해당 권역이 선택됩니다.</p>
+        <div class="wx-table-wrap">
+          <table class="wx-table wide">
+            <thead>
+              <tr><th>권역</th><th>영향도</th><th>영향 인구</th><th>현재 기온</th><th>현재 풍속</th><th>24h 최대풍속</th><th>24h 최대 시간강수</th><th>24h 누적강수(최대 지점)</th><th>관측기간 최대풍속</th><th>관측기간 최대 시간강수</th><th>기상 상태</th></tr>
+            </thead>
+            <tbody id="impactTable"></tbody>
+          </table>
+        </div>
         <div class="placeholder-box">권역별 세부 지표 및 공공데이터(이재민, 병원) 결합 그래프 표시 영역</div>
       </div>
     </div>
