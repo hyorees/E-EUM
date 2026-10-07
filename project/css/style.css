@@ -109,8 +109,8 @@ main{
 .top-actions{display:flex;align-items:center;gap:16px;color:#64748b;font-size:11px}
 .live{color:#16a34a;font-weight:700}
 .avatar{
-  width:32px;
-  height:32px;
+  width:45px;
+  height:45px;
   border-radius:50%;
   background:#e2e8f0;
   display:grid;
