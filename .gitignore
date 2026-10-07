@@ -1,4 +1,5 @@
-# 무거운 데이터 파일 업로드 방지
-*.csv
-*.xls
+# 엑셀 및 원본 데이터 제외
 *.xlsx
+*.xls
+raw_data/
+data/raw/
