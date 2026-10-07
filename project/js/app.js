@@ -4,16 +4,33 @@ let selected = outageData[0];
 let map = null;
 let mapMarkers = [];
 
-// 1. Leaflet 상세 지도 초기화
+// 1. Leaflet 상세 지도 및 행정구역 GeoJSON 경계선 초기화
 function initMap(){
   const mapContainer = $("#leafletMap");
   if(mapContainer){
     map = L.map('leafletMap').setView([36.2, 127.8], 7);
 
+    // 타일 지도 배경
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       maxZoom: 18,
       attribution: '© OpenStreetMap'
     }).addTo(map);
+
+    // 행정구역 GeoJSON 경계 데이터 불러오기
+    fetch('data/korea.json')
+      .then(response => response.json())
+      .then(geoJsonData => {
+        L.geoJSON(geoJsonData, {
+          style: {
+            color: '#0284c7',       // 경계선 색상 (진한 파란색)
+            weight: 2.5,            // 경계선 두께 (1.5 -> 2.5로 상향)
+            opacity: 0.9,           // 선 불투명도
+            fillColor: '#0284c7',   // 영역 내부 채우기 색상
+            fillOpacity: 0.12       // 내부 투명도
+          }
+        }).addTo(map);
+      })
+      .catch(err => console.log('GeoJSON 로드 실패 (파일 경로 확인 필요):', err));
 
     renderMapMarkers();
   }
@@ -92,7 +109,7 @@ function goToScenarioDetail(key){
 
 // 6. 토스트 알림
 function showToast(msg){
-  const t = $("#toast");    if(!t) return;    t.textContent = msg;    t.classList.add("show");   clearTimeout(window.toastTimer);    window.toastTimer = setTimeout(() => t.classList.remove("show"), 2200); }  // 7. 탭 전환 이벤트 처리 
+  const t = $("#toast");    if(!t) return;    t.textContent = msg;    t.classList.add("show");   clearTimeout(window.toastTimer);    window.toastTimer = setTimeout(() => t.classList.remove("show"), 2200); }  // 7. 탭 전환 및 사이드바 이벤트 처리 
   function bindNavEvents(){   $$(".nav-item").forEach(btn => {
     btn.addEventListener("click", () => {
       const targetTab = btn.getAttribute("data-tab");
