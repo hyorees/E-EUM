@@ -4,45 +4,34 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>재난 전력복구 의사결정 지원 시스템</title>
-<!-- OpenStreetMap 기반 Leaflet 지도 라이브러리 -->
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 <link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="css/extra.css">
 </head>
 <body>
 <div class="app">
-  <!-- 사이드바 -->
   <aside class="sidebar" id="sidebar">
     <div class="brand">
       <button class="toggle-btn" id="sidebarToggle" title="사이드바 토글">☰</button>
-      <div class="brand-text">
-        <strong>전력복구 관제</strong>
-        <span>의사결정 지원 시스템</span>
-      </div>
+      <div class="brand-text"><strong>전력복구 관제</strong><span>의사결정 지원 시스템</span></div>
     </div>
     <nav class="nav-menu">
-      <button class="nav-item active" data-tab="tab-dashboard">
-        <span class="nav-label">전국 정전 현황</span>
-      </button>
-      <button class="nav-item" data-tab="tab-impact">
-        <span class="nav-label">피해 영향 분석</span>
-      </button>
-      <button class="nav-item" data-tab="tab-priority">
-        <span class="nav-label">복구 우선순위</span>
-      </button>
-      <button class="nav-item" data-tab="tab-scenario">
-        <span class="nav-label">복구 시나리오</span>
-      </button>
-      <button class="nav-item" data-tab="tab-facility">
-        <span class="nav-label">시설 상세 정보</span>
-      </button>
+      <button class="nav-item active" data-tab="tab-dashboard"><span class="nav-label">전국 정전 현황</span></button>
+      <button class="nav-item" data-tab="tab-impact"><span class="nav-label">피해 영향 분석</span></button>
+      <button class="nav-item" data-tab="tab-priority"><span class="nav-label">복구 우선순위</span></button>
+      <button class="nav-item" data-tab="tab-scenario"><span class="nav-label">복구 시나리오</span></button>
+      <button class="nav-item" data-tab="tab-facility"><span class="nav-label">시설 상세 정보</span></button>
     </nav>
     <div class="side-bottom">
+      <div class="dev-links">
+        <a href="http://127.0.0.1:8000/docs" target="_blank">백엔드 API 문서 (/docs)</a>
+        <a href="http://127.0.0.1:8000/api/outage-report" target="_blank">수신 원본 데이터 (JSON)</a>
+      </div>
       <div class="system-ok"><i></i> 시스템 연계 정상</div>
-      <small>관제 센터 서버 v2.4</small>
+      <small>관제 센터 서버 v3.1</small>
     </div>
   </aside>
 
-  <!-- 메인 콘텐츠 영역 -->
   <main class="main-content">
     <header class="topbar">
       <div class="topbar-left">
@@ -50,52 +39,59 @@
         <h1 id="pageTitle">전국 재난 전력복구 상황판</h1>
       </div>
       <div class="top-actions">
-        <span class="live"><i></i> 실시간 수신 중</span>
-        <div class="time-ctl"><label for="wxTime">분석 기준 시점</label>
-          <input type="datetime-local" id="wxTime" step="3600">
-          <select id="wxPreset" title="대표 기상 사례"></select>
-          <button id="wxLatest" type="button">최신</button></div>
+        <span class="live" id="liveStat"><i></i> <span id="liveText">수신 대기 중</span></span>
+        <div class="time-ctl sim-top" title="데모용: 백엔드에 가상 재난을 발생시킵니다 (백엔드 /docs 의 POST /api/simulate 와 동일)">
+          <label>재난 시뮬레이션</label>
+          <select id="simType"></select>
+          <select id="simSev"><option value="0.7">강도 약</option><option value="1" selected>강도 보통</option><option value="1.3">강도 강</option></select>
+          <button id="simGo" type="button" class="go">재난 발생 ▶</button>
+          <button id="simReset" type="button">초기화</button>
+        </div>
         <div class="avatar">관제자</div>
       </div>
     </header>
 
-    <!-- TAB 1: 메인 대시보드 -->
+    <div class="data-note">※ 이 화면의 기상·정전 수치는 실제 관측값이 아닌 <b>가상 시뮬레이션 데이터</b>입니다. (응급의료기관 수·위치와 시·도 인구 합계만 실제 데이터)</div>
+
+    <!-- TAB 1: 전국 정전 현황 -->
     <div id="tab-dashboard" class="tab-content active">
-      <!-- 정전 피해 상단 배너 -->
-      <section class="disaster-alert">
+      <ol class="flow-steps" id="flowSteps">
+        <li data-step="1"><b>1</b><span>재난 발생 · 정전 정보 수신</span></li>
+        <li data-step="2"><b>2</b><span>복구 우선순위 분석</span></li>
+        <li data-step="3"><b>3</b><span>복구 권고 → 관리자 확인</span></li>
+      </ol>
+
+      <section class="disaster-alert idle" id="alertBox">
         <div class="alert-icon">!</div>
-        <div class="alert-copy"><b id="alertTitle">-</b><span id="alertSub">-</span><button class="link-btn" type="button" onclick="openTab('tab-priority')">정전 상황 입력 ›</button></div>
+        <div class="alert-copy">
+          <b id="alertTitle">-</b><span id="alertSub">-</span>
+          <div class="link-row"><button class="link-btn" type="button" onclick="openTab('tab-priority')">복구 기준 변경 ›</button></div>
+        </div>
         <div class="alert-stats">
-          <div class="stat-box"><b id="aZones">-</b><span>정전 구역</span></div>
-          <div class="stat-box"><b id="aFac">-</b><span>응급의료기관</span></div>
+          <div class="stat-box"><b id="aZones">-</b><span>정전 시·군·구</span></div>
+          <div class="stat-box"><b id="aFac">-</b><span>영향 응급의료기관</span></div>
           <div class="stat-box"><b id="aPop">-</b><span>영향 인구(만)</span></div>
         </div>
       </section>
 
-      <!-- KPI 지표 -->
+      <section class="ai-summary hidden" id="aiSummary"></section>
+
       <section class="kpis">
         <div class="kpi"><span>총 영향 인구</span><strong id="k1">-</strong><em>명</em><small id="k1s"></small></div>
-        <div class="kpi"><span>긴급·높음 우선순위 구역</span><strong id="k2">-</strong><em>개 권역</em><small id="k2s"></small></div>
-        <div class="kpi"><span>응급의료기관(중요시설)</span><strong id="k3">-</strong><em>개소</em><small id="k3s"></small></div>
-        <div class="kpi"><span>예상 평균 정전시간</span><strong id="k4">-</strong><em>시간</em><small id="k4s"></small></div>
+        <div class="kpi"><span>긴급·높음 우선순위 구역</span><strong id="k2">-</strong><em>개 시·군·구</em><small id="k2s"></small></div>
+        <div class="kpi"><span>영향 응급의료기관</span><strong id="k3">-</strong><em>개소</em><small id="k3s"></small></div>
+        <div class="kpi"><span>예상 평균 복구시간</span><strong id="k4">-</strong><em>시간</em><small id="k4s"></small></div>
       </section>
 
-      <!-- 메인 지도 및 오른쪽 리스트 -->
       <section class="main-grid">
         <div class="panel map-panel">
           <div class="panel-head">
-            <div>
-              <span class="section-label">GIS POWER MAP</span>
-              <h2>전국 정전 피해 및 복구 우선순위 지도</h2>
-            </div>
+            <div><span class="section-label">GIS POWER MAP</span><h2 id="mapTitle">전국 정전 현황 지도</h2></div>
             <div class="legend">
-              <span><i class="dot critical"></i>긴급</span>
-              <span><i class="dot high"></i>높음</span>
-              <span><i class="dot mid"></i>보통</span>
-              <span><i class="dot low"></i>낮음</span>
+              <span><i class="dot critical"></i>긴급</span><span><i class="dot high"></i>높음</span>
+              <span><i class="dot mid"></i>보통</span><span><i class="dot low"></i>낮음</span>
             </div>
           </div>
-          <!-- Leaflet 상세 지도 컴포넌트 -->
           <div id="leafletMap" class="map-wrap"></div>
         </div>
 
@@ -109,65 +105,24 @@
 
           <div class="panel selected-panel">
             <div class="panel-head compact">
-              <div><span class="section-label">SELECTED OUTAGE</span><h2 id="selectedTitle">부산 권역 정전</h2></div>
-              <span id="selectedRank" class="rank-badge">1순위</span>
+              <div><span class="section-label">SELECTED OUTAGE</span><h2 id="selectedTitle">-</h2></div>
+              <span id="selectedRank" class="rank-badge">-</span>
             </div>
             <div class="selected-body">
-              <div class="score-ring"><strong id="selectedScore">96</strong><span>영향도 점수</span></div>
+              <div class="score-ring"><strong id="selectedScore">-</strong><span id="selectedScoreLbl">우선순위 점수</span></div>
               <div class="facts">
-                <div><span>영향 인구</span><b id="selectedPeople">18.2만 명</b></div>
-                <div><span>중요 시설</span><b id="selectedFacilities">31개</b></div>
-                <div><span>예상 복구시간</span><b id="selectedTime">6.2시간</b></div>
-                <div><span>연쇄 파급성</span><b id="selectedCascade">매우 높음</b></div>
+                <div><span>영향 인구</span><b id="selectedPeople">-</b></div>
+                <div><span>영향 응급의료기관</span><b id="selectedFacilities">-</b></div>
+                <div><span>예상 복구시간</span><b id="selectedTime">-</b></div>
+                <div><span>정전 비율</span><b id="selectedPct">-</b></div>
               </div>
             </div>
-            <div class="reason"><b>우선순위 산출 근거</b><span id="selectedReason">대형 병원·상수도 시설 밀집 + 높은 영향 인구 + 주요 선로 연계</span></div>
+            <div class="reason"><b>정전이 이렇게 된 이유</b><span id="selectedCause">-</span></div>
+            <div class="reason"><b>우선순위 산출 근거</b><span id="selectedReason">-</span></div>
           </div>
         </div>
       </section>
 
-
-      <!-- 기상청(KMA) 관측 현황 -->
-      <section class="weather-grid">
-        <div class="panel weather-panel">
-          <div class="panel-head compact">
-            <div><span class="section-label">KMA WEATHER OBSERVATION</span><h2 id="weatherTitle">기상 현황</h2></div>
-            <div class="weather-head-right">
-              <span id="weatherLevel" class="wx-badge ok">-</span>
-              <span id="weatherTime" class="forecast-tag">-</span>
-            </div>
-          </div>
-          <div class="wx-tiles">
-            <div class="wx-tile"><span>현재 기온</span><b id="wxTemp">-</b><small id="wxTempSub">권역 평균</small></div>
-            <div class="wx-tile"><span>현재 풍속</span><b id="wxWind">-</b><small id="wxWindSub">-</small></div>
-            <div class="wx-tile"><span>현재 강수량</span><b id="wxRain">-</b><small id="wxRainSub">-</small></div>
-            <div class="wx-tile"><span>24시간 최대 풍속</span><b id="wxPeakWind">-</b><small id="wxPeakWindSub">-</small></div>
-            <div class="wx-tile"><span>24시간 최대 강수</span><b id="wxPeakRain">-</b><small id="wxPeakRainSub">-</small></div>
-          </div>
-          <div class="wx-chart-head">
-            <b>최근 24시간 풍속·강수 추이</b>
-            <span class="wx-legend"><i class="lg-bar"></i>강수(권역 내 최대 지점)<i class="lg-line"></i>풍속 최대<i class="lg-dash"></i>풍속 평균</span>
-          </div>
-          <div id="weatherChart" class="wx-chart"></div>
-          <div class="reason"><b>관측기간 극값</b><span id="wxExtreme">-</span></div>
-        </div>
-
-        <div class="panel weather-table-panel">
-          <div class="panel-head compact">
-            <div><span class="section-label">REGIONAL COMPARISON</span><h2>권역별 기상 비교</h2></div>
-            <span class="forecast-tag" id="wxSource">기상청 ASOS 시간자료</span>
-          </div>
-          <div class="wx-table-wrap">
-            <table class="wx-table">
-              <thead><tr><th>권역</th><th>기온</th><th>풍속</th><th>24h 최대풍속</th><th>24h 최대강수</th><th>상태</th></tr></thead>
-              <tbody id="weatherTable"></tbody>
-            </table>
-          </div>
-          <div class="reason"><b>위험도 기준</b><span>위험: 풍속 14m/s 이상 또는 시간당 30mm 이상 · 주의: 풍속 9m/s 이상 또는 시간당 10mm 이상 (최근 24시간 기준)</span></div>
-        </div>
-      </section>
-
-      <!-- 하단 그래프 & 시나리오 -->
       <section class="lower-grid">
         <div class="panel impact-panel">
           <div class="panel-head compact">
@@ -175,74 +130,71 @@
             <span class="forecast-tag">시나리오별 잔여 영향 인구(만 명)</span>
           </div>
           <div id="impactChart" class="impact-chart2"></div>
+          <div class="curve-legend"><span><i style="background:#e11d48"></i>A 피해 최소화</span><span><i style="background:#f97316"></i>B 중요시설</span><span><i style="background:#0284c7"></i>C 효율</span></div>
           <div class="impact-summary"><b>총 영향 인구</b><strong id="impactMax">-</strong><span id="impactNote"></span></div>
         </div>
         <div class="panel scenario-panel">
           <div class="panel-head compact">
             <div><span class="section-label">RESTORATION SIMULATION</span><h2>복구 시나리오 비교</h2></div>
-            <span class="scenario-note">3개 방안 비교</span>
+            <span class="scenario-note" id="scenarioNote">3개 방안 비교</span>
           </div>
           <div class="scenario-cards" id="scenarioCards"></div>
         </div>
       </section>
+
+      <section class="lower-grid">
+        <div class="panel">
+          <div class="panel-head compact">
+            <div><span class="section-label">HOW THIS DATA WAS MADE</span><h2>이 정전 데이터는 어떻게 만들어졌나</h2></div>
+          </div>
+          <ul class="how-list" id="howList"></ul>
+        </div>
+        <div class="panel">
+          <div class="panel-head compact">
+            <div><span class="section-label">OUTAGE CAUSES</span><h2>정전 비율이 높은 구역과 원인</h2></div>
+          </div>
+          <div id="causeList"></div>
+        </div>
+      </section>
     </div>
 
-    <!-- TAB 2: 피해 영향 분석 페이지 -->
+    <!-- TAB 2: 피해 영향 분석 -->
     <div id="tab-impact" class="tab-content">
       <div class="panel full-page-panel">
-        <h2>피해 영향 분석 상세</h2>
-        <p>전국 권역별 정전 영향도와 기상청 관측 데이터를 결합한 상세 지표입니다. 행을 누르면 대시보드에서 해당 권역이 선택됩니다.</p>
-        <div class="wx-table-wrap">
-          <table class="wx-table wide">
-            <thead>
-              <tr><th>권역</th><th>영향도</th><th>영향 인구</th><th>현재 기온</th><th>현재 풍속</th><th>24h 최대풍속</th><th>24h 최대 시간강수</th><th>24h 누적강수(최대 지점)</th><th>관측기간 최대풍속</th><th>관측기간 최대 시간강수</th><th>기상 상태</th></tr>
-            </thead>
-            <tbody id="impactTable"></tbody>
-          </table>
-        </div>
-        <div class="placeholder-box">권역별 세부 지표 및 공공데이터(이재민, 병원) 결합 그래프 표시 영역</div>
+        <h2>피해 영향 분석</h2>
+        <p>백엔드에서 수신한 정전 현황입니다. 행을 누르면 대시보드에서 해당 시·군·구가 선택됩니다.</p>
+        <h3 class="sub-h">시·도별 요약</h3>
+        <div class="wx-table-wrap"><table class="wx-table wide">
+          <thead><tr><th>시·도</th><th>정전 시·군·구</th><th>영향 인구</th><th>65세 이상 영향</th><th>영향 응급의료기관</th><th>평균 정전 비율</th></tr></thead>
+          <tbody id="sidoTable"></tbody></table></div>
+        <h3 class="sub-h">정전 시·군·구 전체 (원인 포함)</h3>
+        <div class="wx-table-wrap tall"><table class="wx-table wide why-table">
+          <thead><tr><th>시·군·구</th><th>정전 비율</th><th>영향 인구</th><th>65세 이상 영향</th><th>응급의료기관(영향/전체)</th><th>예상 복구</th><th>정전이 이렇게 된 이유</th></tr></thead>
+          <tbody id="impactTable"></tbody></table></div>
       </div>
     </div>
 
-    <!-- TAB 3: 복구 우선순위 페이지 -->
+    <!-- TAB 3: 복구 우선순위 -->
     <div id="tab-priority" class="tab-content">
       <div class="panel full-page-panel">
-        <h2>정전 상황 입력 · 복구 우선순위</h2>
-        <p>정전 비율을 어떻게 정할지 고르세요. <b>기상 자동 추정</b>은 선택한 시점의 풍속·강수에서 비율을 계산하므로 시점을 바꾸면 같이 바뀝니다. 영향 인구·응급의료기관은 이 비율만큼만 반영되고, 0%인 권역은 순위에서 제외됩니다.
-        <br><small>※ 풍속 9m/s 이상, 시간강수 10mm 이상부터 정전이 생기는 것으로 가정한 <b>임의 추정식</b>입니다(실제 정전 이력으로 보정 전). 현장 확인 값은 '추정 + 직접 보정'에서 덮어쓰세요.</small></p>
-        <div class="outage-box">
-          <div>
-          <div class="mode-row">
-            <label><input type="radio" name="outMode" value="auto" checked> 기상 자동 추정</label>
-            <label><input type="radio" name="outMode" value="mixed"> 추정 + 직접 보정</label>
-            <label><input type="radio" name="outMode" value="manual"> 직접 입력</label>
-          </div>
-          <div id="outageInputs"></div>
-          </div>
-          <div class="out-btns"><button id="outReset" type="button">보정 초기화</button><button id="outDemo" type="button">예시값(직접)</button><button id="outAll" type="button">전 권역 100%</button><button id="outNone" type="button">전체 해제</button></div>
-        </div>
-        <h3 class="sub-h">우선순위 산출 근거</h3>
-        <p>우선순위 점수(0~100) = 정전 영향 인구 비중 + 응급의료기관 비중 + 기상 위험도를 가중합한 값입니다. 각 항목은 최대 권역 대비 비율이며, 기상 위험도는 분석 시점 직전 24시간의 최대풍속(21m/s=1.0)과 시간강수(50mm=1.0) 중 큰 값입니다.</p>
-        <div class="weights">
-          <label>영향 인구 <input type="range" id="wPop" min="0" max="100" value="40"><b id="wPopV">40</b></label>
-          <label>응급의료기관 <input type="range" id="wFac" min="0" max="100" value="30"><b id="wFacV">30</b></label>
-          <label>기상 위험 <input type="range" id="wWx" min="0" max="100" value="30"><b id="wWxV">30</b></label>
-          <span class="stack-legend"><i class="s-pop"></i>인구<i class="s-fac"></i>시설<i class="s-wx"></i>기상</span>
-        </div>
-        <div class="wx-table-wrap"><table class="wx-table wide why-table">
-          <thead><tr><th>순위</th><th>권역</th><th>우선순위 점수</th><th>영향 인구</th><th>응급의료기관</th><th>기상(24h 최대)</th><th>예상 복구</th><th>산출 근거</th></tr></thead>
+        <h2>복구 우선순위</h2>
+        <p>수신한 정전 현황으로 우선순위 점수(0~100)를 계산합니다. 점수는 <b>정전 영향 인구 · 영향 응급의료기관 · 영향 고령층(65세+) · 정전 비율</b>을 가중합한 값이며, 각 항목은 가장 큰 구역 대비 비율입니다. 복구 기준을 바꾸면 가중치가 달라져 다시 분석합니다.</p>
+        <div class="strategy-btns" id="strategyBtns"></div>
+        <div class="strategy-desc" id="strategyDesc"></div>
+        <div class="lg2"><i class="sb-pop"></i>인구<i class="sb-fac"></i>의료기관<i class="sb-vul"></i>고령층<i class="sb-sev"></i>정전 비율</div>
+        <div class="wx-table-wrap tall"><table class="wx-table wide why-table">
+          <thead><tr><th>순위</th><th>시·군·구</th><th>우선순위</th><th>점수</th><th>점수 구성</th><th>영향 인구</th><th>응급의료기관</th><th>예상 복구</th><th>산출 근거</th></tr></thead>
           <tbody id="rankTable"></tbody></table></div>
       </div>
     </div>
 
-    <!-- TAB 4: 복구 시나리오 (상세 시뮬레이션) 페이지 -->
+    <!-- TAB: 복구 시나리오 -->
     <div id="tab-scenario" class="tab-content">
       <div class="panel full-page-panel">
         <h2>복구 시나리오 상세 시뮬레이션</h2>
-        <p id="scenarioDetailDesc"></p>
+        <p id="scenarioDetailDesc">복구 순서 규칙에 따라 전체 복구 일정이 어떻게 달라지는지 비교합니다. (복구반 10팀 기준)</p>
         <div class="sim-ctl">
           <div class="sc-tabs"><button class="sc-tab active" data-sc="A">A. 사회적 피해 최소화</button><button class="sc-tab" data-sc="B">B. 중요시설 우선</button><button class="sc-tab" data-sc="C">C. 네트워크 효율 우선</button></div>
-          <label>복구반 <input type="range" id="crews" min="1" max="7" value="3"><b id="crewsVal">3팀</b></label>
         </div>
         <div class="sim-display-grid">
           <div class="sim-card"><h3>선택된 시나리오</h3><div id="simName" class="sim-title">-</div><div class="sim-metric"><span id="simScore">-</span>점</div></div>
@@ -250,21 +202,22 @@
             <div class="sim-row"><span>전체 복구 완료:</span> <strong id="simTime">-</strong></div>
             <div class="sim-row"><span>인구 평균 정전시간:</span> <strong id="simPeople">-</strong></div>
             <div class="sim-row"><span>병원 평균 복구시간:</span> <strong id="simHosp">-</strong></div>
-            <div class="sim-row"><span>시나리오 설명:</span> <p id="simDesc"></p></div>
+            <div class="sim-row"><span>순서 규칙:</span> <p id="simDesc"></p></div>
           </div>
         </div>
         <h3 class="sub-h">복구반별 작업 타임라인</h3>
         <div id="gantt" class="gantt"></div>
-        <div id="simWhy" class="why-box"></div>
       </div>
     </div>
 
-    <!-- TAB 5: 시설 상세 정보 페이지 -->
+    <!-- TAB: 시설 상세 정보 -->
     <div id="tab-facility" class="tab-content">
       <div class="panel full-page-panel">
-        <h2>전력 취약시설 상세 조회</h2>
-        <p>병원, 대피소, 통신소, 공공시설 등 정전 영향 취약시설 데이터베이스입니다.</p>
-        <div class="placeholder-box">공공데이터 API 연동 시설 검색 및 비상발전기 보유 현황 표시 영역</div>
+        <h2>영향 응급의료기관</h2>
+        <p>정전 영향을 받는 시·군·구별 응급의료기관 현황입니다. (병원 단위 상세·비상발전기 정보는 공공데이터 연동 후 추가 예정)</p>
+        <div class="wx-table-wrap tall"><table class="wx-table wide">
+          <thead><tr><th>시·군·구</th><th>전체 응급의료기관</th><th>정전 영향</th><th>정전 비율</th><th>복구 순위</th></tr></thead>
+          <tbody id="facTable"></tbody></table></div>
       </div>
     </div>
 
@@ -276,11 +229,7 @@
 </div>
 
 <div id="toast"></div>
-
-<!-- Leaflet JS -->
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-<script src="js/data.js"></script>
-<script src="js/weather.js"></script>
 <script src="js/app.js"></script>
 </body>
 </html>

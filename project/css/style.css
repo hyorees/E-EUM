@@ -469,3 +469,74 @@ footer{display:flex;justify-content:space-between;color:#94a3b8;font-size:10px;p
 .mode-row label{display:flex;align-items:center;gap:5px;cursor:pointer}
 .out-row input:disabled{opacity:.55}
 .out-row{grid-template-columns:110px 1fr 260px}
+
+/* style.css 에 없는 새 요소만 추가 (기존 파일은 수정하지 않음) */
+.dot.critical{background:#e11d48}.dot.high{background:#f97316}.dot.mid{background:#0284c7}.dot.low{background:#16a34a}
+.live.off{color:#dc2626}.live.off i{background:#dc2626}
+
+/* 재난 시뮬레이션 제어(상단) */
+.sim-top label{white-space:nowrap}
+.sim-top select{max-width:120px}
+.sim-top .go{background:#e11d48;border-color:#e11d48;color:#fff}
+.sim-top .go:hover{background:#be123c}
+
+/* 진행 단계 */
+.flow-steps{display:flex;gap:8px;list-style:none;margin:0 0 14px;padding:0}
+.flow-steps li{flex:1;display:flex;align-items:center;gap:10px;padding:10px 14px;background:#fff;border:1px solid #e2e8f0;border-radius:10px;color:#94a3b8;font-size:12px;font-weight:600}
+.flow-steps li b{width:24px;height:24px;border-radius:50%;background:#e2e8f0;color:#64748b;display:grid;place-items:center;font-size:12px;flex-shrink:0}
+.flow-steps li.active{border-color:#0284c7;color:#0369a1;background:#f0f9ff}
+.flow-steps li.active b{background:#0284c7;color:#fff}
+.flow-steps li.done{color:#15803d;border-color:#bbf7d0;background:#f0fdf4}
+.flow-steps li.done b{background:#16a34a;color:#fff}
+.flow-steps li.busy b{animation:pulse 1s infinite}
+@keyframes pulse{50%{opacity:.35}}
+
+/* 배너 */
+.disaster-alert.idle{background:#f8fafc;border-color:#e2e8f0}
+.disaster-alert.idle .alert-icon{background:#94a3b8}
+.alert-copy b{display:block;font-size:15px;color:#be123c}
+.disaster-alert.idle .alert-copy b{color:#475569}
+.alert-copy span{display:block;margin-top:3px;color:#64748b;font-size:12px}
+.link-row{display:flex;gap:6px;margin-top:6px}
+.link-row .link-btn{margin-top:0}
+
+/* 권고 요약 */
+.ai-summary{margin:12px 0 0;padding:14px 18px;background:#f0f9ff;border:1px solid #bae6fd;border-radius:10px;font-size:13px;color:#334155;line-height:1.65}
+.ai-summary b{color:#0369a1}
+.ai-summary.hidden{display:none}
+
+/* 복구 기준 선택 */
+.strategy-btns{display:flex;gap:6px;flex-wrap:wrap;margin:10px 0 0}
+.strategy-btns button{border:1px solid #cbd5e1;background:#fff;color:#334155;border-radius:6px;padding:7px 12px;font-size:12px;font-weight:700;cursor:pointer}
+.strategy-btns button.active{background:#0284c7;border-color:#0284c7;color:#fff}
+
+/* 점수 구성 막대 */
+.stackbar{display:flex;height:8px;min-width:90px;border-radius:4px;overflow:hidden;background:#e2e8f0}
+.stackbar i{display:block;height:100%}
+.sb-pop{background:#0284c7}.sb-fac{background:#f97316}.sb-vul{background:#7c3aed}.sb-sev{background:#e11d48}
+.lg2{font-size:10px;color:#64748b;margin:8px 0 6px}
+.lg2 i{display:inline-block;width:8px;height:8px;border-radius:2px;margin:0 3px 0 10px}
+.lg2 i:first-child{margin-left:0}
+.lvl{display:inline-block;padding:2px 7px;border-radius:5px;font-size:10px;font-weight:700;color:#fff}
+.lvl.critical{background:#e11d48}.lvl.high{background:#f97316}.lvl.mid{background:#0284c7}.lvl.low{background:#16a34a}
+.wx-table tbody tr{cursor:pointer}
+.wx-table tbody tr:hover{background:#f8fafc}
+.wx-table tr.sel{background:#f0f9ff}
+.wx-table-wrap.tall{max-height:520px;overflow:auto}
+.curve-legend{display:flex;gap:14px;font-size:10px;color:#64748b;padding:0 14px}
+.curve-legend i{display:inline-block;width:14px;height:3px;border-radius:2px;margin-right:4px;vertical-align:middle}
+
+/* 데이터 안내 / 원인 설명 */
+.data-note{margin:0 0 12px;padding:9px 14px;background:#fffbeb;border:1px solid #fde68a;border-radius:8px;color:#92400e;font-size:12px;font-weight:600}
+.how-list{margin:0;padding:6px 18px 10px 32px;font-size:12px;color:#334155;line-height:1.7}
+.how-list li{margin-bottom:4px}
+.how-list li.note{color:#92400e}
+.cause-item{display:block;width:100%;text-align:left;border:0;background:transparent;border-bottom:1px solid #e2e8f0;padding:10px 14px;cursor:pointer;font-family:inherit}
+.cause-item:hover{background:#f8fafc}
+.cause-item b{font-size:13px;color:#0f172a}
+.cause-item b em{font-style:normal;color:#e11d48;margin-left:6px}
+.cause-item small{display:block;margin-top:3px;color:#64748b;font-size:11px;line-height:1.5}
+.strategy-desc{margin:8px 0 14px;font-size:12px;color:#64748b}
+.dev-links{display:flex;flex-direction:column;gap:4px;margin-bottom:10px}
+.dev-links a{font-size:11px;color:#0284c7;text-decoration:none;font-weight:600}
+.dev-links a:hover{text-decoration:underline}
