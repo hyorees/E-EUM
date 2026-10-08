@@ -4,13 +4,17 @@
 raw_data/
 data/raw/
 
-# backend/venv 폴더 전체 무시
-backend/venv/
-venv/
+# 가상환경 내부 폴더들만 쏙 무시
+Include/
+Lib/
+Scripts/
+__pycache__/
 
-# 파이썬 캐시 파일 무시
+# 파이썬 캐시 파일 제외
 __pycache__/
 *.pyc
 
-# 엑셀 임시 파일 무시
+# OS 및 임시 파일 제외
 ~$*.xlsx
+.DS_Store
+Thumbs.db
