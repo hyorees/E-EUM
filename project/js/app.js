@@ -26,7 +26,7 @@ const S = {
   eventId: null, event: null, outages: [], rows: [],
   phase: "idle",              // idle → received → analyzing → done (| error)
   analyzed: false, summary: null,
-  strategy: "BALANCED", strategies: [],
+  strategy: "MIN_DAMAGE", strategies: [], facSort: "rank", facOnly: true,
   sel: null, crews: CREWS, sc: "A", reqSeq: 0, metaLoaded: false
 };
 let SC = {}, REC = "A", map = null, layer = null, geoLayer = null, polling = false;
@@ -328,16 +328,38 @@ function renderTables() {
       <td>${man(r.pop)}<br><small>정전 ${r.pct}%</small></td><td>${r.hosp}개소</td><td>${r.dur.toFixed(1)}h</td>
       <td class="why">${r.reason || "분석 대기 중"}</td></tr>`).join("") || empty(9));
 
-  // 시설 상세
-  const fac = [...R].filter(r => r.totHosp > 0).sort((a, b) => b.hosp - a.hosp || b.pop - a.pop);
-  setHTML("#facTable", fac.map(r => `
-    <tr class="${cls(r)}" onclick="pickFromTable('${r.id}')"><td><b>${r.region}</b></td><td>${r.totHosp}개소</td><td>${r.hosp}개소</td><td>${r.pct}%</td><td>${S.analyzed ? r.rank + "순위" : "-"}</td></tr>`).join("") || empty(5));
+  renderFacilities();
+}
+
+/* ── 시설 상세: hospitals.csv (js/hospitals.js) 기반 병원 목록 ── */
+function renderFacilities() {
+  const H = window.hospitalList || [];
+  const byId = {}; S.rows.forEach(r => byId[r.id] = r);
+  let list = H.map(h => ({ h, r: byId[String(h.rid)] || null }));
+  const outN = list.filter(x => x.r).length;
+  if (S.facOnly) list = list.filter(x => x.r);
+  const rk = x => x.r ? (S.analyzed ? x.r.rank : 1e6) : 2e6;
+  const cmp = {
+    rank: (a, b) => rk(a) - rk(b) || (b.r ? b.r.ratio : 0) - (a.r ? a.r.ratio : 0) || a.h.n.localeCompare(b.h.n, "ko"),
+    ratio: (a, b) => (b.r ? b.r.ratio : -1) - (a.r ? a.r.ratio : -1) || a.h.n.localeCompare(b.h.n, "ko"),
+    region: (a, b) => a.h.reg.localeCompare(b.h.reg, "ko") || a.h.n.localeCompare(b.h.n, "ko"),
+    name: (a, b) => a.h.n.localeCompare(b.h.n, "ko")
+  }[S.facSort];
+  list.sort(cmp);
+  $$("#facSortBtns button").forEach(b => b.classList.toggle("active", b.dataset.fs === S.facSort));
+  setText("#facCount", S.rows.length ? `정전 구역 소재 ${outN}곳 / 전체 ${H.length}곳 · 표시 ${list.length}곳` : `전체 ${H.length}곳 (재난 발생 전)`);
+  const empty = `<tr><td colspan="7" class="empty-msg">${S.rows.length ? "표시할 병원이 없습니다." : "재난이 발생하면 정전 구역 소재 병원이 표시됩니다. (체크 해제 시 전체 목록)"}</td></tr>`;
+  setHTML("#facTable", list.map((x, i) => `
+    <tr ${x.r ? `class="${x.r.id === S.sel ? "sel" : ""}" onclick="pickFromTable('${x.r.id}')"` : ""}>
+      <td>${i + 1}</td><td><b>${x.h.n}</b></td><td class="why">${x.h.a}</td><td>${x.h.reg}</td>
+      <td>${x.r ? x.r.pct + "%" : "-"}</td><td>${x.r && S.analyzed ? x.r.rank + "순위" : "-"}</td>
+      <td>${x.r ? `<span class="lvl ${x.r.level}">정전 구역</span>` : "정상"}</td></tr>`).join("") || empty);
 }
 
 function renderScenarios() {
   if (!SC || !SC.A) {
     setHTML("#scenarioCards", `<div class="empty-msg">우선순위 분석이 끝나면 복구 시나리오를 비교합니다.</div>`);
-    setHTML("#gantt", ""); setText("#simName", "-"); setText("#simScore", "-");
+    setText("#simName", "-"); setText("#simScore", "-");
     ["#simTime", "#simPeople", "#simHosp", "#simDesc"].forEach(x => setText(x, "-"));
     return;
   }
@@ -367,16 +389,115 @@ function renderSimDetail() {
   setText("#simTime", s.makespan.toFixed(1) + "시간");
   setText("#simPeople", s.avgP.toFixed(1) + "시간");
   setText("#simHosp", s.avgH.toFixed(1) + "시간");
-  const mx = Math.max(...Object.values(s.sc).map(x => x.f)) || 1;
-  let g = "";
-  for (let c = 0; c < S.crews; c++) {
-    g += `<div class="g-row"><span>복구반 ${c + 1}</span><div class="g-track">` +
-      s.order.filter(r => s.sc[r.id].c === c).map(r => {
-        const w = (r.dur / mx) * 100;
-        return `<i class="g-bar ${r.level}" style="left:${(s.sc[r.id].s / mx) * 100}%;width:${w}%" title="${r.region} (${r.dur.toFixed(1)}h)">${w >= 7 ? `<b>${r.region.split(" ").pop()}</b>` : ""}</i>`;
-      }).join("") + `</div></div>`;
-  }
-  setHTML("#gantt", g + `<div class="g-row"><span></span><div class="g-axis"><em>0h</em><em>${(mx / 2).toFixed(1)}h</em><em>${mx.toFixed(1)}h</em></div></div>`);
+}
+function renderSimDetail() {
+  const k = S.sc, s = SC[k];
+
+  $$(".sc-tab").forEach(b =>
+    b.classList.toggle("active", b.dataset.sc === k)
+  );
+
+  if (!s) return;
+
+  setText("#simName", SC_NAME[k]);
+  setText("#simDesc", SC_RULE[k]);
+  setText("#simScore", s.score.toFixed(1));
+  setText("#simTime", s.makespan.toFixed(1) + "시간");
+  setText("#simPeople", s.avgP.toFixed(1) + "시간");
+  setText("#simHosp", s.avgH.toFixed(1) + "시간");
+
+  renderScenarioExplanation(k, s);
+}
+function renderScenarioExplanation(k, s) {
+  if (!s || !SC.A) return;
+
+  // 세 시나리오의 실제 지표 범위
+  const pVals = [SC.A.avgP, SC.B.avgP, SC.C.avgP];
+  const hVals = [SC.A.avgH, SC.B.avgH, SC.C.avgH];
+  const mVals = [SC.A.makespan, SC.B.makespan, SC.C.makespan];
+
+  const minP = Math.min(...pVals);
+  const maxP = Math.max(...pVals);
+  const minH = Math.min(...hVals);
+  const maxH = Math.max(...hVals);
+  const minM = Math.min(...mVals);
+  const maxM = Math.max(...mVals);
+
+  // app.js의 scenarios()와 동일한 정규화 식
+  const norm = (v, mn, mx) =>
+    Math.abs(mx - mn) < 0.01
+      ? 85
+      : (1 - (v - mn) / (mx - mn)) * 100;
+
+  const pScore = norm(s.avgP, minP, maxP);
+  const hScore = norm(s.avgH, minH, maxH);
+  const mScore = norm(s.makespan, minM, maxM);
+
+  const W = {
+    A: { p: 0.5, h: 0.3, m: 0.2 },
+    B: { p: 0.2, h: 0.6, m: 0.2 },
+    C: { p: 0.2, h: 0.2, m: 0.6 }
+  };
+
+  const w = W[k];
+
+  const raw =
+    pScore * w.p +
+    hScore * w.h +
+    mScore * w.m;
+
+  const finalScore = Math.min(99.9, Math.max(25, raw));
+
+  const reason = {
+    A: "사회적 피해 최소화를 위해 인구가 오래 정전되는 상황을 가장 중요하게 보고, 병원 영향과 전체 복구시간을 함께 반영합니다.",
+    B: "응급의료기관의 복구를 가장 중요하게 보기 때문에 병원 평균 복구시간에 가장 높은 가중치(60%)를 적용합니다.",
+    C: "전체 복구 완료시간을 가장 중요하게 보기 때문에 전체 복구시간 지표에 가장 높은 가중치(60%)를 적용합니다."
+  };
+
+  setText("#explainTitle", `${SC_NAME[k]} · 점수 산출 근거`);
+
+  setText(
+    "#explainSummary",
+    `${reason[k]} 현재 이 시나리오의 최종 점수는 ${s.score.toFixed(1)}점입니다.`
+  );
+
+  setText(
+    "#explainFormula",
+    `최종점수 = 인구지표 × ${(w.p * 100).toFixed(0)}%`
+    + ` + 의료기관지표 × ${(w.h * 100).toFixed(0)}%`
+    + ` + 복구시간지표 × ${(w.m * 100).toFixed(0)}%`
+  );
+
+  setText("#explainP", `${pScore.toFixed(1)}점`);
+  setText(
+    "#explainPDetail",
+    `인구 평균 정전시간 ${s.avgP.toFixed(1)}시간`
+  );
+
+  setText("#explainH", `${hScore.toFixed(1)}점`);
+  setText(
+    "#explainHDetail",
+    `병원 평균 복구시간 ${s.avgH.toFixed(1)}시간`
+  );
+
+  setText("#explainM", `${mScore.toFixed(1)}점`);
+  setText(
+    "#explainMDetail",
+    `전체 복구 완료 ${s.makespan.toFixed(1)}시간`
+  );
+
+  setText(
+    "#explainCalculation",
+    `(${pScore.toFixed(1)} × ${w.p.toFixed(2)})`
+    + ` + (${hScore.toFixed(1)} × ${w.h.toFixed(2)})`
+    + ` + (${mScore.toFixed(1)} × ${w.m.toFixed(2)})`
+    + ` = ${raw.toFixed(1)}점`
+    + (raw !== finalScore
+      ? ` → 최종 ${finalScore.toFixed(1)}점`
+      : "")
+  );
+
+  setText("#explainReason", reason[k]);
 }
 
 function renderCurve() {
@@ -421,23 +542,9 @@ function chooseStrategy(type) {
   if (S.outages.length) runAnalysis();
 }
 
-function renderHow() {
-  const e = S.event;
-  if (!e) {
-    setHTML("#howList", `<li>재난이 발생하면 정전 데이터가 어떻게 만들어졌는지 여기에 설명이 표시됩니다.</li>`);
-    setHTML("#causeList", `<div class="empty-msg">재난이 발생하면 정전 비율이 높은 구역과 그 원인이 표시됩니다.</div>`);
-    return;
-  }
-  setHTML("#howList",
-    e.explain.how.map(t => `<li>${t}</li>`).join("") + e.explain.notes.map(t => `<li class="note">${t}</li>`).join(""));
-  const top = [...S.rows].sort((a, b) => b.ratio - a.ratio || b.pop - a.pop).slice(0, 5);
-  setHTML("#causeList", top.map(r => `
-    <button class="cause-item" onclick="selectOutage('${r.id}')"><b>${r.region}<em>정전 ${r.pct}%</em></b><small>${r.cause}</small></button>`).join(""));
-}
-
 function renderAll(fit) {
   renderFlow(); renderBanner(); renderAI(); renderKpis();
-  renderMap(fit); renderPriority(); renderSelected(); renderTables(); renderHow();
+  renderMap(fit); renderPriority(); renderSelected(); renderTables();
   renderScenarios(); renderCurve();
 }
 
@@ -468,6 +575,8 @@ function initMap() {
 function bind() {
   $$(".nav-item").forEach(b => b.addEventListener("click", () => openTab(b.dataset.tab)));
   $$(".sc-tab").forEach(b => b.addEventListener("click", () => { S.sc = b.dataset.sc; renderSimDetail(); }));
+  $$("#facSortBtns button").forEach(b => b.addEventListener("click", () => { S.facSort = b.dataset.fs; renderFacilities(); }));
+  $("#facOnlyOutage").addEventListener("change", e => { S.facOnly = e.target.checked; renderFacilities(); });
   $("#sidebarToggle").addEventListener("click", () => { $("#sidebar").classList.toggle("collapsed"); setTimeout(() => map && map.invalidateSize(), 300); });
   $("#simGo").addEventListener("click", async () => {
     try {

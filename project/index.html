@@ -141,21 +141,6 @@
           <div class="scenario-cards" id="scenarioCards"></div>
         </div>
       </section>
-
-      <section class="lower-grid">
-        <div class="panel">
-          <div class="panel-head compact">
-            <div><span class="section-label">HOW THIS DATA WAS MADE</span><h2>이 정전 데이터는 어떻게 만들어졌나</h2></div>
-          </div>
-          <ul class="how-list" id="howList"></ul>
-        </div>
-        <div class="panel">
-          <div class="panel-head compact">
-            <div><span class="section-label">OUTAGE CAUSES</span><h2>정전 비율이 높은 구역과 원인</h2></div>
-          </div>
-          <div id="causeList"></div>
-        </div>
-      </section>
     </div>
 
     <!-- TAB 2: 피해 영향 분석 -->
@@ -205,18 +190,67 @@
             <div class="sim-row"><span>순서 규칙:</span> <p id="simDesc"></p></div>
           </div>
         </div>
-        <h3 class="sub-h">복구반별 작업 타임라인</h3>
-        <div id="gantt" class="gantt"></div>
+                <!-- 시나리오 점수 산출 근거 -->
+        <div class="scenario-explain-card" id="scenarioExplain">
+          <div class="scenario-explain-head">
+            <div>
+              <span class="section-label">SCENARIO SCORE ANALYSIS</span>
+              <h3 id="explainTitle">시나리오 점수 산출 근거</h3>
+            </div>
+            <span class="formula-badge">높을수록 유리</span>
+          </div>
+
+          <p id="explainSummary" class="explain-summary">-</p>
+
+          <div class="formula-box">
+            <div class="formula-title">점수 계산식</div>
+            <div id="explainFormula" class="formula-main">-</div>
+          </div>
+
+          <div class="explain-grid">
+            <div class="explain-item">
+              <span>인구 피해 지표</span>
+              <strong id="explainP">-</strong>
+              <small id="explainPDetail">-</small>
+            </div>
+
+            <div class="explain-item">
+              <span>의료기관 복구 지표</span>
+              <strong id="explainH">-</strong>
+              <small id="explainHDetail">-</small>
+            </div>
+
+            <div class="explain-item">
+              <span>전체 복구 지표</span>
+              <strong id="explainM">-</strong>
+              <small id="explainMDetail">-</small>
+            </div>
+          </div>
+
+          <div class="calculation-box">
+            <div class="formula-title">최종 점수 계산</div>
+            <div id="explainCalculation">-</div>
+          </div>
+
+          <div class="scenario-reason" id="explainReason">-</div>
+        </div>
       </div>
     </div>
 
     <!-- TAB: 시설 상세 정보 -->
     <div id="tab-facility" class="tab-content">
       <div class="panel full-page-panel">
-        <h2>영향 응급의료기관</h2>
-        <p>정전 영향을 받는 시·군·구별 응급의료기관 현황입니다. (병원 단위 상세·비상발전기 정보는 공공데이터 연동 후 추가 예정)</p>
+        <h2>응급의료기관 목록</h2>
+        <p id="facDesc">hospitals.csv 의 응급의료기관 전체 목록입니다. 병원이 속한 시·군·구의 정전 상황과 복구 순위를 함께 보여 줍니다. (병원 단위 비상발전기 정보는 공공데이터 연동 후 추가 예정)</p>
+        <div class="strategy-btns" id="facSortBtns">
+          <button data-fs="rank" class="active">복구 순위순</button>
+          <button data-fs="ratio">정전 비율순</button>
+          <button data-fs="region">지역순</button>
+          <button data-fs="name">병원명순</button>
+        </div>
+        <div class="strategy-desc"><label><input type="checkbox" id="facOnlyOutage" checked> 정전 구역 소재 병원만 보기</label> · <span id="facCount">-</span></div>
         <div class="wx-table-wrap tall"><table class="wx-table wide">
-          <thead><tr><th>시·군·구</th><th>전체 응급의료기관</th><th>정전 영향</th><th>정전 비율</th><th>복구 순위</th></tr></thead>
+          <thead><tr><th>#</th><th>병원명</th><th>주소</th><th>시·군·구</th><th>구역 정전 비율</th><th>복구 순위</th><th>상태</th></tr></thead>
           <tbody id="facTable"></tbody></table></div>
       </div>
     </div>
@@ -230,6 +264,7 @@
 
 <div id="toast"></div>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="js/hospitals.js"></script>
 <script src="js/app.js"></script>
 </body>
 </html>

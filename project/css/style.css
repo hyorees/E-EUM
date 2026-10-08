@@ -540,3 +540,121 @@ footer{display:flex;justify-content:space-between;color:#94a3b8;font-size:10px;p
 .dev-links{display:flex;flex-direction:column;gap:4px;margin-bottom:10px}
 .dev-links a{font-size:11px;color:#0284c7;text-decoration:none;font-weight:600}
 .dev-links a:hover{text-decoration:underline}
+/* ── 시나리오 점수 산출 근거 카드 ── */
+.scenario-explain-card {
+  margin-top: 18px;
+  padding: 22px;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  background: #ffffff;
+  box-shadow: 0 4px 16px rgba(15, 23, 42, 0.05);
+}
+
+.scenario-explain-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 10px;
+}
+
+.scenario-explain-head h3 {
+  margin: 4px 0 0;
+  font-size: 18px;
+}
+
+.formula-badge {
+  padding: 5px 10px;
+  border-radius: 999px;
+  background: #eff6ff;
+  color: #2563eb;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.explain-summary {
+  margin: 10px 0 18px;
+  color: #475569;
+  line-height: 1.6;
+}
+
+.formula-box,
+.calculation-box {
+  padding: 14px 16px;
+  border-radius: 10px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  margin-bottom: 14px;
+}
+
+.formula-title {
+  margin-bottom: 7px;
+  color: #64748b;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.formula-main {
+  font-weight: 700;
+  color: #0f172a;
+  line-height: 1.6;
+}
+
+.explain-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.explain-item {
+  padding: 15px;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+}
+
+.explain-item span {
+  display: block;
+  color: #64748b;
+  font-size: 12px;
+  margin-bottom: 7px;
+}
+
+.explain-item strong {
+  display: block;
+  font-size: 21px;
+  color: #0f172a;
+}
+
+.explain-item small {
+  display: block;
+  margin-top: 5px;
+  color: #64748b;
+}
+
+#explainCalculation {
+  font-size: 15px;
+  font-weight: 700;
+  color: #0f172a;
+  line-height: 1.6;
+}
+
+.scenario-reason {
+  padding: 13px 15px;
+  border-left: 4px solid #2563eb;
+  background: #f8fafc;
+  color: #334155;
+  line-height: 1.6;
+  font-size: 13px;
+}
+
+@media (max-width: 800px) {
+  .explain-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .scenario-explain-head {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}
