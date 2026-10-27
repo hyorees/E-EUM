@@ -382,16 +382,6 @@ function renderScenarios() {
 
 function renderSimDetail() {
   const k = S.sc, s = SC[k];
-  $$(".sc-tab").forEach(b => b.classList.toggle("active", b.dataset.sc === k));
-  if (!s) return;
-  setText("#simName", SC_NAME[k]); setText("#simDesc", SC_RULE[k]);
-  setText("#simScore", s.score.toFixed(1));
-  setText("#simTime", s.makespan.toFixed(1) + "시간");
-  setText("#simPeople", s.avgP.toFixed(1) + "시간");
-  setText("#simHosp", s.avgH.toFixed(1) + "시간");
-}
-function renderSimDetail() {
-  const k = S.sc, s = SC[k];
 
   $$(".sc-tab").forEach(b =>
     b.classList.toggle("active", b.dataset.sc === k)
@@ -594,4 +584,3 @@ window.addEventListener("DOMContentLoaded", () => {
   bind(); initMap(); renderAll(false);
   poll(); setInterval(poll, POLL_MS);
 });
-
