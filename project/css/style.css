@@ -521,7 +521,7 @@ footer{display:flex;justify-content:space-between;color:#94a3b8;font-size:10px;p
 /* 점수 구성 막대 */
 .stackbar{display:flex;height:8px;min-width:90px;border-radius:4px;overflow:hidden;background:#e2e8f0}
 .stackbar i{display:block;height:100%}
-.sb-pop{background:#0284c7}.sb-fac{background:#f97316}.sb-vul{background:#7c3aed}.sb-sev{background:#e11d48}
+.sb-pop{background:#0284c7}.sb-fac{background:#f97316}.sb-vul{background:#7c3aed}.sb-sev{background:#e11d48}.sb-dur{background:#16a34a}
 .lg2{font-size:10px;color:#64748b;margin:8px 0 6px}
 .lg2 i{display:inline-block;width:8px;height:8px;border-radius:2px;margin:0 3px 0 10px}
 .lg2 i:first-child{margin-left:0}
