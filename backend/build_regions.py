@@ -1,40 +1,75 @@
 # backend/build_regions.py
-import pandas as pd
+import csv
 import os
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 POP_CSV = os.path.join(HERE, "data", "202609_202609_주민등록인구및세대현황_월간.csv")
 TARGET_CSV = os.path.join(HERE, "data", "regions.csv")
+POP65_RATIO = 0.192
+POP_SOURCE = "resident_population_2026-09"
+POP65_SOURCE = "estimated_uniform_19.2_percent"
 
 def apply_real_population():
     if not os.path.exists(POP_CSV) or not os.path.exists(TARGET_CSV):
-        print("파일 경로를 확인해 주세요.")
-        return
+        raise FileNotFoundError("인구 원본 또는 regions.csv 파일 경로를 확인해 주세요.")
 
-    # 공공데이터 읽기
-    pop_df = pd.read_csv(POP_CSV, encoding='euc-kr')
-    pop_col = [c for c in pop_df.columns if '총인구수' in c][0]
-    
-    pop_map = {}
-    for _, row in pop_df.iterrows():
-        name = str(row['행정구역']).split('(')[0].strip()
-        val = str(row[pop_col]).replace(',', '').strip()
-        if val.isdigit():
-            pop_map[name] = int(val)
+    with open(POP_CSV, encoding="euc-kr", newline="") as f:
+        reader = csv.DictReader(f)
+        if not reader.fieldnames or "행정구역" not in reader.fieldnames:
+            raise ValueError("인구 원본에 '행정구역' 열이 없습니다.")
+        pop_columns = [name for name in reader.fieldnames if "총인구수" in name]
+        if len(pop_columns) != 1:
+            raise ValueError("인구 원본에서 총인구수 열을 하나로 확인할 수 없습니다.")
 
-    # regions.csv 업데이트
-    reg_df = pd.read_csv(TARGET_CSV, encoding='utf-8-sig')
-    
-    for idx, row in reg_df.iterrows():
-        sido, sigungu = row['sido'], row['sigungu']
-        for k, v in pop_map.items():
-            if sigungu in k and (sido[:2] in k):
-                reg_df.at[idx, 'pop'] = v
-                reg_df.at[idx, 'pop65'] = int(v * 0.192) # 고령층 비율 반영
-                break
+        pop_map = {}
+        for row in reader:
+            name = row["행정구역"].split("(", 1)[0].strip()
+            raw_value = row[pop_columns[0]].replace(",", "").strip()
+            if not raw_value.isdigit():
+                continue
+            value = int(raw_value)
+            if name in pop_map and pop_map[name] != value:
+                raise ValueError(f"인구 원본에 중복·불일치 지역이 있습니다: {name}")
+            pop_map[name] = value
 
-    reg_df.to_csv(TARGET_CSV, index=False, encoding='utf-8-sig')
-    print("성공: 2026년 9월 최신 주민등록 실인구 데이터가 regions.csv에 적용되었습니다.")
+    with open(TARGET_CSV, encoding="utf-8-sig", newline="") as f:
+        reader = csv.DictReader(f)
+        fieldnames = reader.fieldnames
+        if not fieldnames or not {"sido", "sigungu", "pop", "pop65", "pop65_ratio", "pop_source"}.issubset(fieldnames):
+            raise ValueError("regions.csv에 필요한 인구 열이 없습니다.")
+        if "pop65_source" not in fieldnames:
+            fieldnames.append("pop65_source")
+        regions = list(reader)
+
+    updates = []
+    missing = []
+    for row in regions:
+        source_name = f"{row['sido']} {row['sigungu']}"
+        population = pop_map.get(source_name)
+        if population is None and row["sigungu"] == "세종시":
+            population = pop_map.get(row["sido"])
+        if population is None:
+            missing.append(source_name)
+            continue
+        updates.append((row, population))
+
+    if missing:
+        raise ValueError("인구 원본에서 일치하는 지역을 찾지 못했습니다: " + ", ".join(missing))
+
+    for row, population in updates:
+        row["pop"] = str(population)
+        row["pop65"] = str(int(population * POP65_RATIO))
+        row["pop65_ratio"] = str(POP65_RATIO)
+        row["pop_source"] = POP_SOURCE
+        row["pop65_source"] = POP65_SOURCE
+
+    with open(TARGET_CSV, "w", encoding="utf-8-sig", newline="") as f:
+        writer = csv.DictWriter(f, fieldnames=fieldnames)
+        writer.writeheader()
+        writer.writerows(regions)
+
+    print(f"성공: {len(updates)}개 지역의 2026년 9월 인구를 정확한 행정구역명으로 적용했습니다.")
+    print(f"65세 이상 인구는 추정 비율 {POP65_RATIO:.1%}을 적용했습니다.")
 
 if __name__ == "__main__":
     apply_real_population()
