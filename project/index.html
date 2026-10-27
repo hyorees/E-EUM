@@ -121,7 +121,7 @@
                 <div><span>정전 비율</span><b id="selectedPct">-</b></div>
               </div>
             </div>
-            <div class="reason"><b>정전이 이렇게 된 이유</b><span id="selectedCause">-</span></div>
+            <div class="reason"><b>산출 근거 및 발생 원인</b><span id="selectedCause">-</span></div>
             <div class="reason"><b>우선순위 산출 근거</b><span id="selectedReason">-</span></div>
           </div>
         </div>
@@ -153,12 +153,12 @@
         <h2>피해 영향 분석</h2>
         <p>백엔드에서 수신한 정전 현황입니다. 행을 누르면 대시보드에서 해당 시·군·구가 선택됩니다.</p>
         <h3 class="sub-h">시·도별 요약</h3>
-        <div class="wx-table-wrap"><table class="wx-table wide">
+        <div class="wx-table-wrap"><table class="wx-table wide table-sido">
           <thead><tr><th>시·도</th><th>정전 시·군·구</th><th>영향 인구</th><th>65세 이상 영향</th><th>영향 응급의료기관</th><th>평균 정전 비율</th></tr></thead>
           <tbody id="sidoTable"></tbody></table></div>
         <h3 class="sub-h2">정전 시·군·구 전체 (원인 포함)</h3>
-        <div class="wx-table-wrap tall"><table class="wx-table wide why-table">
-          <thead><tr><th>시·군·구</th><th>정전 비율</th><th>영향 인구</th><th>65세 이상 영향</th><th>응급의료기관(영향/전체)</th><th>예상 복구</th><th>정전이 이렇게 된 이유</th></tr></thead>
+        <div class="wx-table-wrap tall"><table class="wx-table wide why-table table-impact">
+          <thead><tr><th>시·군·구</th><th>정전 비율</th><th>영향 인구</th><th>65세 이상 영향</th><th>응급의료기관(영향/전체)</th><th>예상 복구</th><th>산출 근거 및 발생 원인</th></tr></thead>
           <tbody id="impactTable"></tbody></table></div>
       </div>
     </div>
@@ -171,7 +171,7 @@
         <div class="strategy-btns" id="strategyBtns"></div>
         <div class="strategy-desc" id="strategyDesc"></div>
         <div class="strategy-desc subtle" id="strategyDescWeights"></div>
-        <div class="wx-table-wrap tall"><table class="wx-table wide why-table">
+        <div class="wx-table-wrap tall"><table class="wx-table wide why-table table-priority">
           <thead><tr><th>순위</th><th>시·군·구</th><th>우선순위</th><th>기준 점수</th><th>시나리오 기준</th><th>영향 인구</th><th>응급의료기관</th><th>예상 복구</th><th>산출 근거</th></tr></thead>
           <tbody id="rankTable"></tbody></table></div>
       </div>
@@ -253,7 +253,7 @@
           <button data-fs="name">병원명순</button>
         </div>
         <div class="strategy-desc"><label><input type="checkbox" id="facOnlyOutage" checked> 정전 구역 소재 병원만 보기</label> · <span id="facCount">-</span></div>
-        <div class="wx-table-wrap tall"><table class="wx-table wide">
+        <div class="wx-table-wrap tall"><table class="wx-table wide table-facility">
           <thead><tr><th>#</th><th>병원명</th><th>주소</th><th>시·군·구</th><th>구역 정전 비율</th><th>복구 순위</th><th>상태</th></tr></thead>
           <tbody id="facTable"></tbody></table></div>
 
@@ -266,7 +266,7 @@
           <button data-fs="name">기관명순</button>
         </div>
         <div class="strategy-desc"><label><input type="checkbox" id="careOnlyOutage" checked> 정전 구역 소재 기관만 보기</label> · <span id="careCount">-</span></div>
-        <div class="wx-table-wrap tall"><table class="wx-table wide">
+        <div class="wx-table-wrap tall"><table class="wx-table wide table-facility">
           <thead><tr><th>#</th><th>기관명</th><th>주소</th><th>시·군·구</th><th>구역 정전 비율</th><th>복구 순위</th><th>상태</th></tr></thead>
           <tbody id="careTable"></tbody></table></div>
       </div>
