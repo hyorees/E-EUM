@@ -6,15 +6,16 @@
   fac : 정전 영향 응급의료기관 수 (최대 구역 대비)
   vul : 정전 영향 65세 이상 인구  (최대 구역 대비)
   sev : 정전 비율                 (구역 내 정전 비중, 0~1)
+  dur : 예상 복구 소요시간         (짧을수록 점수 상승, 구간 정규화)
 """
 
 STRATEGIES = {   # 복구 시나리오(A/B/C)와 같은 이름·순서를 사용한다
-    "MIN_DAMAGE":        {"label": "A. 사회적 피해 최소화", "w": {"pop": 0.30, "fac": 0.25, "vul": 0.20, "sev": 0.25}},
-    "CRITICAL_FACILITY": {"label": "B. 중요시설 우선",      "w": {"pop": 0.15, "fac": 0.50, "vul": 0.20, "sev": 0.15}},
-    "EFFICIENCY":        {"label": "C. 네트워크 효율 우선", "w": {"pop": 0.55, "fac": 0.15, "vul": 0.15, "sev": 0.15}},
+    "MIN_DAMAGE":        {"label": "A. 사회적 피해 최소화", "w": {"pop": 0.30, "fac": 0.25, "vul": 0.20, "sev": 0.25, "dur": 0.00}},
+    "CRITICAL_FACILITY": {"label": "B. 중요시설 우선",      "w": {"pop": 0.15, "fac": 0.50, "vul": 0.20, "sev": 0.15, "dur": 0.00}},
+    "EFFICIENCY":        {"label": "C. 네트워크 효율 우선", "w": {"pop": 0.15, "fac": 0.10, "vul": 0.10, "sev": 0.10, "dur": 0.55}},
 }
 DEFAULT_STRATEGY = "MIN_DAMAGE"
-LABEL = {"pop": "영향 인구", "fac": "응급의료기관", "vul": "고령층(65세+)", "sev": "정전 비율"}
+LABEL = {"pop": "영향 인구", "fac": "응급의료기관", "vul": "고령층(65세+)", "sev": "정전 비율", "dur": "복구 소요시간"}
 
 
 def _normalize(w):
@@ -47,14 +48,21 @@ def calculate_priority(outages: list, strategy: str = DEFAULT_STRATEGY, weights:
         "pop": max(o["affected_population"] for o in outages) or 1,
         "fac": max(o["hospitals_affected"] for o in outages) or 1,
         "vul": max(o["vulnerable_affected"] for o in outages) or 1,
+        "dur": max(float(o.get("est_hours", 0) or 0) for o in outages) or 1,
+    }
+    mn = {
+        "dur": min(float(o.get("est_hours", 0) or 0) for o in outages) if outages else 0,
     }
     total_pop = sum(o["affected_population"] for o in outages) or 1
 
     scored = []
     for o in outages:
+        est = float(o.get("est_hours", 0) or 0)
+        dur_span = (mx["dur"] - mn["dur"]) or 1
         norm = {
             "pop": o["affected_population"] / mx["pop"], "fac": o["hospitals_affected"] / mx["fac"],
             "vul": o["vulnerable_affected"] / mx["vul"], "sev": o["outage_ratio"],
+            "dur": (mx["dur"] - est) / dur_span if dur_span > 0 else 1.0,
         }
         parts = {k: round(100 * w[k] * norm[k], 1) for k in LABEL}
         it = dict(o)

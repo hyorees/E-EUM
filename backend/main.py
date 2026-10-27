@@ -27,7 +27,7 @@ class SimulateRequest(BaseModel):
 class PriorityRequest(BaseModel):
     outages: list[dict]
     strategy: str = "MIN_DAMAGE"
-    weights: dict | None = None            # {"pop":..,"fac":..,"vul":..,"sev":..} 직접 지정 시
+    weights: dict | None = None            # {"pop":..,"fac":..,"vul":..,"sev":..,"dur":..} 직접 지정 시
 
 
 @app.get("/")
