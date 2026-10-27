@@ -83,5 +83,6 @@ def calculate_priority(outages: list, strategy: str = DEFAULT_STRATEGY, weights:
         "total_affected_population": total_pop,
         "top10_share": round(top10 / total_pop * 100, 1),
         "zones": n,
+        "strategy_weights": w # 전략 가중치를 프론트엔드로 전달
     }
     return {"strategy": strategy, "strategy_label": STRATEGIES[strategy]["label"], "weights": w, "items": scored, "summary": summary}

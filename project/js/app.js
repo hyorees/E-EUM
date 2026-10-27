@@ -166,14 +166,22 @@ function scenarios(rows) {
     const m = metrics(ord[k], K);
     out[k] = { k, order: ord[k], sc: m.sc, makespan: m.M, avgP: m.D / totP, avgH: m.F / totH };
   }
-  const rng = f => { const v = Object.keys(ord).map(k => f(out[k])); return [Math.min(...v), Math.max(...v)]; };
-  const [minP, maxP] = rng(x => x.avgP), [minH, maxH] = rng(x => x.avgH), [minM, maxM] = rng(x => x.makespan);
-  const norm = (v, mn, mx) => Math.abs(mx - mn) < 0.01 ? 85 : (1 - (v - mn) / (mx - mn)) * 100;
+
+  // 절대적 기준 반영 및 재난 강도에 따른 실시간 점수 동적 연산
   const W = { A: { p: .5, h: .3, m: .2 }, B: { p: .2, h: .6, m: .2 }, C: { p: .2, h: .2, m: .6 } };
+  
+  // 전체 구역 수 및 재난 가중치 반영
+  const baseFactor = Math.min(1.0, rows.length / 50.0);
+
   for (const k in ord) {
     const w = W[k];
-    const raw = norm(out[k].avgP, minP, maxP) * w.p + norm(out[k].avgH, minH, maxH) * w.h + norm(out[k].makespan, minM, maxM) * w.m;
-    out[k].score = Math.min(99.9, Math.max(25, raw));
+    // 인구, 병원, 복구시간의 절대 지표 환산 점수
+    const pScore = Math.max(10, 100 - (out[k].avgP * 1.5));
+    const hScore = Math.max(10, 100 - (out[k].avgH * 2.0));
+    const mScore = Math.max(10, 100 - (out[k].makespan * 0.8));
+
+    const raw = (pScore * w.p) + (hScore * w.h) + (mScore * w.m);
+    out[k].score = Math.min(99.9, Math.max(25.0, raw));
   }
   out.totP = totP;
   return out;
