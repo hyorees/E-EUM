@@ -123,6 +123,10 @@ main{
 /* Tab Management */
 .tab-content{display:none}
 .tab-content.active{display:block}
+#tab-impact h2 {
+  font-size: 20px; /* 원하시는 크기(ex: 26px, 28px)로 조절 가능 */
+  font-weight: 700;
+}
 
 /* Red Disaster Banner Fixed Alignment */
 .disaster-alert{
@@ -437,7 +441,8 @@ footer{display:flex;justify-content:space-between;color:#94a3b8;font-size:10px;p
 .sc-tabs{display:flex;gap:6px}
 .sc-tab{border:1px solid #cbd5e1;background:#fff;color:#475569;border-radius:6px;padding:7px 12px;font-size:12px;font-weight:700;cursor:pointer}
 .sc-tab.active{background:#0284c7;border-color:#0284c7;color:#fff}
-.sub-h{margin:70px 0 15px;font-size:20px;color:#0f172a}
+.sub-h{margin:20px 0 15px;font-size:20px;color:#0f172a}
+.sub-h2{margin:40px 0 15px;font-size:20px;color:#0f172a}
 .gantt{border:1px solid #e2e8f0;border-radius:8px;padding:10px 12px;background:#fff}
 .g-row{display:flex;align-items:center;gap:10px;margin:6px 0;font-size:11px;color:#64748b}
 .g-row>span{width:56px;flex-shrink:0}
@@ -516,10 +521,6 @@ footer{display:flex;justify-content:space-between;color:#94a3b8;font-size:10px;p
 /* 점수 구성 막대 */
 .stackbar{display:flex;height:8px;min-width:90px;border-radius:4px;overflow:hidden;background:#e2e8f0}
 .stackbar i{display:block;height:100%}
-.stackbar .scenario-bar{width:auto;background:#0284c7}
-.stackbar .scenario-bar.sc-A{background:#e11d48}
-.stackbar .scenario-bar.sc-B{background:#f97316}
-.stackbar .scenario-bar.sc-C{background:#0284c7}
 .sb-pop{background:#0284c7}.sb-fac{background:#f97316}.sb-vul{background:#7c3aed}.sb-sev{background:#e11d48}
 .lg2{font-size:10px;color:#64748b;margin:8px 0 6px}
 .lg2 i{display:inline-block;width:8px;height:8px;border-radius:2px;margin:0 3px 0 10px}
@@ -544,6 +545,9 @@ footer{display:flex;justify-content:space-between;color:#94a3b8;font-size:10px;p
 .cause-item b em{font-style:normal;color:#e11d48;margin-left:6px}
 .cause-item small{display:block;margin-top:3px;color:#64748b;font-size:11px;line-height:1.5}
 .strategy-desc{margin:8px 0 14px;font-size:12px;color:#64748b}
+.strategy-desc .score-legend{display:inline-flex;gap:10px;margin-left:12px}
+.score-legend>span{display:inline-flex;align-items:center;gap:3px}
+.score-legend i{display:inline-block;width:8px;height:8px;border-radius:2px}
 .dev-links{display:flex;flex-direction:column;gap:4px;margin-bottom:10px}
 .dev-links a{font-size:11px;color:#0284c7;text-decoration:none;font-weight:600}
 .dev-links a:hover{text-decoration:underline}

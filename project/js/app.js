@@ -11,6 +11,12 @@ const SC_RULE = {
   C: "복구 소요시간이 짧은 구역부터 복구해 완료 구역 수를 빠르게 늘립니다."
 };
 const SC_COLOR = { A: "#e11d48", B: "#f97316", C: "#0284c7" };
+const SC_WEIGHTS = {
+  A: { pop: .30, fac: .25, vul: .20, sev: .25 },
+  B: { pop: .15, fac: .50, vul: .20, sev: .15 },
+  C: { pop: .55, fac: .15, vul: .15, sev: .15 }
+};
+const SCORE_LABEL = { pop: "영향 인구", fac: "응급의료기관", vul: "고령층", sev: "정전 비율" };
 const CREWS = 10;                       // 복구반 수 (고정)
 const SEV_TXT = { "0.7": "약", "1": "보통", "1.3": "강" };
 
@@ -30,10 +36,11 @@ const man = n => (n / 1e4).toLocaleString("ko", { maximumFractionDigits: 1 }) + 
 const setText = (s, v) => { const e = $(s); if (e) e.textContent = v; };
 const setHTML = (s, v) => { const e = $(s); if (e) e.innerHTML = v; };
 const ratioLevel = r => r >= 0.7 ? "critical" : r >= 0.45 ? "high" : r >= 0.2 ? "mid" : "low";
-const scenarioDescription = {
-  A: "사회적 피해 점수(영향 인구·응급의료기관·고령층·정전 비율) 순서와 동일합니다.",
-  B: "영향 응급의료기관이 많은 구역부터 복구하는 시나리오 순서와 동일합니다.",
-  C: "예상 복구시간이 짧은 구역부터 복구하는 시나리오 순서와 동일합니다."
+const scenarioDescription = key => {
+  const weights = SC_WEIGHTS[key];
+  const weightText = ["pop", "fac", "vul", "sev"]
+    .map(name => `${SCORE_LABEL[name]} ${Math.round(weights[name] * 100)}%`).join(" · ");
+  return `현재 가중치: ${weightText}. 색상 구간은 영향 인구·응급의료기관·고령층·정전 비율별 점수 기여도이며, 막대 길이는 시나리오 기준 점수에 비례합니다.`;
 };
 
 function toast(msg) {
@@ -164,16 +171,24 @@ function scenarios(rows) {
   const out = {};
   const maxHosp = Math.max(...rows.map(r => r.hosp), 0);
   const maxPop = Math.max(...rows.map(r => r.pop), 1);
+  const maxVul = Math.max(...rows.map(r => r.vul), 1);
   const minDur = Math.min(...rows.map(r => r.dur));
   for (const k in ord) {
     const m = metrics(ord[k], K);
-    const scores = {};
+    const scores = {}, parts = {};
     for (const r of ord[k]) {
       if (k === "A") scores[r.id] = r.score;
       else if (k === "B") scores[r.id] = maxHosp ? r.hosp / maxHosp * 100 : r.pop / maxPop * 100;
       else scores[r.id] = minDur / r.dur * 100;
+      const weights = SC_WEIGHTS[k];
+      parts[r.id] = {
+        pop: Math.round(100 * weights.pop * r.pop / maxPop * 10) / 10,
+        fac: Math.round(100 * weights.fac * (maxHosp ? r.hosp / maxHosp : 0) * 10) / 10,
+        vul: Math.round(100 * weights.vul * r.vul / maxVul * 10) / 10,
+        sev: Math.round(100 * weights.sev * r.ratio * 10) / 10
+      };
     }
-    out[k] = { k, order: ord[k], scores, sc: m.sc, makespan: m.M, avgP: m.D / totP, avgH: m.F / totH };
+    out[k] = { k, order: ord[k], scores, parts, sc: m.sc, makespan: m.M, avgP: m.D / totP, avgH: m.F / totH };
   }
 
   // A, B, C 시나리오 간 상대적 성능 비교 정규화 (25.0점 하한선 고정 방지)
@@ -223,8 +238,10 @@ function applyScenarioPriority() {
       r.parts = r.baseParts;
       r.reason = r.baseReason;
     } else if (S.sc === "B") {
+      r.parts = scenario.parts[r.id];
       r.reason = `${r.region}: 응급의료기관 ${r.hosp}곳이 영향을 받아 중요시설 우선 시나리오의 ${r.rank}순위로 배정됩니다.`;
     } else if (S.sc === "C") {
+      r.parts = scenario.parts[r.id];
       r.reason = `${r.region}: 예상 복구시간 ${r.dur.toFixed(1)}시간으로 효율 우선 시나리오의 ${r.rank}순위로 배정됩니다.`;
     }
   });
@@ -344,7 +361,7 @@ function renderSelected() {
   setText("#selectedTitle", r.region);
   setText("#selectedRank", S.analyzed ? `${r.rank}순위` : "분석 대기");
   setText("#selectedScore", S.analyzed ? Math.round(r.score) : r.pct + "%");
-  setText("#selectedScoreLbl", S.analyzed ? "시나리오 기준 점수" : "정전 비율");
+  setText("#selectedScoreLbl", "우선순위 점수");
   setText("#selectedPeople", man(r.pop));
   setText("#selectedFacilities", `${r.hosp}개소 (전체 ${r.totHosp})`);
   setText("#selectedTime", r.dur.toFixed(1) + "시간");
@@ -356,11 +373,10 @@ function renderSelected() {
 
 function stackBar(r) {
   if (!r.parts) return "";
-  if (S.sc !== "A") {
-    return `<div class="stackbar" title="${scenarioDescription[S.sc]}"><i class="scenario-bar sc-${S.sc}" style="width:${r.score}%"></i></div>`;
-  }
-  return `<div class="stackbar" title="${scenarioDescription[S.sc]}">` +
-    ["pop", "fac", "vul", "sev"].map(k => `<i class="sb-${k}" style="width:${r.parts[k]}%"></i>`).join("") + `</div>`;
+  const total = Object.values(r.parts).reduce((sum, part) => sum + part, 0);
+  const scale = total === 0 ? 1 : r.score / total;
+  return `<div class="stackbar" title="${scenarioDescription(S.sc)}">` +
+    ["pop", "fac", "vul", "sev"].map(k => `<i class="sb-${k}" style="width:${r.parts[k] * scale}%"></i>`).join("") + `</div>`;
 }
 
 function renderTables() {
@@ -546,7 +562,12 @@ function renderStrategyBtns() {
   setHTML("#strategyBtns", ["A", "B", "C"].map(k =>
     `<button data-st="${k}" class="${S.sc === k ? "active" : ""}">${SC_NAME[k]}</button>`).join(""));
   $$("#strategyBtns button").forEach(b => b.addEventListener("click", () => chooseScenario(b.dataset.st)));
-  setText("#strategyDesc", scenarioDescription[S.sc]);
+  const weights = SC_WEIGHTS[S.sc];
+  const weightText = ["pop", "fac", "vul", "sev"]
+    .map(name => `${SCORE_LABEL[name]} ${Math.round(weights[name] * 100)}%`).join(" · ");
+  setHTML("#strategyDesc", `<span>현재 가중치: ${weightText}</span><span class="score-legend">
+    <span><i class="sb-pop"></i>영향 인구</span><span><i class="sb-fac"></i>응급의료기관</span>
+    <span><i class="sb-vul"></i>고령층</span><span><i class="sb-sev"></i>정전 비율</span></span>`);
 }
 
 function chooseScenario(type) {
