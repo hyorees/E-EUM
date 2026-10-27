@@ -517,10 +517,10 @@ function renderAll(fit) {
 function selectOutage(id) {
   S.sel = id;
   renderPriority(); renderSelected(); renderTables(); renderMap(false);
-  const r = S.rows.find(x => x.id === id);
-  if (map && r) map.panTo([r.lat, r.lng]);
+  // 복구 우선순위에서 지역 선택 시 전국 현황 탭으로 이동하지 않고
+  // 현재 화면에서 선택 상태만 유지한다.
 }
-function pickFromTable(id) { selectOutage(id); openTab("tab-dashboard"); }
+function pickFromTable(id) { selectOutage(id); }
 
 function goToScenarioDetail(k) { S.sc = k; renderSimDetail(); openTab("tab-scenario"); }
 

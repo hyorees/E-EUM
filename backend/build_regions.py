@@ -1,13 +1,46 @@
 # backend/build_regions.py
 import csv
 import os
+import re
+
+import pandas as pd
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 POP_CSV = os.path.join(HERE, "data", "202609_202609_주민등록인구및세대현황_월간.csv")
 TARGET_CSV = os.path.join(HERE, "data", "regions.csv")
+INGU_CSV = os.path.join(HERE, "..", "project", "data", "ingu.csv")
 POP65_RATIO = 0.192
 POP_SOURCE = "resident_population_2026-09"
-POP65_SOURCE = "estimated_uniform_19.2_percent"
+POP65_SOURCE = "real_age_65_plus_from_ingu_cva"
+
+
+def _norm_name(value):
+    if value is None:
+        return ""
+    return re.sub(r"\s+", "", str(value)).lower().replace(".", "")
+
+
+def _load_real_older_map():
+    if not os.path.exists(INGU_CSV):
+        return {}
+    try:
+        df = pd.read_csv(INGU_CSV, encoding="cp949")
+    except Exception:
+        return {}
+    mapping = {}
+    for _, row in df.iloc[2:].iterrows():
+        if len(row) < 5:
+            continue
+        try:
+            aged_65 = int(str(row.iloc[3]).replace(",", "")) + int(str(row.iloc[4]).replace(",", ""))
+        except (TypeError, ValueError):
+            continue
+        for key in [row.iloc[0], row.iloc[1], f"{row.iloc[0]} {row.iloc[1]}", f"{row.iloc[1]} {row.iloc[0]}"]:
+            norm = _norm_name(key)
+            if norm:
+                mapping[norm] = int(aged_65)
+    return mapping
+
 
 def apply_real_population():
     if not os.path.exists(POP_CSV) or not os.path.exists(TARGET_CSV):
@@ -43,6 +76,7 @@ def apply_real_population():
 
     updates = []
     missing = []
+    older_map = _load_real_older_map()
     for row in regions:
         source_name = f"{row['sido']} {row['sigungu']}"
         population = pop_map.get(source_name)
@@ -58,8 +92,16 @@ def apply_real_population():
 
     for row, population in updates:
         row["pop"] = str(population)
-        row["pop65"] = str(int(population * POP65_RATIO))
-        row["pop65_ratio"] = str(POP65_RATIO)
+        pop65 = None
+        for cand in [row["full_name"], row["sigungu"], row["sido"], f"{row['sido']} {row['sigungu']}", f"{row['sigungu']} {row['sido']}"]:
+            val = older_map.get(_norm_name(cand))
+            if val is not None:
+                pop65 = int(val)
+                break
+        if pop65 is None:
+            pop65 = int(population * POP65_RATIO)
+        row["pop65"] = str(pop65)
+        row["pop65_ratio"] = str(POP65_RATIO if pop65 is None else pop65 / population)
         row["pop_source"] = POP_SOURCE
         row["pop65_source"] = POP65_SOURCE
 
@@ -69,7 +111,8 @@ def apply_real_population():
         writer.writerows(regions)
 
     print(f"성공: {len(updates)}개 지역의 2026년 9월 인구를 정확한 행정구역명으로 적용했습니다.")
-    print(f"65세 이상 인구는 추정 비율 {POP65_RATIO:.1%}을 적용했습니다.")
+    print(f"65세 이상 인구는 project/data/ingu.csv 값을 우선 적용하고, 없으면 추정 비율 {POP65_RATIO:.1%}으로 채웠습니다.")
+
 
 if __name__ == "__main__":
     apply_real_population()

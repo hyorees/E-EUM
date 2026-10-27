@@ -8,10 +8,12 @@
 import csv
 import math
 import os
+import re
 from datetime import datetime
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 REGIONS_CSV = os.path.join(HERE, "data", "regions.csv")
+INGU_CSV = os.path.join(HERE, "..", "project", "data", "ingu.csv")
 
 DISASTERS = {
     "TYPHOON":    {"name": "태풍", "desc": "제주 → 남해안 → 동해안으로 북상하는 강한 태풍"},
@@ -30,6 +32,39 @@ BASE_HOURS = {"TYPHOON": 6.0, "EARTHQUAKE": 14.0, "HEAVY_RAIN": 9.0, "HEATWAVE":
 _REGIONS = None
 
 
+def _norm_name(value):
+    if value is None:
+        return ""
+    return re.sub(r"\s+", "", str(value)).lower().replace(".", "")
+
+
+def _load_real_pop65_by_region():
+    if not os.path.exists(INGU_CSV):
+        return {}
+    try:
+        with open(INGU_CSV, encoding="cp949", newline="") as f:
+            rows = list(csv.reader(f))
+    except Exception:
+        return {}
+    mapping = {}
+    for row in rows[2:]:
+        if len(row) < 5:
+            continue
+        sigungu = str(row[0]).strip()
+        area_label = str(row[1]).strip()
+        try:
+            aged_65 = int(str(row[3]).replace(",", "")) + int(str(row[4]).replace(",", ""))
+        except (TypeError, ValueError):
+            continue
+        if not sigungu or not area_label:
+            continue
+        for key in [sigungu, area_label, f"{sigungu} {area_label}", f"{area_label} {sigungu}"]:
+            norm = _norm_name(key)
+            if norm:
+                mapping[norm] = aged_65
+    return mapping
+
+
 def load_regions():
     global _REGIONS
     if _REGIONS is None:
@@ -43,6 +78,18 @@ def load_regions():
                     "type": r["type"], "lat": float(r["lat"]), "lng": float(r["lng"]),
                     "pop": int(r["pop"]), "pop65": int(r["pop65"]), "hosp": int(r["hosp"]),
                 })
+
+        real_pop65 = _load_real_pop65_by_region()
+        for reg in rows:
+            candidate_names = [
+                reg["sigungu"], reg["sido"], reg["name"], f"{reg['sido']} {reg['sigungu']}",
+                f"{reg['sigungu']} {reg['sido']}",
+            ]
+            for key in candidate_names:
+                val = real_pop65.get(_norm_name(key))
+                if val is not None:
+                    reg["pop65"] = int(val)
+                    break
         _REGIONS = rows
     return _REGIONS
 
@@ -113,7 +160,7 @@ _MODELS = {"TYPHOON": _typhoon, "EARTHQUAKE": _earthquake, "HEAVY_RAIN": _heavy_
 
 COMMON_NOTES = [
     "이 화면의 기상·정전 수치는 실제 관측값이 아니라 공식으로 만든 '가상 시뮬레이션'입니다.",
-    "실제 데이터: 응급의료기관 수·위치(공공데이터), 2026년 9월 주민등록 시·군·구 인구. 추정 데이터: 65세 이상 비율(전 지역 19.2%). 가상 데이터: 기상 수치, 정전 비율, 복구시간.",
+    "실제 데이터: 응급의료기관 수·위치(공공데이터), 2026년 9월 주민등록 시·군·구 인구, 65세 이상 고령 인구(project/data/ingu.csv). 가상 데이터: 기상 수치, 정전 비율, 복구시간.",
     "지역마다 ±15% 범위의 고정 편차를 곱해 현실처럼 들쭉날쭉하게 만들었고, 난수를 쓰지 않아 같은 재난·강도면 항상 같은 결과가 나옵니다.",
     "예상 복구시간 = 재난별 기본시간 × (0.6 + 1.4 × 정전 비율), 군 지역은 ×1.25 (현장 접근이 어려워 오래 걸린다고 가정).",
 ]
