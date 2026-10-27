@@ -19,6 +19,7 @@ const S = {
   phase: "idle",              // idle → received → analyzing → done (| error)
   analyzed: false, summary: null,
   strategy: "MIN_DAMAGE", strategies: [], facSort: "rank", facOnly: true,
+  careSort: "rank", careOnly: true,
   sel: null, crews: CREWS, sc: "A", reqSeq: 0, metaLoaded: false
 };
 let SC = {}, REC = "A", map = null, layer = null, geoLayer = null, polling = false;
@@ -335,29 +336,53 @@ function renderTables() {
       <td class="why">${r.reason || "분석 대기 중"}</td></tr>`).join("") || empty(9));
 
   renderFacilities();
+  renderCareCenters();
 }
 
 /* ── 시설 상세: hospitals.csv (js/hospitals.js) 기반 병원 목록 ── */
 function renderFacilities() {
-  const H = window.hospitalList || [];
+  renderFacilityList({
+    items: window.hospitalList || [],
+    sort: S.facSort,
+    onlyOutage: S.facOnly,
+    sortButtons: "#facSortBtns",
+    count: "#facCount",
+    table: "#facTable",
+    itemLabel: "병원"
+  });
+}
+
+function renderCareCenters() {
+  renderFacilityList({
+    items: window.careCenterList || [],
+    sort: S.careSort,
+    onlyOutage: S.careOnly,
+    sortButtons: "#careSortBtns",
+    count: "#careCount",
+    table: "#careTable",
+    itemLabel: "기관"
+  });
+}
+
+function renderFacilityList({ items, sort, onlyOutage, sortButtons, count, table, itemLabel }) {
   const byId = {}; S.rows.forEach(r => byId[r.id] = r);
-  let list = H.map(h => ({ h, r: byId[String(h.rid)] || null }));
+  let list = items.map(item => ({ item, r: byId[String(item.rid)] || null }));
   const outN = list.filter(x => x.r).length;
-  if (S.facOnly) list = list.filter(x => x.r);
+  if (onlyOutage) list = list.filter(x => x.r);
   const rk = x => x.r ? (S.analyzed ? x.r.rank : 1e6) : 2e6;
   const cmp = {
-    rank: (a, b) => rk(a) - rk(b) || (b.r ? b.r.ratio : 0) - (a.r ? a.r.ratio : 0) || a.h.n.localeCompare(b.h.n, "ko"),
-    ratio: (a, b) => (b.r ? b.r.ratio : -1) - (a.r ? a.r.ratio : -1) || a.h.n.localeCompare(b.h.n, "ko"),
-    region: (a, b) => a.h.reg.localeCompare(b.h.reg, "ko") || a.h.n.localeCompare(b.h.n, "ko"),
-    name: (a, b) => a.h.n.localeCompare(b.h.n, "ko")
-  }[S.facSort];
+    rank: (a, b) => rk(a) - rk(b) || (b.r ? b.r.ratio : 0) - (a.r ? a.r.ratio : 0) || a.item.n.localeCompare(b.item.n, "ko"),
+    ratio: (a, b) => (b.r ? b.r.ratio : -1) - (a.r ? a.r.ratio : -1) || a.item.n.localeCompare(b.item.n, "ko"),
+    region: (a, b) => a.item.reg.localeCompare(b.item.reg, "ko") || a.item.n.localeCompare(b.item.n, "ko"),
+    name: (a, b) => a.item.n.localeCompare(b.item.n, "ko")
+  }[sort];
   list.sort(cmp);
-  $$("#facSortBtns button").forEach(b => b.classList.toggle("active", b.dataset.fs === S.facSort));
-  setText("#facCount", S.rows.length ? `정전 구역 소재 ${outN}곳 / 전체 ${H.length}곳 · 표시 ${list.length}곳` : `전체 ${H.length}곳 (재난 발생 전)`);
-  const empty = `<tr><td colspan="7" class="empty-msg">${S.rows.length ? "표시할 병원이 없습니다." : "재난이 발생하면 정전 구역 소재 병원이 표시됩니다. (체크 해제 시 전체 목록)"}</td></tr>`;
-  setHTML("#facTable", list.map((x, i) => `
+  $$(sortButtons + " button").forEach(b => b.classList.toggle("active", b.dataset.fs === sort));
+  setText(count, S.rows.length ? `정전 구역 소재 ${outN}곳 / 전체 ${items.length}곳 · 표시 ${list.length}곳` : `전체 ${items.length}곳 (재난 발생 전)`);
+  const empty = `<tr><td colspan="7" class="empty-msg">${S.rows.length ? `표시할 ${itemLabel} 목록이 없습니다.` : `재난이 발생하면 정전 구역 소재 ${itemLabel}이 표시됩니다. (체크 해제 시 전체 목록)`}</td></tr>`;
+  setHTML(table, list.map((x, i) => `
     <tr ${x.r ? `class="${x.r.id === S.sel ? "sel" : ""}" onclick="pickFromTable('${x.r.id}')"` : ""}>
-      <td>${i + 1}</td><td><b>${x.h.n}</b></td><td class="why">${x.h.a}</td><td>${x.h.reg}</td>
+      <td>${i + 1}</td><td><b>${x.item.n}</b></td><td class="why">${x.item.a}</td><td>${x.item.reg}</td>
       <td>${x.r ? x.r.pct + "%" : "-"}</td><td>${x.r && S.analyzed ? x.r.rank + "순위" : "-"}</td>
       <td>${x.r ? `<span class="lvl ${x.r.level}">정전 구역</span>` : "정상"}</td></tr>`).join("") || empty);
 }
@@ -517,6 +542,8 @@ function bind() {
   $$(".sc-tab").forEach(b => b.addEventListener("click", () => { S.sc = b.dataset.sc; renderSimDetail(); }));
   $$("#facSortBtns button").forEach(b => b.addEventListener("click", () => { S.facSort = b.dataset.fs; renderFacilities(); }));
   $("#facOnlyOutage").addEventListener("change", e => { S.facOnly = e.target.checked; renderFacilities(); });
+  $$("#careSortBtns button").forEach(b => b.addEventListener("click", () => { S.careSort = b.dataset.fs; renderCareCenters(); }));
+  $("#careOnlyOutage").addEventListener("change", e => { S.careOnly = e.target.checked; renderCareCenters(); });
   $("#sidebarToggle").addEventListener("click", () => { $("#sidebar").classList.toggle("collapsed"); setTimeout(() => map && map.invalidateSize(), 300); });
 
   // 💡 백엔드 연결 여부 엄격 차단 로직 적용
