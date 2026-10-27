@@ -195,3 +195,4 @@ def generate_disaster_scenario(disaster_type: str, severity: float = 1.0):
         },
     }
     return event, outages
+

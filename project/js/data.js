@@ -106,3 +106,5 @@ const scenarioData = {
   C:{name:"C. 네트워크 효율 우선", short:"효율 우선", rule:"복구 소요시간이 짧은 구역부터", desc:"작업량이 적은 구역부터 끝내 복구 완료 구역 수를 빠르게 늘립니다."}
 };
 window.scenarioData = scenarioData;
+
+

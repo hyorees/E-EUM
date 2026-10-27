@@ -33,3 +33,4 @@ for h in read(os.path.join(HERE, "hospitals.csv")):
 with open(OUT, "w", encoding="utf-8") as f:
     f.write("// make_hospitals.py 가 생성 (직접 수정 X)\nwindow.hospitalList = " + json.dumps(out, ensure_ascii=False, separators=(",", ":")) + ";\n")
 print(f"병원 {len(out)}곳 저장, 매칭 실패 {miss}곳 → {os.path.normpath(OUT)}")
+

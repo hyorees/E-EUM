@@ -41,3 +41,5 @@ if response.status_code == 200:
     print(f"총 {len(items)}개의 응급의료기관 데이터를 '{filename}'로 저장했습니다.")
 else:
     print("수집 실패:", response.status_code)
+
+    

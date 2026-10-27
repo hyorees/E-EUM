@@ -594,3 +594,4 @@ window.addEventListener("DOMContentLoaded", () => {
   bind(); initMap(); renderAll(false);
   poll(); setInterval(poll, POLL_MS);
 });
+

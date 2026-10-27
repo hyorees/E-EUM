@@ -107,3 +107,4 @@ with open(os.path.join(JS_DIR, 'data.js'), 'w', encoding='utf-8') as f:
 ''')
 print("병원", hosp, "인구", pop)
 print("기상:", meta["n"], "시간,", len(allst), "지점 / 대표 사례:", [e["label"] for e in events])
+
