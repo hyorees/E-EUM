@@ -1,11 +1,3 @@
-/* 재난 전력복구 의사결정 지원 — 화면
- *
- * 흐름
- *  1) 백엔드가 재난을 발생시키면(POST /api/simulate) 화면이 주기적으로 GET /api/outage-report 를 조회해
- *     '정전 정보'를 수신한다.                                  → 지도·표에 정전 현황 표시 (순위 없음)
- *  2) 정전 정보를 받으면 그 데이터를 POST /api/priority 로 보내 복구 우선순위를 계산한다.
- *  3) 결과(순위·근거·시나리오)를 보여 주고, 최종 결정은 관리자가 한다.
- */
 const $ = s => document.querySelector(s), $$ = s => document.querySelectorAll(s);
 const API = "http://127.0.0.1:8000";
 const POLL_MS = 3000;
@@ -119,11 +111,11 @@ async function runAnalysis() {
   if (!S.outages.length) return;
   const seq = ++S.reqSeq;
   S.phase = "analyzing"; renderFlow(); renderBanner();
-  await sleep(700);                                   // '분석 중' 단계가 보이도록 잠깐 대기
+  await sleep(700);
   try {
     const body = { outages: S.outages, strategy: S.strategy };
     const res = await api("/api/priority", { method: "POST", body: JSON.stringify(body) });
-    if (seq !== S.reqSeq) return;                     // 더 최신 요청이 있으면 버림
+    if (seq !== S.reqSeq) return;
     S.rows = res.items.map(fromItem); S.summary = res.summary;
     S.analyzed = true; S.phase = "done";
     if (!S.rows.find(r => r.id === S.sel)) S.sel = S.rows[0] ? S.rows[0].id : null;
@@ -167,21 +159,28 @@ function scenarios(rows) {
     out[k] = { k, order: ord[k], sc: m.sc, makespan: m.M, avgP: m.D / totP, avgH: m.F / totH };
   }
 
-  // 절대적 기준 반영 및 재난 강도에 따른 실시간 점수 동적 연산
+  // A, B, C 시나리오 간 상대적 성능 비교 정규화 (25.0점 하한선 고정 방지)
+  const pVals = Object.values(out).map(x => x.avgP);
+  const hVals = Object.values(out).map(x => x.avgH);
+  const mVals = Object.values(out).map(x => x.makespan);
+
+  const minP = Math.min(...pVals), maxP = Math.max(...pVals);
+  const minH = Math.min(...hVals), maxH = Math.max(...hVals);
+  const minM = Math.min(...mVals), maxM = Math.max(...mVals);
+
+  // 수치가 짧을수록 높은 점수 부여 (60점 ~ 98점 동적 분포)
+  const norm = (v, mn, mx) => Math.abs(mx - mn) < 0.01 ? 85 : 98 - ((v - mn) / (mx - mn)) * 38;
+
   const W = { A: { p: .5, h: .3, m: .2 }, B: { p: .2, h: .6, m: .2 }, C: { p: .2, h: .2, m: .6 } };
-  
-  // 전체 구역 수 및 재난 가중치 반영
-  const baseFactor = Math.min(1.0, rows.length / 50.0);
 
   for (const k in ord) {
     const w = W[k];
-    // 인구, 병원, 복구시간의 절대 지표 환산 점수
-    const pScore = Math.max(10, 100 - (out[k].avgP * 1.5));
-    const hScore = Math.max(10, 100 - (out[k].avgH * 2.0));
-    const mScore = Math.max(10, 100 - (out[k].makespan * 0.8));
+    const pScore = norm(out[k].avgP, minP, maxP);
+    const hScore = norm(out[k].avgH, minH, maxH);
+    const mScore = norm(out[k].makespan, minM, maxM);
 
     const raw = (pScore * w.p) + (hScore * w.h) + (mScore * w.m);
-    out[k].score = Math.min(99.9, Math.max(25.0, raw));
+    out[k].score = Math.min(99.9, Math.max(10.0, raw));
   }
   out.totP = totP;
   return out;
@@ -190,7 +189,6 @@ function scenarios(rows) {
 /* ── 렌더링 ── */
 function renderFlow() {
   const st = { idle: [1, 0, 0], received: [2, 1, 0], analyzing: [2, 1, 0], error: [2, 1, 0], done: [2, 2, 1] }[S.phase];
-  // 값: 0=대기, 1=진행(active), 2=완료(done)
   const cls = [
     st[0] === 2 ? "done" : "active",
     st[1] === 2 ? "done" : st[1] === 1 ? "active" : "",
@@ -397,64 +395,30 @@ function renderSimDetail() {
   setText("#simTime", s.makespan.toFixed(1) + "시간");
   setText("#simPeople", s.avgP.toFixed(1) + "시간");
   setText("#simHosp", s.avgH.toFixed(1) + "시간");
-}
-function renderSimDetail() {
-  const k = S.sc, s = SC[k];
-
-  $$(".sc-tab").forEach(b =>
-    b.classList.toggle("active", b.dataset.sc === k)
-  );
-
-  if (!s) return;
-
-  setText("#simName", SC_NAME[k]);
-  setText("#simDesc", SC_RULE[k]);
-  setText("#simScore", s.score.toFixed(1));
-  setText("#simTime", s.makespan.toFixed(1) + "시간");
-  setText("#simPeople", s.avgP.toFixed(1) + "시간");
-  setText("#simHosp", s.avgH.toFixed(1) + "시간");
-
   renderScenarioExplanation(k, s);
 }
+
 function renderScenarioExplanation(k, s) {
   if (!s || !SC.A) return;
 
-  // 세 시나리오의 실제 지표 범위
   const pVals = [SC.A.avgP, SC.B.avgP, SC.C.avgP];
   const hVals = [SC.A.avgH, SC.B.avgH, SC.C.avgH];
   const mVals = [SC.A.makespan, SC.B.makespan, SC.C.makespan];
 
-  const minP = Math.min(...pVals);
-  const maxP = Math.max(...pVals);
-  const minH = Math.min(...hVals);
-  const maxH = Math.max(...hVals);
-  const minM = Math.min(...mVals);
-  const maxM = Math.max(...mVals);
+  const minP = Math.min(...pVals), maxP = Math.max(...pVals);
+  const minH = Math.min(...hVals), maxH = Math.max(...hVals);
+  const minM = Math.min(...mVals), maxM = Math.max(...mVals);
 
-  // app.js의 scenarios()와 동일한 정규화 식
-  const norm = (v, mn, mx) =>
-    Math.abs(mx - mn) < 0.01
-      ? 85
-      : (1 - (v - mn) / (mx - mn)) * 100;
+  const norm = (v, mn, mx) => Math.abs(mx - mn) < 0.01 ? 85 : 98 - ((v - mn) / (mx - mn)) * 38;
 
   const pScore = norm(s.avgP, minP, maxP);
   const hScore = norm(s.avgH, minH, maxH);
   const mScore = norm(s.makespan, minM, maxM);
 
-  const W = {
-    A: { p: 0.5, h: 0.3, m: 0.2 },
-    B: { p: 0.2, h: 0.6, m: 0.2 },
-    C: { p: 0.2, h: 0.2, m: 0.6 }
-  };
-
+  const W = { A: { p: 0.5, h: 0.3, m: 0.2 }, B: { p: 0.2, h: 0.6, m: 0.2 }, C: { p: 0.2, h: 0.2, m: 0.6 } };
   const w = W[k];
-
-  const raw =
-    pScore * w.p +
-    hScore * w.h +
-    mScore * w.m;
-
-  const finalScore = Math.min(99.9, Math.max(25, raw));
+  const raw = pScore * w.p + hScore * w.h + mScore * w.m;
+  const finalScore = Math.min(99.9, Math.max(10.0, raw));
 
   const reason = {
     A: "사회적 피해 최소화를 위해 인구가 오래 정전되는 상황을 가장 중요하게 보고, 병원 영향과 전체 복구시간을 함께 반영합니다.",
@@ -463,48 +427,15 @@ function renderScenarioExplanation(k, s) {
   };
 
   setText("#explainTitle", `${SC_NAME[k]} · 점수 산출 근거`);
-
-  setText(
-    "#explainSummary",
-    `${reason[k]} 현재 이 시나리오의 최종 점수는 ${s.score.toFixed(1)}점입니다.`
-  );
-
-  setText(
-    "#explainFormula",
-    `최종점수 = 인구지표 × ${(w.p * 100).toFixed(0)}%`
-    + ` + 의료기관지표 × ${(w.h * 100).toFixed(0)}%`
-    + ` + 복구시간지표 × ${(w.m * 100).toFixed(0)}%`
-  );
-
+  setText("#explainSummary", `${reason[k]} 현재 이 시나리오의 최종 점수는 ${s.score.toFixed(1)}점입니다.`);
+  setText("#explainFormula", `최종점수 = 인구지표 × ${(w.p * 100).toFixed(0)}% + 의료기관지표 × ${(w.h * 100).toFixed(0)}% + 복구시간지표 × ${(w.m * 100).toFixed(0)}%`);
   setText("#explainP", `${pScore.toFixed(1)}점`);
-  setText(
-    "#explainPDetail",
-    `인구 평균 정전시간 ${s.avgP.toFixed(1)}시간`
-  );
-
+  setText("#explainPDetail", `인구 평균 정전시간 ${s.avgP.toFixed(1)}시간`);
   setText("#explainH", `${hScore.toFixed(1)}점`);
-  setText(
-    "#explainHDetail",
-    `병원 평균 복구시간 ${s.avgH.toFixed(1)}시간`
-  );
-
+  setText("#explainHDetail", `병원 평균 복구시간 ${s.avgH.toFixed(1)}시간`);
   setText("#explainM", `${mScore.toFixed(1)}점`);
-  setText(
-    "#explainMDetail",
-    `전체 복구 완료 ${s.makespan.toFixed(1)}시간`
-  );
-
-  setText(
-    "#explainCalculation",
-    `(${pScore.toFixed(1)} × ${w.p.toFixed(2)})`
-    + ` + (${hScore.toFixed(1)} × ${w.h.toFixed(2)})`
-    + ` + (${mScore.toFixed(1)} × ${w.m.toFixed(2)})`
-    + ` = ${raw.toFixed(1)}점`
-    + (raw !== finalScore
-      ? ` → 최종 ${finalScore.toFixed(1)}점`
-      : "")
-  );
-
+  setText("#explainMDetail", `전체 복구 완료 ${s.makespan.toFixed(1)}시간`);
+  setText("#explainCalculation", `(${pScore.toFixed(1)} × ${w.p.toFixed(2)}) + (${hScore.toFixed(1)} × ${w.h.toFixed(2)}) + (${mScore.toFixed(1)} × ${w.m.toFixed(2)}) = ${raw.toFixed(1)}점` + (raw !== finalScore ? ` → 최종 ${finalScore.toFixed(1)}점` : ""));
   setText("#explainReason", reason[k]);
 }
 
@@ -586,15 +517,28 @@ function bind() {
   $$("#facSortBtns button").forEach(b => b.addEventListener("click", () => { S.facSort = b.dataset.fs; renderFacilities(); }));
   $("#facOnlyOutage").addEventListener("change", e => { S.facOnly = e.target.checked; renderFacilities(); });
   $("#sidebarToggle").addEventListener("click", () => { $("#sidebar").classList.toggle("collapsed"); setTimeout(() => map && map.invalidateSize(), 300); });
+
+  // 💡 백엔드 연결 여부 엄격 차단 로직 적용
   $("#simGo").addEventListener("click", async () => {
     try {
       await api("/api/simulate", { method: "POST", body: JSON.stringify({ disaster_type: $("#simType").value, severity: +$("#simSev").value }) });
       toast("백엔드에 재난이 발생했습니다. 정전 정보를 수신합니다…");
-      poll();
-    } catch (e) { toast("백엔드에 연결할 수 없습니다 (uvicorn 실행 확인)"); }
+      await poll();
+    } catch (e) {
+      console.error("백엔드 연결 실패:", e);
+      toast("⚠️ 백엔드 서버(uvicorn)가 꺼져 있어 재난을 발생시킬 수 없습니다!");
+      clearEvent(); // 백엔드 미작동 시 기존 화면 완전 초기화 및 차단
+    }
   });
+
   $("#simReset").addEventListener("click", async () => {
-    try { await api("/api/reset", { method: "POST" }); poll(); } catch (e) { toast("백엔드에 연결할 수 없습니다"); }
+    try { 
+      await api("/api/reset", { method: "POST" }); 
+      poll(); 
+    } catch (e) { 
+      toast("⚠️ 백엔드 서버(uvicorn)가 꺼져 있습니다."); 
+      clearEvent();
+    }
   });
 }
 
@@ -602,4 +546,3 @@ window.addEventListener("DOMContentLoaded", () => {
   bind(); initMap(); renderAll(false);
   poll(); setInterval(poll, POLL_MS);
 });
-
