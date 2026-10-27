@@ -8,19 +8,19 @@
   sev : 정전 비율                 (구역 내 정전 비중, 0~1)
 """
 
-STRATEGIES = {
-    "BALANCED":          {"label": "균형 복구",       "w": {"pop": 0.30, "fac": 0.25, "vul": 0.20, "sev": 0.25}},
-    "POPULATION":        {"label": "인구 우선",       "w": {"pop": 0.55, "fac": 0.15, "vul": 0.15, "sev": 0.15}},
-    "CRITICAL_FACILITY": {"label": "중요시설 우선",   "w": {"pop": 0.15, "fac": 0.50, "vul": 0.20, "sev": 0.15}},
-    "RISK_FIRST":        {"label": "피해 규모 우선",  "w": {"pop": 0.15, "fac": 0.15, "vul": 0.20, "sev": 0.50}},
+STRATEGIES = {   # 복구 시나리오(A/B/C)와 같은 이름·순서를 사용한다
+    "MIN_DAMAGE":        {"label": "A. 사회적 피해 최소화", "w": {"pop": 0.30, "fac": 0.25, "vul": 0.20, "sev": 0.25}},
+    "CRITICAL_FACILITY": {"label": "B. 중요시설 우선",      "w": {"pop": 0.15, "fac": 0.50, "vul": 0.20, "sev": 0.15}},
+    "EFFICIENCY":        {"label": "C. 네트워크 효율 우선", "w": {"pop": 0.55, "fac": 0.15, "vul": 0.15, "sev": 0.15}},
 }
+DEFAULT_STRATEGY = "MIN_DAMAGE"
 LABEL = {"pop": "영향 인구", "fac": "응급의료기관", "vul": "고령층(65세+)", "sev": "정전 비율"}
 
 
 def _normalize(w):
     w = {k: max(0.0, float(w.get(k, 0))) for k in LABEL}
     s = sum(w.values())
-    return {k: v / s for k, v in w.items()} if s > 0 else dict(STRATEGIES["BALANCED"]["w"])
+    return {k: v / s for k, v in w.items()} if s > 0 else dict(STRATEGIES[DEFAULT_STRATEGY]["w"])
 
 
 def _man(n):
@@ -35,10 +35,10 @@ def _level(rank, n):
     return "low"
 
 
-def calculate_priority(outages: list, strategy: str = "BALANCED", weights: dict | None = None):
-    strategy = (strategy or "BALANCED").upper()
+def calculate_priority(outages: list, strategy: str = DEFAULT_STRATEGY, weights: dict | None = None):
+    strategy = (strategy or DEFAULT_STRATEGY).upper()
     if strategy not in STRATEGIES:
-        strategy = "BALANCED"
+        strategy = DEFAULT_STRATEGY
     w = _normalize(weights) if weights else dict(STRATEGIES[strategy]["w"])
     if not outages:
         return {"strategy": strategy, "strategy_label": STRATEGIES[strategy]["label"], "weights": w, "items": [], "summary": {}}
