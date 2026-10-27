@@ -18,7 +18,7 @@ const S = {
   eventId: null, event: null, outages: [], rows: [],
   phase: "idle",              // idle → received → analyzing → done (| error)
   analyzed: false, summary: null,
-  strategy: "MIN_DAMAGE", strategies: [], facSort: "rank", facOnly: true,
+  facSort: "rank", facOnly: true,
   careSort: "rank", careOnly: true,
   sel: null, crews: CREWS, sc: "A", reqSeq: 0, metaLoaded: false
 };
@@ -30,7 +30,11 @@ const man = n => (n / 1e4).toLocaleString("ko", { maximumFractionDigits: 1 }) + 
 const setText = (s, v) => { const e = $(s); if (e) e.textContent = v; };
 const setHTML = (s, v) => { const e = $(s); if (e) e.innerHTML = v; };
 const ratioLevel = r => r >= 0.7 ? "critical" : r >= 0.45 ? "high" : r >= 0.2 ? "mid" : "low";
-const stratLabel = () => (S.strategies.find(x => x.type === S.strategy) || {}).label || S.strategy;
+const scenarioDescription = {
+  A: "사회적 피해 점수(영향 인구·응급의료기관·고령층·정전 비율) 순서와 동일합니다.",
+  B: "영향 응급의료기관이 많은 구역부터 복구하는 시나리오 순서와 동일합니다.",
+  C: "예상 복구시간이 짧은 구역부터 복구하는 시나리오 순서와 동일합니다."
+};
 
 function toast(msg) {
   const t = $("#toast"); if (!t) return;
@@ -58,6 +62,7 @@ function fromItem(it) {
   const r = fromOutage(it);
   r.score = it.priority_score; r.rank = it.priority_rank; r.level = it.level;
   r.parts = it.score_parts; r.reason = it.reason;
+  r.baseScore = r.score; r.baseParts = r.parts; r.baseReason = r.reason;
   return r;
 }
 
@@ -69,7 +74,6 @@ function setConn(ok, msg) {
 
 async function loadMeta() {
   const d = await api("/api/disasters");
-  S.strategies = d.strategies;
   setHTML("#simType", d.disasters.map(x => `<option value="${x.type}">${x.name}</option>`).join(""));
   renderStrategyBtns();
   S.metaLoaded = true;
@@ -94,9 +98,10 @@ async function poll() {
 async function onNewEvent(d) {
   S.eventId = d.event.event_id; S.event = d.event; S.outages = d.outages;
   S.rows = d.outages.map(fromOutage).sort((a, b) => b.pop - a.pop);
-  S.analyzed = false; S.summary = null; SC = {};
+  S.analyzed = false; S.summary = null; S.sc = "A"; SC = {};
   S.sel = S.rows.length ? S.rows[0].id : null;
   S.phase = "received";
+  renderStrategyBtns();
   renderAll(true);
   toast(`[${d.event.type_name}] 정전 정보 수신: ${d.outages.length}개 시·군·구`);
   await runAnalysis();
@@ -104,7 +109,8 @@ async function onNewEvent(d) {
 
 function clearEvent() {
   S.eventId = null; S.event = null; S.outages = []; S.rows = []; S.summary = null;
-  S.analyzed = false; S.phase = "idle"; S.sel = null; SC = {}; S.reqSeq++;
+  S.analyzed = false; S.phase = "idle"; S.sel = null; S.sc = "A"; SC = {}; S.reqSeq++;
+  renderStrategyBtns();
   renderAll(true);
 }
 
@@ -114,15 +120,16 @@ async function runAnalysis() {
   S.phase = "analyzing"; renderFlow(); renderBanner();
   await sleep(700);
   try {
-    const body = { outages: S.outages, strategy: S.strategy };
+    const body = { outages: S.outages, strategy: "MIN_DAMAGE" };
     const res = await api("/api/priority", { method: "POST", body: JSON.stringify(body) });
     if (seq !== S.reqSeq) return;
     S.rows = res.items.map(fromItem); S.summary = res.summary;
     S.analyzed = true; S.phase = "done";
-    if (!S.rows.find(r => r.id === S.sel)) S.sel = S.rows[0] ? S.rows[0].id : null;
     SC = scenarios(S.rows);
+    applyScenarioPriority();
+    if (!S.rows.find(r => r.id === S.sel)) S.sel = S.rows[0] ? S.rows[0].id : null;
     renderAll(false);
-    toast(`우선순위 분석 완료 (${stratLabel()})`);
+    toast(`우선순위 분석 완료 (${SC_NAME[S.sc]})`);
   } catch (e) {
     if (seq !== S.reqSeq) return;
     S.phase = "error"; renderFlow(); renderBanner();
@@ -155,9 +162,18 @@ function scenarios(rows) {
   const totP = rows.reduce((s, r) => s + r.pop / 1e4, 0) || 1;
   const totH = rows.reduce((s, r) => s + r.hosp, 0) || 1;
   const out = {};
+  const maxHosp = Math.max(...rows.map(r => r.hosp), 0);
+  const maxPop = Math.max(...rows.map(r => r.pop), 1);
+  const minDur = Math.min(...rows.map(r => r.dur));
   for (const k in ord) {
     const m = metrics(ord[k], K);
-    out[k] = { k, order: ord[k], sc: m.sc, makespan: m.M, avgP: m.D / totP, avgH: m.F / totH };
+    const scores = {};
+    for (const r of ord[k]) {
+      if (k === "A") scores[r.id] = r.score;
+      else if (k === "B") scores[r.id] = maxHosp ? r.hosp / maxHosp * 100 : r.pop / maxPop * 100;
+      else scores[r.id] = minDur / r.dur * 100;
+    }
+    out[k] = { k, order: ord[k], scores, sc: m.sc, makespan: m.M, avgP: m.D / totP, avgH: m.F / totH };
   }
 
   // A, B, C 시나리오 간 상대적 성능 비교 정규화 (25.0점 하한선 고정 방지)
@@ -187,6 +203,33 @@ function scenarios(rows) {
   return out;
 }
 
+function levelForRank(rank, count) {
+  const pct = rank / count;
+  if (rank === 1 || pct <= 0.1) return "critical";
+  if (pct <= 0.3) return "high";
+  if (pct <= 0.6) return "mid";
+  return "low";
+}
+
+function applyScenarioPriority() {
+  const scenario = SC[S.sc];
+  if (!scenario) return;
+  const count = scenario.order.length;
+  scenario.order.forEach((r, index) => {
+    r.rank = index + 1;
+    r.score = scenario.scores[r.id];
+    r.level = levelForRank(r.rank, count);
+    if (S.sc === "A") {
+      r.parts = r.baseParts;
+      r.reason = r.baseReason;
+    } else if (S.sc === "B") {
+      r.reason = `${r.region}: 응급의료기관 ${r.hosp}곳이 영향을 받아 중요시설 우선 시나리오의 ${r.rank}순위로 배정됩니다.`;
+    } else if (S.sc === "C") {
+      r.reason = `${r.region}: 예상 복구시간 ${r.dur.toFixed(1)}시간으로 효율 우선 시나리오의 ${r.rank}순위로 배정됩니다.`;
+    }
+  });
+}
+
 /* ── 렌더링 ── */
 function renderFlow() {
   const st = { idle: [1, 0, 0], received: [2, 1, 0], analyzing: [2, 1, 0], error: [2, 1, 0], done: [2, 2, 1] }[S.phase];
@@ -212,7 +255,7 @@ function renderBanner() {
     return;
   }
   const sm = e.summary;
-  const phase = S.phase === "analyzing" ? "우선순위 분석 중…" : S.phase === "error" ? "분석 실패" : S.analyzed ? `복구 기준: ${stratLabel()}` : "분석 대기";
+  const phase = S.phase === "analyzing" ? "우선순위 분석 중…" : S.phase === "error" ? "분석 실패" : S.analyzed ? `복구 기준: ${SC_NAME[S.sc]}` : "분석 대기";
   setText("#alertTitle", `[${e.type_name}] 정전 정보 수신 · ${e.occurred_at}`);
   setText("#alertSub", `${e.desc} · 강도 ${SEV_TXT[String(e.severity)] || e.severity} · ${phase}`);
   setText("#aZones", sm.outage_zones);
@@ -223,10 +266,13 @@ function renderBanner() {
 function renderAI() {
   const box = $("#aiSummary");
   if (!S.analyzed || !S.summary || !S.rows.length) { box.classList.add("hidden"); return; }
-  const top3 = S.rows.slice(0, 3).map(r => `${r.rank}순위 ${r.region}`).join(" → ");
+  const order = SC[S.sc].order;
+  const top3 = order.slice(0, 3).map(r => `${r.rank}순위 ${r.region}`).join(" → ");
+  const totalPop = order.reduce((sum, r) => sum + r.pop, 0) || 1;
+  const top10Share = order.slice(0, 10).reduce((sum, r) => sum + r.pop, 0) / totalPop * 100;
   box.classList.remove("hidden");
-  box.innerHTML = `<b>복구 권고</b> · ${S.summary.headline}.<br>${top3}. 상위 10개 시·군·구가 전체 영향 인구의 <b>${S.summary.top10_share}%</b>를 차지합니다.
-    <br><small>※ 정전 현황을 가중 점수로 계산한 권고안입니다. 최종 결정은 관리자 확인 후 수행됩니다.</small>`;
+  box.innerHTML = `<b>${SC_NAME[S.sc]} 복구 순서</b> · ${order[0].region}부터 배정합니다.<br>${top3}. 상위 10개 시·군·구가 전체 영향 인구의 <b>${top10Share.toFixed(1)}%</b>를 차지합니다.
+    <br><small>※ 아래 순서는 복구 시나리오의 구역 배정 순서와 같습니다. 최종 결정은 관리자 확인 후 수행됩니다.</small>`;
 }
 
 function renderKpis() {
@@ -270,13 +316,16 @@ function renderMap(fit) {
 }
 
 function renderPriority() {
+  setText("#priorityHeading", `${SC_NAME[S.sc]} · TOP 5`);
+  $$("#priorityScenarioBtns button").forEach(b => b.classList.toggle("active", b.dataset.sc === S.sc));
   if (!S.analyzed) {
     const msg = !S.rows.length ? "재난이 발생하면 정전 정보 수신 후 우선순위를 자동으로 분석합니다."
       : S.phase === "error" ? "분석에 실패했습니다. 백엔드를 확인하세요." : "정전 정보를 수신했습니다. 우선순위를 분석하는 중…";
     setHTML("#priorityList", `<div class="empty-msg">${msg}</div>`);
     return;
   }
-  setHTML("#priorityList", S.rows.slice(0, 5).map(r => `
+  const scenario = SC[S.sc];
+  setHTML("#priorityList", scenario.order.slice(0, 5).map(r => `
     <button class="priority-item ${S.sel === r.id ? "selected" : ""}" onclick="selectOutage('${r.id}')">
       <span class="rank">${r.rank}</span>
       <span class="priority-main"><b>${r.region}</b><small>정전 ${r.pct}% · ${r.hosp}개 시설 · ${man(r.pop)}</small></span>
@@ -295,7 +344,7 @@ function renderSelected() {
   setText("#selectedTitle", r.region);
   setText("#selectedRank", S.analyzed ? `${r.rank}순위` : "분석 대기");
   setText("#selectedScore", S.analyzed ? Math.round(r.score) : r.pct + "%");
-  setText("#selectedScoreLbl", S.analyzed ? "우선순위 점수" : "정전 비율");
+  setText("#selectedScoreLbl", S.analyzed ? "시나리오 기준 점수" : "정전 비율");
   setText("#selectedPeople", man(r.pop));
   setText("#selectedFacilities", `${r.hosp}개소 (전체 ${r.totHosp})`);
   setText("#selectedTime", r.dur.toFixed(1) + "시간");
@@ -305,10 +354,13 @@ function renderSelected() {
   const el = $("#selectedScore"); if (el) el.style.color = LEVEL_COLOR[r.level];
 }
 
-function stackBar(p) {
-  if (!p) return "";
-  return `<div class="stackbar" title="인구 ${p.pop} · 의료 ${p.fac} · 고령 ${p.vul} · 정전비율 ${p.sev}">` +
-    ["pop", "fac", "vul", "sev"].map(k => `<i class="sb-${k}" style="width:${p[k]}%"></i>`).join("") + `</div>`;
+function stackBar(r) {
+  if (!r.parts) return "";
+  if (S.sc !== "A") {
+    return `<div class="stackbar" title="${scenarioDescription[S.sc]}"><i class="scenario-bar sc-${S.sc}" style="width:${r.score}%"></i></div>`;
+  }
+  return `<div class="stackbar" title="${scenarioDescription[S.sc]}">` +
+    ["pop", "fac", "vul", "sev"].map(k => `<i class="sb-${k}" style="width:${r.parts[k]}%"></i>`).join("") + `</div>`;
 }
 
 function renderTables() {
@@ -326,12 +378,12 @@ function renderTables() {
     <td>${r.hosp} / ${r.totHosp}</td><td>${r.dur.toFixed(1)}h</td><td class="why">${r.cause}</td></tr>`).join("") || empty(7));
 
   // 복구 우선순위
-  const list = S.analyzed ? R : by;
+  const list = S.analyzed ? SC[S.sc].order : by;
   setHTML("#rankTable", list.map(r => `
     <tr class="${cls(r)}" onclick="pickFromTable('${r.id}')">
       <td>${S.analyzed ? r.rank : "-"}</td><td><b>${r.region}</b></td>
       <td>${S.analyzed ? `<span class="lvl ${r.level}">${LEVEL_TXT[r.level]}</span>` : "-"}</td>
-      <td><b>${S.analyzed ? r.score.toFixed(1) : "-"}</b></td><td>${stackBar(r.parts)}</td>
+      <td><b>${S.analyzed ? r.score.toFixed(1) : "-"}</b></td><td>${stackBar(r)}</td>
       <td>${man(r.pop)}<br><small>정전 ${r.pct}%</small></td><td>${r.hosp}개소</td><td>${r.dur.toFixed(1)}h</td>
       <td class="why">${r.reason || "분석 대기 중"}</td></tr>`).join("") || empty(9));
 
@@ -491,20 +543,18 @@ function renderCurve() {
 }
 
 function renderStrategyBtns() {
-  setHTML("#strategyBtns", S.strategies.map(x =>
-    `<button data-st="${x.type}" class="${S.strategy === x.type ? "active" : ""}">${x.label}</button>`).join(""));
-  $$("#strategyBtns button").forEach(b => b.addEventListener("click", () => chooseStrategy(b.dataset.st)));
-  const st = S.strategies.find(x => x.type === S.strategy);
-  if (st) {
-    const w = st.weights;
-    setText("#strategyDesc", `현재 가중치: 영향 인구 ${Math.round(w.pop * 100)}% · 응급의료기관 ${Math.round(w.fac * 100)}% · 고령층 ${Math.round(w.vul * 100)}% · 정전 비율 ${Math.round(w.sev * 100)}%`);
-  }
+  setHTML("#strategyBtns", ["A", "B", "C"].map(k =>
+    `<button data-st="${k}" class="${S.sc === k ? "active" : ""}">${SC_NAME[k]}</button>`).join(""));
+  $$("#strategyBtns button").forEach(b => b.addEventListener("click", () => chooseScenario(b.dataset.st)));
+  setText("#strategyDesc", scenarioDescription[S.sc]);
 }
 
-function chooseStrategy(type) {
-  S.strategy = type;
+function chooseScenario(type) {
+  if (!SC_NAME[type]) return;
+  S.sc = type;
+  applyScenarioPriority();
   renderStrategyBtns();
-  if (S.outages.length) runAnalysis();
+  renderAll(false);
 }
 
 function renderAll(fit) {
@@ -522,7 +572,7 @@ function selectOutage(id) {
 }
 function pickFromTable(id) { selectOutage(id); }
 
-function goToScenarioDetail(k) { S.sc = k; renderSimDetail(); openTab("tab-scenario"); }
+function goToScenarioDetail(k) { chooseScenario(k); openTab("tab-scenario"); }
 
 function openTab(id) {
   $$(".nav-item").forEach(b => b.classList.toggle("active", b.dataset.tab === id));
@@ -539,7 +589,8 @@ function initMap() {
 
 function bind() {
   $$(".nav-item").forEach(b => b.addEventListener("click", () => openTab(b.dataset.tab)));
-  $$(".sc-tab").forEach(b => b.addEventListener("click", () => { S.sc = b.dataset.sc; renderSimDetail(); }));
+  $$(".sc-tab").forEach(b => b.addEventListener("click", () => chooseScenario(b.dataset.sc)));
+  $$("#priorityScenarioBtns button").forEach(b => b.addEventListener("click", () => chooseScenario(b.dataset.sc)));
   $$("#facSortBtns button").forEach(b => b.addEventListener("click", () => { S.facSort = b.dataset.fs; renderFacilities(); }));
   $("#facOnlyOutage").addEventListener("change", e => { S.facOnly = e.target.checked; renderFacilities(); });
   $$("#careSortBtns button").forEach(b => b.addEventListener("click", () => { S.careSort = b.dataset.fs; renderCareCenters(); }));
