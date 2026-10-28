@@ -4,7 +4,7 @@ import json
 import os
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-SOURCE = os.path.join(HERE, "보건복지부_노인돌봄서비스 기관 현황.csv")
+SOURCE = os.path.join(HERE, "보건복지부_노인돌봄서비스_기관_현황.csv")   # 파일명은 밑줄 버전으로 통일
 REGIONS = os.path.join(HERE, "..", "..", "backend", "data", "regions.csv")
 OUT = os.path.join(HERE, "..", "js", "care_centers.js")
 

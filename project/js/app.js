@@ -6,9 +6,9 @@ const LEVEL_COLOR = { critical: "#e11d48", high: "#f97316", mid: "#0284c7", low:
 const LEVEL_TXT = { critical: "긴급", high: "높음", mid: "보통", low: "낮음" };
 const SC_NAME = { A: "A. 사회적 피해 최소화", B: "B. 중요시설 우선", C: "C. 네트워크 효율 우선" };
 const SC_RULE = {
-  A: "우선순위 점수가 높은 구역부터 복구합니다.",
-  B: "정전 영향 응급의료기관이 많은 구역부터 복구합니다.",
-  C: "복구 소요시간이 짧은 구역부터 복구해 완료 구역 수를 빠르게 늘립니다."
+  A: "종합 우선순위 점수(인구·병원·고령층·정전비율 균형)가 높은 구역부터 복구합니다.",
+  B: "응급의료기관 가중치(50%)를 크게 둔 점수가 높은 구역부터 복구합니다.",
+  C: "복구 소요시간 가중치(55%)를 크게 둔 점수가 높은 구역, 즉 빨리 끝나는 구역부터 복구합니다."
 };
 const SC_COLOR = { A: "#e11d48", B: "#f97316", C: "#0284c7" };
 const CREWS = 10;                       // 복구반 수 (고정)
@@ -38,7 +38,7 @@ const setHTML = (s, v) => { const e = $(s); if (e) e.innerHTML = v; };
 const ratioLevel = r => r >= 0.7 ? "critical" : r >= 0.45 ? "high" : r >= 0.2 ? "mid" : "low";
 const SCORE_FACTORS = ["pop", "fac", "vul", "sev", "dur"];
 const SCORE_LABEL = {
-  pop: "영향 인구", fac: "응급의료기관", vul: "고령층", sev: "정전 비율", dur: "복구 소요시간"
+  pop: "영향 인구", fac: "응급의료기관", vul: "고령층(65~74세)", sev: "정전 비율", dur: "복구 소요시간"
 };
 const scenarioWeights = key => S.strategyMeta[key] || DEFAULT_STRATEGY_WEIGHTS[key];
 const scenarioDescription = key => {
@@ -169,63 +169,60 @@ function metrics(order, K) {
   return { D, F, M: Mk, sc };
 }
 
+// 시나리오 간 비교 점수 가중치 (인구 평균 정전시간 / 병원 평균 복구시간 / 전체 완료시간)
+const SCENARIO_W = { A: { p: .5, h: .3, m: .2 }, B: { p: .2, h: .6, m: .2 }, C: { p: .2, h: .2, m: .6 } };
+// 상대 점수 = 100 × (세 시나리오 중 가장 짧은 값 ÷ 내 값). 가장 좋은 안 = 100점, 나머지는 실제 격차만큼만 감점.
+// 예) 전체 완료시간이 최선 115.6h, 내 값 121.0h → 100 × 115.6 / 121.0 = 95.5점
+const relScore = (v, best) => (v <= 0 || best <= 0) ? 100 : Math.min(100, 100 * best / v);
+
+function scenarioComparison(out) {
+  const keys = ["A", "B", "C"];
+  const best = f => Math.min(...keys.map(k => out[k][f]));
+  const bestP = best("avgP"), bestH = best("avgH"), bestM = best("makespan");
+  keys.forEach(k => {
+    const w = SCENARIO_W[k], s = out[k];
+    s.w = w;
+    s.pScore = relScore(s.avgP, bestP);
+    s.hScore = relScore(s.avgH, bestH);
+    s.mScore = relScore(s.makespan, bestM);
+    s.raw = s.pScore * w.p + s.hScore * w.h + s.mScore * w.m;
+    s.score = Math.min(100, Math.max(0, s.raw));
+  });
+}
+
 function scenarios(rows) {
   if (!rows || !rows.length) return {};
   const K = S.crews;
-  const ord = {
-    A: [...rows].sort((a, b) => b.score - a.score || a.dur - b.dur),
-    B: [...rows].sort((a, b) => b.hosp - a.hosp || b.pop - a.pop),
-    C: [...rows].sort((a, b) => a.dur - b.dur || b.score - a.score)
-  };
   const totP = rows.reduce((s, r) => s + r.pop / 1e4, 0) || 1;
   const totH = rows.reduce((s, r) => s + r.hosp, 0) || 1;
-  const out = {};
   const maxHosp = Math.max(...rows.map(r => r.hosp), 0);
   const maxPop = Math.max(...rows.map(r => r.pop), 1);
   const maxVul = Math.max(...rows.map(r => r.vul), 1);
   const minDur = Math.min(...rows.map(r => r.dur));
   const maxDur = Math.max(...rows.map(r => r.dur), minDur);
   const durSpan = maxDur - minDur || 1;
-  for (const k in ord) {
-    const m = metrics(ord[k], K);
-    const scores = {}, parts = {};
-    for (const r of ord[k]) {
-      const weights = scenarioWeights(k);
+  const r1 = v => Math.round(v * 10) / 10;
+  const out = {};
+  for (const k of ["A", "B", "C"]) {
+    const w = scenarioWeights(k), scores = {}, parts = {};
+    for (const r of rows) {
       parts[r.id] = {
-        pop: Math.round(100 * weights.pop * r.pop / maxPop * 10) / 10,
-        fac: Math.round(100 * weights.fac * (maxHosp ? r.hosp / maxHosp : 0) * 10) / 10,
-        vul: Math.round(100 * weights.vul * r.vul / maxVul * 10) / 10,
-        sev: Math.round(100 * weights.sev * r.ratio * 10) / 10,
-        dur: Math.round(100 * weights.dur * (maxDur - r.dur) / durSpan * 10) / 10
+        pop: r1(100 * w.pop * r.pop / maxPop),
+        fac: r1(100 * w.fac * (maxHosp ? r.hosp / maxHosp : 0)),
+        vul: r1(100 * w.vul * r.vul / maxVul),
+        sev: r1(100 * w.sev * r.ratio),
+        dur: r1(100 * w.dur * (maxDur - r.dur) / durSpan)
       };
-      scores[r.id] = Math.round(SCORE_FACTORS.reduce((sum, factor) => sum + parts[r.id][factor], 0) * 10) / 10;
+      scores[r.id] = r1(SCORE_FACTORS.reduce((sum, f) => sum + parts[r.id][f], 0));
+      // A안은 백엔드(priority_engine.py)가 계산한 점수를 그대로 사용 → 서버 순위와 항상 일치
+      if (k === "A" && r.baseScore != null) { scores[r.id] = r.baseScore; parts[r.id] = r.baseParts; }
     }
-    out[k] = { k, order: ord[k], scores, parts, sc: m.sc, makespan: m.M, avgP: m.D / totP, avgH: m.F / totH };
+    // 복구 순서 = 시나리오 점수 내림차순 (동점이면 영향 인구 많은 곳, 그다음 복구시간 짧은 곳)
+    const order = [...rows].sort((a, b) => scores[b.id] - scores[a.id] || b.pop - a.pop || a.dur - b.dur);
+    const m = metrics(order, K);
+    out[k] = { k, order, scores, parts, sc: m.sc, makespan: m.M, avgP: m.D / totP, avgH: m.F / totH };
   }
-
-  // A, B, C 시나리오 간 상대적 성능 비교 정규화 (25.0점 하한선 고정 방지)
-  const pVals = Object.values(out).map(x => x.avgP);
-  const hVals = Object.values(out).map(x => x.avgH);
-  const mVals = Object.values(out).map(x => x.makespan);
-
-  const minP = Math.min(...pVals), maxP = Math.max(...pVals);
-  const minH = Math.min(...hVals), maxH = Math.max(...hVals);
-  const minM = Math.min(...mVals), maxM = Math.max(...mVals);
-
-  // 수치가 짧을수록 높은 점수 부여 (60점 ~ 98점 동적 분포)
-  const norm = (v, mn, mx) => Math.abs(mx - mn) < 0.01 ? 85 : 98 - ((v - mn) / (mx - mn)) * 38;
-
-  const W = { A: { p: .5, h: .3, m: .2 }, B: { p: .2, h: .6, m: .2 }, C: { p: .2, h: .2, m: .6 } };
-
-  for (const k in ord) {
-    const w = W[k];
-    const pScore = norm(out[k].avgP, minP, maxP);
-    const hScore = norm(out[k].avgH, minH, maxH);
-    const mScore = norm(out[k].makespan, minM, maxM);
-
-    const raw = (pScore * w.p) + (hScore * w.h) + (mScore * w.m);
-    out[k].score = Math.min(99.9, Math.max(10.0, raw));
-  }
+  scenarioComparison(out);
   out.totP = totP;
   return out;
 }
@@ -505,53 +502,36 @@ function renderSimDetail() {
 }
 
 function renderScenarioExplanation(k, s) {
-  if (!s || !SC.A) return;
-
-  const pVals = [SC.A.avgP, SC.B.avgP, SC.C.avgP];
-  const hVals = [SC.A.avgH, SC.B.avgH, SC.C.avgH];
-  const mVals = [SC.A.makespan, SC.B.makespan, SC.C.makespan];
-
-  const minP = Math.min(...pVals), maxP = Math.max(...pVals);
-  const minH = Math.min(...hVals), maxH = Math.max(...hVals);
-  const minM = Math.min(...mVals), maxM = Math.max(...mVals);
-
-  const norm = (v, mn, mx) => Math.abs(mx - mn) < 0.01 ? 85 : 98 - ((v - mn) / (mx - mn)) * 38;
-
-  const pScore = norm(s.avgP, minP, maxP);
-  const hScore = norm(s.avgH, minH, maxH);
-  const mScore = norm(s.makespan, minM, maxM);
-
-  const W = { A: { p: 0.5, h: 0.3, m: 0.2 }, B: { p: 0.2, h: 0.6, m: 0.2 }, C: { p: 0.2, h: 0.2, m: 0.6 } };
-  const w = W[k];
-  const raw = pScore * w.p + hScore * w.h + mScore * w.m;
-  const finalScore = Math.min(99.9, Math.max(10.0, raw));
-
+  if (!s || !s.w) return;
+  const w = s.w, finalScore = s.score;
   const reason = {
-    A: "사회적 피해 최소화를 위해 인구가 오래 정전되는 상황을 가장 중요하게 보고, 병원 영향과 전체 복구시간을 함께 반영합니다.",
+    A: "사회적 피해 최소화를 위해 인구가 오래 정전되는 상황을 가장 중요하게 보고(50%), 병원 영향과 전체 복구시간을 함께 반영합니다.",
     B: "응급의료기관의 복구를 가장 중요하게 보기 때문에 병원 평균 복구시간에 가장 높은 가중치(60%)를 적용합니다.",
     C: "전체 복구 완료시간을 가장 중요하게 보기 때문에 전체 복구시간 지표에 가장 높은 가중치(60%)를 적용합니다."
   };
-
   setText("#explainTitle", `${SC_NAME[k]} · 점수 산출 근거`);
-  setText("#explainSummary", `${reason[k]} 현재 이 시나리오의 최종 점수는 ${s.score.toFixed(1)}점입니다.`);
+  setText("#explainSummary", `${reason[k]} 이 점수는 A·B·C 세 시나리오끼리 비교한 상대 점수입니다(각 지표에서 가장 좋은 안이 100점이고, 나머지는 「가장 좋은 안의 값 ÷ 내 값 × 100」으로 계산합니다). 최종 점수는 ${s.score.toFixed(1)}점입니다.`);
   setText("#explainFormula", `최종점수 = 인구지표 × ${(w.p * 100).toFixed(0)}% + 의료기관지표 × ${(w.h * 100).toFixed(0)}% + 복구시간지표 × ${(w.m * 100).toFixed(0)}%`);
-  setText("#explainP", `${pScore.toFixed(1)}점`);
+  setText("#explainP", `${s.pScore.toFixed(1)}점`);
   setText("#explainPDetail", `인구 평균 정전시간 ${s.avgP.toFixed(1)}시간`);
-  setText("#explainH", `${hScore.toFixed(1)}점`);
+  setText("#explainH", `${s.hScore.toFixed(1)}점`);
   setText("#explainHDetail", `병원 평균 복구시간 ${s.avgH.toFixed(1)}시간`);
-  setText("#explainM", `${mScore.toFixed(1)}점`);
+  setText("#explainM", `${s.mScore.toFixed(1)}점`);
   setText("#explainMDetail", `전체 복구 완료 ${s.makespan.toFixed(1)}시간`);
-  setText("#explainCalculation", `(${pScore.toFixed(1)} × ${w.p.toFixed(2)}) + (${hScore.toFixed(1)} × ${w.h.toFixed(2)}) + (${mScore.toFixed(1)} × ${w.m.toFixed(2)}) = ${raw.toFixed(1)}점` + (raw !== finalScore ? ` → 최종 ${finalScore.toFixed(1)}점` : ""));
+  setText("#explainCalculation", `(${s.pScore.toFixed(1)} × ${w.p.toFixed(2)}) + (${s.hScore.toFixed(1)} × ${w.h.toFixed(2)}) + (${s.mScore.toFixed(1)} × ${w.m.toFixed(2)}) = ${s.raw.toFixed(1)}점` + (s.raw !== finalScore ? ` → 최종 ${finalScore.toFixed(1)}점` : ""));
   setText("#explainReason", reason[k]);
 }
 
 function renderCurve() {
   if (!SC || !SC.A) { setHTML("#impactChart", `<div class="empty-msg">분석 후 표시됩니다.</div>`); setText("#impactMax", "-"); setText("#impactNote", ""); return; }
   const maxT = Math.max(SC.A.makespan, SC.B.makespan, SC.C.makespan) || 1, tot = SC.totP;
-  const X0 = 44, X1 = 590, Y0 = 130, Y1 = 12, N = 60;
+  // 글자가 찌그러지지 않도록 실제 차트 너비를 그대로 viewBox 로 사용한다
+  const holder = $("#impactChart");
+  const W = Math.max(320, (holder && holder.clientWidth ? holder.clientWidth - 24 : 0) || 600), H = 180;
+  const X0 = 58, X1 = W - 14, Y1 = 10, Y0 = 140;
   const px = t => X0 + (t / maxT) * (X1 - X0), py = v => Y0 - (v / tot) * (Y0 - Y1);
   const line = k => {
-    const s = SC[k], pts = [];
+    const s = SC[k], pts = [], N = 60;
     for (let i = 0; i <= N; i++) {
       const t = maxT * i / N;
       const rem = s.order.reduce((a, r) => a + (s.sc[r.id].f > t ? r.pop / 1e4 : 0), 0);
@@ -559,12 +539,27 @@ function renderCurve() {
     }
     return `<polyline fill="none" stroke="${SC_COLOR[k]}" stroke-width="2.2" points="${pts.join(" ")}"/>`;
   };
-  setHTML("#impactChart", `<svg viewBox="0 0 600 150" preserveAspectRatio="none">
-    <line x1="${X0}" y1="${Y0}" x2="${X1}" y2="${Y0}" stroke="#cbd5e1"/><line x1="${X0}" y1="${Y1}" x2="${X0}" y2="${Y0}" stroke="#cbd5e1"/>
-    <text x="${X0 - 6}" y="${Y1 + 4}" font-size="10" fill="#64748b" text-anchor="end">${tot.toFixed(0)}</text>
-    <text x="${X0 - 6}" y="${Y0 + 3}" font-size="10" fill="#64748b" text-anchor="end">0</text>
-    <text x="${X0}" y="146" font-size="10" fill="#64748b">0h</text>
-    <text x="${X1}" y="146" font-size="10" fill="#64748b" text-anchor="end">${maxT.toFixed(0)}h</text>
+  // X축 눈금: 전체 시간을 약 6칸으로 나누되 6·12·24시간처럼 읽기 쉬운 간격 사용
+  const step = [1, 2, 3, 6, 12, 24, 48, 72, 96, 120, 240].find(s => s >= maxT / 6) || 240;
+  let xTicks = "";
+  for (let t = 0; t <= maxT + 0.001; t += step) {
+    xTicks += `<line x1="${px(t)}" y1="${Y0}" x2="${px(t)}" y2="${Y0 + 4}" stroke="#94a3b8"/>` +
+      `<text x="${px(t)}" y="${Y0 + 16}" font-size="10" fill="#64748b" text-anchor="middle">${t}</text>`;
+  }
+  // Y축 눈금: 0~총 영향 인구를 4등분 (가로 격자선 포함)
+  const fmtY = v => v === 0 ? "0" : v >= 10 ? Math.round(v).toLocaleString() : v.toFixed(1);
+  let yTicks = "";
+  for (let i = 0; i <= 4; i++) {
+    const v = tot * i / 4, y = py(v);
+    yTicks += `<line x1="${X0}" y1="${y}" x2="${X1}" y2="${y}" stroke="${i === 0 ? "#cbd5e1" : "#eef2f7"}"/>` +
+      `<line x1="${X0 - 4}" y1="${y}" x2="${X0}" y2="${y}" stroke="#94a3b8"/>` +
+      `<text x="${X0 - 7}" y="${y + 3}" font-size="10" fill="#64748b" text-anchor="end">${fmtY(v)}</text>`;
+  }
+  setHTML("#impactChart", `<svg viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" style="height:${H}px">
+    ${yTicks}${xTicks}
+    <line x1="${X0}" y1="${Y1}" x2="${X0}" y2="${Y0}" stroke="#cbd5e1"/>
+    <text x="${(X0 + X1) / 2}" y="${H - 6}" font-size="11" fill="#475569" text-anchor="middle">경과 시간 (시간)</text>
+    <text transform="rotate(-90 12 ${(Y0 + Y1) / 2})" x="12" y="${(Y0 + Y1) / 2 + 4}" font-size="11" fill="#475569" text-anchor="middle">잔여 영향 인구 (만 명)</text>
     ${line("A")}${line("B")}${line("C")}</svg>`);
   setText("#impactMax", man(tot * 1e4));
   setText("#impactNote", `${REC}안 기준 ${SC[REC].makespan.toFixed(1)}시간 후 전체 복구`);
@@ -579,7 +574,7 @@ function renderStrategyBtns() {
     .map(name => `${SCORE_LABEL[name]} ${(Number(weights[name] || 0) * 100).toFixed(1).replace(/\.0$/, "")}%`).join(" · ");
   const legend = SCORE_FACTORS.filter(name => Number(weights[name] || 0) > 0)
     .map(name => `<span><i class="sb-${name}"></i>${SCORE_LABEL[name]}</span>`).join("");
-  setHTML("#strategyDesc", `<span>${SC_RULE[S.sc]} 현재 가중치: ${weightText}.</span><span class="score-legend">${legend}</span>`);
+  setHTML("#strategyDesc", `<span>현재 가중치: ${weightText}.</span><span class="score-legend">${legend}</span>`);
   setText("#strategyDescWeights", "");
 }
 
@@ -654,6 +649,9 @@ function bind() {
     }
   });
 }
+
+let _curveTimer;
+window.addEventListener("resize", () => { clearTimeout(_curveTimer); _curveTimer = setTimeout(() => { try { renderCurve(); } catch (e) {} }, 150); });
 
 window.addEventListener("DOMContentLoaded", () => {
   bind(); initMap(); renderAll(false);
