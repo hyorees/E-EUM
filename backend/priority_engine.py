@@ -4,7 +4,7 @@
 점수(0~100) = 100 × Σ (가중치 × 정규화 값)
   pop : 정전 영향 인구            (최대 구역 대비)
   fac : 정전 영향 응급의료기관 수 (최대 구역 대비)
-  vul : 정전 영향 65세 이상 인구  (최대 구역 대비)
+  vul : 정전 영향 65~74세 인구    (최대 구역 대비, 75세 이상은 원본에 없음)
   sev : 정전 비율                 (구역 내 정전 비중, 0~1)
   dur : 예상 복구 소요시간         (짧을수록 점수 상승, 구간 정규화)
 """
@@ -15,7 +15,7 @@ STRATEGIES = {   # 복구 시나리오(A/B/C)와 같은 이름·순서를 사용
     "EFFICIENCY":        {"label": "C. 네트워크 효율 우선", "w": {"pop": 0.15, "fac": 0.10, "vul": 0.10, "sev": 0.10, "dur": 0.55}},
 }
 DEFAULT_STRATEGY = "MIN_DAMAGE"
-LABEL = {"pop": "영향 인구", "fac": "응급의료기관", "vul": "고령층(65세+)", "sev": "정전 비율", "dur": "복구 소요시간"}
+LABEL = {"pop": "영향 인구", "fac": "응급의료기관", "vul": "고령층(65~74세)", "sev": "정전 비율", "dur": "복구 소요시간"}
 
 
 def _normalize(w):
@@ -79,7 +79,7 @@ def calculate_priority(outages: list, strategy: str = DEFAULT_STRATEGY, weights:
         it["reason"] = (
             f"{it['region_name']}: 정전 비율 {it['outage_ratio']*100:.0f}%로 영향 인구 {_man(it['affected_population'])}"
             f"(전체의 {it['affected_population']/total_pop*100:.1f}%), 응급의료기관 {it['hospitals_affected']}곳, "
-            f"65세 이상 {_man(it['vulnerable_affected'])}이 영향을 받습니다. "
+            f"65~74세 {_man(it['vulnerable_affected'])}이 영향을 받습니다. "
             f"점수 {it['priority_score']}점 중 '{LABEL[top]}' 기여가 {it['score_parts'][top]}점으로 가장 큽니다."
         )
 
@@ -91,6 +91,6 @@ def calculate_priority(outages: list, strategy: str = DEFAULT_STRATEGY, weights:
         "total_affected_population": total_pop,
         "top10_share": round(top10 / total_pop * 100, 1),
         "zones": n,
-        "strategy_weights": w # 전략 가중치를 프론트엔드로 전달
+        "strategy_weights": w,
     }
     return {"strategy": strategy, "strategy_label": STRATEGIES[strategy]["label"], "weights": w, "items": scored, "summary": summary}

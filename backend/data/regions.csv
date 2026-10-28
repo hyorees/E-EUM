@@ -1,231 +1,231 @@
 ﻿id,sido,sigungu,full_name,type,region_group,lat,lng,pop,pop65,pop65_ratio,hosp,pop_source,hosp_source,pop65_source
-1,서울특별시,강남구,서울 강남구,구,수도권,37.49495,127.05164,551907,58413,0.10583848365757274,5,resident_population_2026-09,hospitals.csv,real_age_65_plus_from_ingu_cva
-2,서울특별시,강동구,서울 강동구,구,수도권,37.53946,127.14677,497709,65326,0.131253403092972,3,resident_population_2026-09,hospitals.csv,real_age_65_plus_from_ingu_cva
-3,서울특별시,강북구,서울 강북구,구,수도권,37.63372,127.02579,277307,43303,0.15615545226049107,3,resident_population_2026-09,hospitals.csv,real_age_65_plus_from_ingu_cva
-4,서울특별시,강서구,서울 강서구,구,수도권,37.55355,126.83683,547960,16142,0.02945835462442514,6,resident_population_2026-09,hospitals.csv,real_age_65_plus_from_ingu_cva
-5,서울특별시,관악구,서울 관악구,구,수도권,37.48279,126.93931,477073,54178,0.11356333307481245,4,resident_population_2026-09,hospitals.csv,real_age_65_plus_from_ingu_cva
-6,서울특별시,광진구,서울 광진구,구,수도권,37.53808,127.07786,330589,39276,0.11880613087549798,2,resident_population_2026-09,hospitals.csv,real_age_65_plus_from_ingu_cva
-7,서울특별시,구로구,서울 구로구,구,수도권,37.49588,126.87555,382163,52947,0.1385455944191353,2,resident_population_2026-09,hospitals.csv,real_age_65_plus_from_ingu_cva
-8,서울특별시,금천구,서울 금천구,구,수도권,37.45567,126.90056,222430,31683,0.14244031830238726,1,resident_population_2026-09,hospitals.csv,real_age_65_plus_from_ingu_cva
-9,서울특별시,노원구,서울 노원구,구,수도권,37.63795,127.07194,479643,64281,0.1340184262044896,3,resident_population_2026-09,hospitals.csv,real_age_65_plus_from_ingu_cva
-10,서울특별시,도봉구,서울 도봉구,구,수도권,37.64612,127.02902,297772,48172,0.16177478070470025,1,resident_population_2026-09,hospitals.csv,real_age_65_plus_from_ingu_cva
-11,서울특별시,동대문구,서울 동대문구,구,수도권,37.58536,127.0496,353511,43908,0.1242054702682519,4,resident_population_2026-09,hospitals.csv,real_age_65_plus_from_ingu_cva
-12,서울특별시,동작구,서울 동작구,구,수도권,37.49445,126.95544,370341,44339,0.11972479417617816,3,resident_population_2026-09,hospitals.csv,real_age_65_plus_from_ingu_cva
-13,서울특별시,마포구,서울 마포구,구,수도권,37.55259,126.93373,355806,36251,0.10188417283575882,1,resident_population_2026-09,hospitals.csv,real_age_65_plus_from_ingu_cva
-14,서울특별시,서대문구,서울 서대문구,구,수도권,37.57161,126.93871,299254,36127,0.12072353251752692,2,resident_population_2026-09,hospitals.csv,real_age_65_plus_from_ingu_cva
-15,서울특별시,서초구,서울 서초구,구,수도권,37.49025,127.00906,420794,44237,0.10512744953587741,3,resident_population_2026-09,hospitals.csv,real_age_65_plus_from_ingu_cva
-16,서울특별시,성동구,서울 성동구,구,수도권,37.56253,127.03645,274047,32560,0.11881173667290647,2,resident_population_2026-09,hospitals.csv,real_age_65_plus_from_ingu_cva
-17,서울특별시,성북구,서울 성북구,구,수도권,37.58716,127.02647,420993,51712,0.12283339627974812,1,resident_population_2026-09,hospitals.csv,real_age_65_plus_from_ingu_cva
-18,서울특별시,송파구,서울 송파구,구,수도권,37.50844,127.10867,648138,78661,0.12136458593694553,3,resident_population_2026-09,hospitals.csv,real_age_65_plus_from_ingu_cva
-19,서울특별시,양천구,서울 양천구,구,수도권,37.52567,126.861,419688,55014,0.13108309029564819,3,resident_population_2026-09,hospitals.csv,real_age_65_plus_from_ingu_cva
-20,서울특별시,영등포구,서울 영등포구,구,수도권,37.51108,126.9083,371156,42842,0.1154285529534751,9,resident_population_2026-09,hospitals.csv,real_age_65_plus_from_ingu_cva
-21,서울특별시,용산구,서울 용산구,구,수도권,37.53384,127.00442,199192,23485,0.11790132133820636,1,resident_population_2026-09,hospitals.csv,real_age_65_plus_from_ingu_cva
-22,서울특별시,은평구,서울 은평구,구,수도권,37.61847,126.91926,452390,61543,0.1360397002586264,4,resident_population_2026-09,hospitals.csv,real_age_65_plus_from_ingu_cva
-23,서울특별시,종로구,서울 종로구,구,수도권,37.57422,126.97776,135842,17855,0.13143946643895113,5,resident_population_2026-09,hospitals.csv,real_age_65_plus_from_ingu_cva
-24,서울특별시,중구,서울 중구,구,수도권,37.56734,127.0058,117205,30635,0.2613796339746598,1,resident_population_2026-09,hospitals.csv,real_age_65_plus_from_ingu_cva
-25,서울특별시,중랑구,서울 중랑구,구,수도권,37.59906,127.09773,376951,56314,0.1493934224872729,3,resident_population_2026-09,hospitals.csv,real_age_65_plus_from_ingu_cva
-26,전남광주통합특별시,강진군,전남광주 강진군,군,광주·전남 권역,34.63682,126.7579,31574,6372,0.20181161715335402,1,resident_population_2026-09,hospitals.csv,real_age_65_plus_from_ingu_cva
-27,전남광주통합특별시,고흥군,전남광주 고흥군,군,광주·전남 권역,34.58329,127.21971,59034,13357,0.22625944371040418,2,resident_population_2026-09,hospitals.csv,real_age_65_plus_from_ingu_cva
-28,전남광주통합특별시,곡성군,전남광주 곡성군,군,광주·전남 권역,35.27628,127.28798,27725,5715,0.206131650135257,1,resident_population_2026-09,hospitals.csv,real_age_65_plus_from_ingu_cva
-29,전남광주통합특별시,광산구,전남광주 광산구,구,광주·전남 권역,35.18019,126.82314,382461,32919,0.08607152101782926,9,resident_population_2026-09,hospitals.csv,real_age_65_plus_from_ingu_cva
-30,전남광주통합특별시,광양시,전남광주 광양시,시,광주·전남 권역,34.94703,127.69375,156147,17749,0.11366853029517057,2,resident_population_2026-09,hospitals.csv,real_age_65_plus_from_ingu_cva
-31,전남광주통합특별시,구례군,전남광주 구례군,군,광주·전남 권역,35.2159,127.46406,24653,5100,0.20687137468056627,1,resident_population_2026-09,hospitals.csv,real_age_65_plus_from_ingu_cva
-32,전남광주통합특별시,나주시,전남광주 나주시,시,광주·전남 권역,35.0303,126.76009,116743,16659,0.14269806326717663,2,resident_population_2026-09,hospitals.csv,real_age_65_plus_from_ingu_cva
-33,전남광주통합특별시,남구,전남광주 남구,구,광주·전남 권역,35.12974,126.90381,204825,39357,0.19214939582570487,3,resident_population_2026-09,hospitals.csv,real_age_65_plus_from_ingu_cva
-34,전남광주통합특별시,담양군,전남광주 담양군,군,광주·전남 권역,35.31525,126.98263,43778,8811,0.20126547580976747,1,resident_population_2026-09,hospitals.csv,real_age_65_plus_from_ingu_cva
-35,전남광주통합특별시,동구,전남광주 동구,구,광주·전남 권역,35.1402,126.92421,105222,21943,0.20854003915530972,2,resident_population_2026-09,hospitals.csv,real_age_65_plus_from_ingu_cva
-36,전남광주통합특별시,목포시,전남광주 목포시,시,광주·전남 권역,34.8111,126.40877,198797,27769,0.13968520651720095,5,resident_population_2026-09,hospitals.csv,real_age_65_plus_from_ingu_cva
-37,전남광주통합특별시,무안군,전남광주 무안군,군,광주·전남 권역,34.99176,126.48926,95516,11500,0.12039867666150174,1,resident_population_2026-09,hospitals.csv,real_age_65_plus_from_ingu_cva
-38,전남광주통합특별시,보성군,전남광주 보성군,군,광주·전남 권역,34.80466,127.22501,38243,8126,0.2124833302826661,2,resident_population_2026-09,hospitals.csv,real_age_65_plus_from_ingu_cva
-39,전남광주통합특별시,북구,전남광주 북구,구,광주·전남 권역,35.18742,126.89579,416528,20989,0.05039036991510775,6,resident_population_2026-09,hospitals.csv,real_age_65_plus_from_ingu_cva
-40,전남광주통합특별시,서구,전남광주 서구,구,광주·전남 권역,35.14555,126.86589,274282,53770,0.1960391130296556,4,resident_population_2026-09,hospitals.csv,real_age_65_plus_from_ingu_cva
-41,전남광주통합특별시,순천시,전남광주 순천시,시,광주·전남 권역,34.95589,127.51175,273175,34829,0.12749702571611604,6,resident_population_2026-09,hospitals.csv,real_age_65_plus_from_ingu_cva
-42,전남광주통합특별시,신안군,전남광주 신안군,군,광주·전남 권역,34.72226,125.93257,42373,8677,0.20477662662544546,1,resident_population_2026-09,hospitals.csv,real_age_65_plus_from_ingu_cva
-43,전남광주통합특별시,여수시,전남광주 여수시,시,광주·전남 권역,34.7604,127.6802,259570,39956,0.1539315020996263,4,resident_population_2026-09,hospitals.csv,real_age_65_plus_from_ingu_cva
-44,전남광주통합특별시,영광군,전남광주 영광군,군,광주·전남 권역,35.27957,126.50491,53608,8991,0.16771750485002238,2,resident_population_2026-09,hospitals.csv,real_age_65_plus_from_ingu_cva
-45,전남광주통합특별시,영암군,전남광주 영암군,군,광주·전남 권역,34.79434,126.70117,49943,8507,0.1703341809663016,1,resident_population_2026-09,hospitals.csv,real_age_65_plus_from_ingu_cva
-46,전남광주통합특별시,완도군,전남광주 완도군,군,광주·전남 권역,34.28132,126.77875,44029,8547,0.1941220559176906,3,resident_population_2026-09,hospitals.csv,real_age_65_plus_from_ingu_cva
-47,전남광주통합특별시,장성군,전남광주 장성군,군,광주·전남 권역,35.30587,126.78362,43103,7962,0.18472032109133935,1,resident_population_2026-09,hospitals.csv,real_age_65_plus_from_ingu_cva
-48,전남광주통합특별시,장흥군,전남광주 장흥군,군,광주·전남 권역,34.67782,126.91102,33845,6778,0.2002659181563008,2,resident_population_2026-09,hospitals.csv,real_age_65_plus_from_ingu_cva
-49,전남광주통합특별시,진도군,전남광주 진도군,군,광주·전남 권역,34.48085,126.26462,27764,5456,0.196513470681458,2,resident_population_2026-09,hospitals.csv,real_age_65_plus_from_ingu_cva
-50,전남광주통합특별시,함평군,전남광주 함평군,군,광주·전남 권역,35.06189,126.51981,29851,6291,0.21074670865297646,1,resident_population_2026-09,hospitals.csv,real_age_65_plus_from_ingu_cva
-51,전남광주통합특별시,해남군,전남광주 해남군,군,광주·전남 권역,34.57789,126.62963,61816,12452,0.20143652128898668,2,resident_population_2026-09,hospitals.csv,real_age_65_plus_from_ingu_cva
-52,전남광주통합특별시,화순군,전남광주 화순군,군,광주·전남 권역,35.05769,126.99387,59793,10297,0.17221079390564112,3,resident_population_2026-09,hospitals.csv,real_age_65_plus_from_ingu_cva
-53,부산광역시,강서구,부산 강서구,구,부산 권역,35.212,128.981,155165,16142,0.1040311926014243,0,resident_population_2026-09,none,real_age_65_plus_from_ingu_cva
-54,부산광역시,금정구,부산 금정구,구,부산 권역,35.21442,129.10408,205257,36140,0.1760719488251314,1,resident_population_2026-09,hospitals.csv,real_age_65_plus_from_ingu_cva
-55,부산광역시,기장군,부산 기장군,군,부산 권역,35.27894,129.23041,175577,22507,0.12818877187786556,2,resident_population_2026-09,hospitals.csv,real_age_65_plus_from_ingu_cva
-56,부산광역시,남구,부산 남구,구,부산 권역,35.11046,129.10919,254990,39357,0.15434722930310993,1,resident_population_2026-09,hospitals.csv,real_age_65_plus_from_ingu_cva
-57,부산광역시,동구,부산 동구,구,부산 권역,35.13298,129.05221,82988,21943,0.2644117221767002,4,resident_population_2026-09,hospitals.csv,real_age_65_plus_from_ingu_cva
-58,부산광역시,동래구,부산 동래구,구,부산 권역,35.20105,129.08893,270259,40031,0.1481208766405559,4,resident_population_2026-09,hospitals.csv,real_age_65_plus_from_ingu_cva
-59,부산광역시,부산진구,부산 부산진구,구,부산 권역,35.15532,129.05146,363992,54250,0.14904173718103694,4,resident_population_2026-09,hospitals.csv,real_age_65_plus_from_ingu_cva
-60,부산광역시,북구,부산 북구,구,부산 권역,35.21907,129.0082,260063,20989,0.08070736706105829,3,resident_population_2026-09,hospitals.csv,real_age_65_plus_from_ingu_cva
-61,부산광역시,사상구,부산 사상구,구,부산 권역,35.15503,128.99977,191631,35315,0.18428646722085676,3,resident_population_2026-09,hospitals.csv,real_age_65_plus_from_ingu_cva
-62,부산광역시,사하구,부산 사하구,구,부산 권역,35.10387,128.97389,280853,49652,0.17678999334171258,1,resident_population_2026-09,hospitals.csv,real_age_65_plus_from_ingu_cva
-63,부산광역시,서구,부산 서구,구,부산 권역,35.10328,129.01582,100738,53770,0.5337608449641644,4,resident_population_2026-09,hospitals.csv,real_age_65_plus_from_ingu_cva
-64,부산광역시,수영구,부산 수영구,구,부산 권역,35.15919,129.11276,169566,27203,0.1604272082846797,3,resident_population_2026-09,hospitals.csv,real_age_65_plus_from_ingu_cva
-65,부산광역시,연제구,부산 연제구,구,부산 권역,35.18492,129.0688,211692,31916,0.15076620750902253,2,resident_population_2026-09,hospitals.csv,real_age_65_plus_from_ingu_cva
-66,부산광역시,영도구,부산 영도구,구,부산 권역,35.09211,129.0422,99959,20595,0.2060344741343951,2,resident_population_2026-09,hospitals.csv,real_age_65_plus_from_ingu_cva
-67,부산광역시,중구,부산 중구,구,부산 권역,35.10758,129.03246,36010,30635,0.8507359066925854,1,resident_population_2026-09,hospitals.csv,real_age_65_plus_from_ingu_cva
-68,부산광역시,해운대구,부산 해운대구,구,부산 권역,35.17339,129.1531,369448,55261,0.14957720707650332,3,resident_population_2026-09,hospitals.csv,real_age_65_plus_from_ingu_cva
-69,대구광역시,군위군,대구 군위군,군,대구·경북 권역,36.239,128.573,22432,6136,0.2735378031383737,0,resident_population_2026-09,none,real_age_65_plus_from_ingu_cva
-70,대구광역시,남구,대구 남구,구,대구·경북 권역,35.8423,128.57633,141804,39357,0.27754506219852754,4,resident_population_2026-09,hospitals.csv,real_age_65_plus_from_ingu_cva
-71,대구광역시,달서구,대구 달서구,구,대구·경북 권역,35.83466,128.53286,512374,71577,0.13969678398981994,6,resident_population_2026-09,hospitals.csv,real_age_65_plus_from_ingu_cva
-72,대구광역시,달성군,대구 달성군,군,대구·경북 권역,35.69331,128.47044,251589,30993,0.12318901064831929,1,resident_population_2026-09,hospitals.csv,real_age_65_plus_from_ingu_cva
-73,대구광역시,동구,대구 동구,구,대구·경북 권역,35.87847,128.63416,338592,21943,0.06480661090634156,3,resident_population_2026-09,hospitals.csv,real_age_65_plus_from_ingu_cva
-74,대구광역시,북구,대구 북구,구,대구·경북 권역,35.94548,128.55683,406186,20989,0.05167337131264987,2,resident_population_2026-09,hospitals.csv,real_age_65_plus_from_ingu_cva
-75,대구광역시,서구,대구 서구,구,대구·경북 권역,35.86508,128.56058,163197,53770,0.3294790958167123,4,resident_population_2026-09,hospitals.csv,real_age_65_plus_from_ingu_cva
-76,대구광역시,수성구,대구 수성구,구,대구·경북 권역,35.84023,128.70573,407572,50493,0.12388731316184624,1,resident_population_2026-09,hospitals.csv,real_age_65_plus_from_ingu_cva
-77,대구광역시,중구,대구 중구,구,대구·경북 권역,35.86957,128.59522,102082,30635,0.3001018788816833,4,resident_population_2026-09,hospitals.csv,real_age_65_plus_from_ingu_cva
-78,인천광역시,강화군,인천 강화군,군,수도권,37.73605,126.48571,69469,16254,0.2339748664872101,1,resident_population_2026-09,hospitals.csv,real_age_65_plus_from_ingu_cva
-79,인천광역시,검단구,인천 검단구,구,수도권,37.59761,126.66267,277639,22455,0.0808784068520633,2,resident_population_2026-09,hospitals.csv,real_age_65_plus_from_ingu_cva
-80,인천광역시,계양구,인천 계양구,구,수도권,37.53324,126.73115,275766,40293,0.14611300885533388,3,resident_population_2026-09,hospitals.csv,real_age_65_plus_from_ingu_cva
-81,인천광역시,남동구,인천 남동구,구,수도권,37.43955,126.70569,478372,66150,0.1382815047703461,3,resident_population_2026-09,hospitals.csv,real_age_65_plus_from_ingu_cva
-82,인천광역시,미추홀구,인천 미추홀구,구,수도권,37.45988,126.65788,419583,56351,0.13430239070696381,3,resident_population_2026-09,hospitals.csv,real_age_65_plus_from_ingu_cva
-83,인천광역시,부평구,인천 부평구,구,수도권,37.48925,126.73266,487060,66452,0.13643493614749722,3,resident_population_2026-09,hospitals.csv,real_age_65_plus_from_ingu_cva
-84,인천광역시,서해구,인천 서해구,구,수도권,37.51347,126.67751,392114,44986,0.11472683964357304,3,resident_population_2026-09,hospitals.csv,real_age_65_plus_from_ingu_cva
-85,인천광역시,연수구,인천 연수구,구,수도권,37.41316,126.68006,410511,41147,0.1002336112796003,2,resident_population_2026-09,hospitals.csv,real_age_65_plus_from_ingu_cva
-86,인천광역시,영종구,인천 영종구,구,수도권,37.48847,126.56467,139382,11113,0.07973052474494555,1,resident_population_2026-09,hospitals.csv,real_age_65_plus_from_ingu_cva
-87,인천광역시,옹진군,인천 옹진군,군,수도권,37.96802,124.72111,19258,4426,0.22982656558313427,1,resident_population_2026-09,hospitals.csv,real_age_65_plus_from_ingu_cva
-88,인천광역시,제물포구,인천 제물포구,구,수도권,37.47144,126.64527,99174,17220,0.17363421864601608,4,resident_population_2026-09,hospitals.csv,real_age_65_plus_from_ingu_cva
-89,대전광역시,대덕구,대전 대덕구,구,충청 권역,36.40776,127.43395,163274,24804,0.15191641045114349,2,resident_population_2026-09,hospitals.csv,real_age_65_plus_from_ingu_cva
-90,대전광역시,동구,대전 동구,구,충청 권역,36.33866,127.43747,217857,21943,0.10072203326034967,2,resident_population_2026-09,hospitals.csv,real_age_65_plus_from_ingu_cva
-91,대전광역시,서구,대전 서구,구,충청 권역,36.32336,127.36506,464189,53770,0.11583643731324957,3,resident_population_2026-09,hospitals.csv,real_age_65_plus_from_ingu_cva
-92,대전광역시,유성구,대전 유성구,구,충청 권역,36.37535,127.32491,374328,35109,0.09379207539911522,1,resident_population_2026-09,hospitals.csv,real_age_65_plus_from_ingu_cva
-93,대전광역시,중구,대전 중구,구,충청 권역,36.32532,127.41528,223474,30635,0.1370852985134736,3,resident_population_2026-09,hospitals.csv,real_age_65_plus_from_ingu_cva
-94,울산광역시,남구,울산 남구,구,부산 권역,35.54288,129.30478,304783,39357,0.12913121794850763,5,resident_population_2026-09,hospitals.csv,real_age_65_plus_from_ingu_cva
-95,울산광역시,동구,울산 동구,구,부산 권역,35.52006,129.4288,147352,21943,0.14891552201531028,1,resident_population_2026-09,hospitals.csv,real_age_65_plus_from_ingu_cva
-96,울산광역시,북구,울산 북구,구,부산 권역,35.60588,129.35484,213305,20989,0.09839900611800005,2,resident_population_2026-09,hospitals.csv,real_age_65_plus_from_ingu_cva
-97,울산광역시,울주군,울산 울주군,군,부산 권역,35.49096,129.20957,218207,31742,0.14546737730686918,2,resident_population_2026-09,hospitals.csv,real_age_65_plus_from_ingu_cva
-98,울산광역시,중구,울산 중구,구,부산 권역,35.55951,129.3278,202430,30635,0.15133626438768957,3,resident_population_2026-09,hospitals.csv,real_age_65_plus_from_ingu_cva
-99,세종특별자치시,세종시,세종 세종시,시,충청 권역,36.49957,127.2601,390585,32303,0.08270414890484785,2,resident_population_2026-09,hospitals.csv,real_age_65_plus_from_ingu_cva
-100,경기도,가평군,경기 가평군,군,수도권,37.69105,127.52141,61954,13275,0.21427187913613327,1,resident_population_2026-09,hospitals.csv,real_age_65_plus_from_ingu_cva
-101,경기도,고양시,경기 고양시,시,수도권,37.65769,126.7943,1056532,125939,0.11920036496764888,8,resident_population_2026-09,hospitals.csv,real_age_65_plus_from_ingu_cva
-102,경기도,과천시,경기 과천시,시,수도권,37.429,126.988,81031,8323,0.10271377620910516,0,resident_population_2026-09,none,real_age_65_plus_from_ingu_cva
-103,경기도,광명시,경기 광명시,시,수도권,37.44903,126.87892,303707,37246,0.12263793722238868,2,resident_population_2026-09,hospitals.csv,real_age_65_plus_from_ingu_cva
-104,경기도,광주시,경기 광주시,시,수도권,37.41095,127.26022,401476,51912,0.1293028724008409,1,resident_population_2026-09,hospitals.csv,real_age_65_plus_from_ingu_cva
-105,경기도,구리시,경기 구리시,시,수도권,37.60324,127.13606,188155,24196,0.12859610427573012,2,resident_population_2026-09,hospitals.csv,real_age_65_plus_from_ingu_cva
-106,경기도,군포시,경기 군포시,시,수도권,37.35922,126.94033,248959,33178,0.13326692346932628,2,resident_population_2026-09,hospitals.csv,real_age_65_plus_from_ingu_cva
-107,경기도,김포시,경기 김포시,시,수도권,37.63674,126.68538,483599,52832,0.1092475377327083,2,resident_population_2026-09,hospitals.csv,real_age_65_plus_from_ingu_cva
-108,경기도,남양주시,경기 남양주시,시,수도권,37.66973,127.21358,727066,87908,0.12090786806149648,5,resident_population_2026-09,hospitals.csv,real_age_65_plus_from_ingu_cva
-109,경기도,동두천시,경기 동두천시,시,수도권,37.90888,127.05398,86135,13755,0.1596911824461601,1,resident_population_2026-09,hospitals.csv,real_age_65_plus_from_ingu_cva
-110,경기도,부천시,경기 부천시,시,수도권,37.50075,126.78413,753731,108141,0.143474263364516,5,resident_population_2026-09,hospitals.csv,real_age_65_plus_from_ingu_cva
-111,경기도,성남시,경기 성남시,시,수도권,37.41767,127.13779,899160,109501,0.12178144045553628,9,resident_population_2026-09,hospitals.csv,real_age_65_plus_from_ingu_cva
-112,경기도,수원시,경기 수원시,시,수도권,37.26779,127.01621,1186308,122406,0.1031823101589132,9,resident_population_2026-09,hospitals.csv,real_age_65_plus_from_ingu_cva
-113,경기도,시흥시,경기 시흥시,시,수도권,37.37697,126.75135,515633,50778,0.09847701756869712,3,resident_population_2026-09,hospitals.csv,real_age_65_plus_from_ingu_cva
-114,경기도,안산시,경기 안산시,시,수도권,37.32156,126.83501,608343,72611,0.11935865128718502,7,resident_population_2026-09,hospitals.csv,real_age_65_plus_from_ingu_cva
-115,경기도,안성시,경기 안성시,시,수도권,37.01174,127.26559,199288,27881,0.13990305487535626,2,resident_population_2026-09,hospitals.csv,real_age_65_plus_from_ingu_cva
-116,경기도,안양시,경기 안양시,시,수도권,37.38788,126.94058,562140,71346,0.12691856121250933,3,resident_population_2026-09,hospitals.csv,real_age_65_plus_from_ingu_cva
-117,경기도,양주시,경기 양주시,시,수도권,37.83756,127.06464,298139,35086,0.11768336245845058,1,resident_population_2026-09,hospitals.csv,real_age_65_plus_from_ingu_cva
-118,경기도,양평군,경기 양평군,군,수도권,37.49396,127.50347,127019,26585,0.2092993961533314,1,resident_population_2026-09,hospitals.csv,real_age_65_plus_from_ingu_cva
-119,경기도,여주시,경기 여주시,시,수도권,37.2956,127.6298,113202,20698,0.18284129255666862,2,resident_population_2026-09,hospitals.csv,real_age_65_plus_from_ingu_cva
-120,경기도,연천군,경기 연천군,군,수도권,38.02374,127.06124,43195,8554,0.1980321796504225,1,resident_population_2026-09,hospitals.csv,real_age_65_plus_from_ingu_cva
-121,경기도,오산시,경기 오산시,시,수도권,37.14123,127.07534,255729,22306,0.08722514849704179,1,resident_population_2026-09,hospitals.csv,real_age_65_plus_from_ingu_cva
-122,경기도,용인시,경기 용인시,시,수도권,37.25098,127.17713,1090103,110704,0.10155370639288214,5,resident_population_2026-09,hospitals.csv,real_age_65_plus_from_ingu_cva
-123,경기도,의왕시,경기 의왕시,시,수도권,37.345,126.968,167093,22095,0.13223175118048033,0,resident_population_2026-09,none,real_age_65_plus_from_ingu_cva
-124,경기도,의정부시,경기 의정부시,시,수도권,37.74938,127.05562,462008,59306,0.128365742584544,5,resident_population_2026-09,hospitals.csv,real_age_65_plus_from_ingu_cva
-125,경기도,이천시,경기 이천시,시,수도권,37.27821,127.44153,227007,28112,0.12383759091129348,2,resident_population_2026-09,hospitals.csv,real_age_65_plus_from_ingu_cva
-126,경기도,파주시,경기 파주시,시,수도권,37.80779,126.77967,536640,56913,0.10605433810375671,4,resident_population_2026-09,hospitals.csv,real_age_65_plus_from_ingu_cva
-127,경기도,평택시,경기 평택시,시,수도권,37.01888,127.05536,624536,59318,0.0949793126417052,6,resident_population_2026-09,hospitals.csv,real_age_65_plus_from_ingu_cva
-128,경기도,포천시,경기 포천시,시,수도권,37.86538,127.17323,140366,25991,0.1851659233717567,2,resident_population_2026-09,hospitals.csv,real_age_65_plus_from_ingu_cva
-129,경기도,하남시,경기 하남시,시,수도권,37.539,127.215,327373,37189,0.11359825031386217,0,resident_population_2026-09,none,real_age_65_plus_from_ingu_cva
-130,경기도,화성시,경기 화성시,시,수도권,37.19392,126.95777,1001559,80445,0.08031978146070276,4,resident_population_2026-09,hospitals.csv,real_age_65_plus_from_ingu_cva
-131,강원특별자치도,강릉시,강원 강릉시,시,강원 권역,37.78069,128.88455,205547,34364,0.16718317465105303,3,resident_population_2026-09,hospitals.csv,real_age_65_plus_from_ingu_cva
-132,강원특별자치도,고성군,강원 고성군,군,강원 권역,38.38,128.468,27203,10360,0.38084034849097526,0,resident_population_2026-09,none,real_age_65_plus_from_ingu_cva
-133,강원특별자치도,동해시,강원 동해시,시,강원 권역,37.53116,129.10663,85445,14065,0.1646088126865235,2,resident_population_2026-09,hospitals.csv,real_age_65_plus_from_ingu_cva
-134,강원특별자치도,삼척시,강원 삼척시,시,강원 권역,37.44028,129.1637,60057,11436,0.19041910185323943,1,resident_population_2026-09,hospitals.csv,real_age_65_plus_from_ingu_cva
-135,강원특별자치도,속초시,강원 속초시,시,강원 권역,38.20712,128.58375,78735,13206,0.16772718613069157,2,resident_population_2026-09,hospitals.csv,real_age_65_plus_from_ingu_cva
-136,강원특별자치도,양구군,강원 양구군,군,강원 권역,38.10478,127.9912,20322,3536,0.17399862218285603,1,resident_population_2026-09,hospitals.csv,real_age_65_plus_from_ingu_cva
-137,강원특별자치도,양양군,강원 양양군,군,강원 권역,38.075,128.619,27321,5863,0.21459683027707624,0,resident_population_2026-09,none,real_age_65_plus_from_ingu_cva
-138,강원특별자치도,영월군,강원 영월군,군,강원 권역,37.18659,128.46531,35570,8337,0.23438290694405398,1,resident_population_2026-09,hospitals.csv,real_age_65_plus_from_ingu_cva
-139,강원특별자치도,원주시,강원 원주시,시,강원 권역,37.34192,127.94954,365634,49187,0.1345252356181318,3,resident_population_2026-09,hospitals.csv,real_age_65_plus_from_ingu_cva
-140,강원특별자치도,인제군,강원 인제군,군,강원 권역,38.07,128.17,30636,5507,0.17975584279932105,0,resident_population_2026-09,none,real_age_65_plus_from_ingu_cva
-141,강원특별자치도,정선군,강원 정선군,군,강원 권역,37.38292,128.65842,35137,7899,0.2248057603096451,1,resident_population_2026-09,hospitals.csv,real_age_65_plus_from_ingu_cva
-142,강원특별자치도,철원군,강원 철원군,군,강원 권역,38.15033,127.30803,39593,6849,0.17298512363296542,1,resident_population_2026-09,hospitals.csv,real_age_65_plus_from_ingu_cva
-143,강원특별자치도,춘천시,강원 춘천시,시,강원 권역,37.88012,127.73709,284801,40250,0.14132675095944186,3,resident_population_2026-09,hospitals.csv,real_age_65_plus_from_ingu_cva
-144,강원특별자치도,태백시,강원 태백시,시,강원 권역,37.10404,129.00429,36642,7250,0.19786037880028381,1,resident_population_2026-09,hospitals.csv,real_age_65_plus_from_ingu_cva
-145,강원특별자치도,평창군,강원 평창군,군,강원 권역,37.36058,128.38905,39854,9504,0.2384704170221308,1,resident_population_2026-09,hospitals.csv,real_age_65_plus_from_ingu_cva
-146,강원특별자치도,홍천군,강원 홍천군,군,강원 권역,37.69082,127.89491,65764,15161,0.2305364637187519,1,resident_population_2026-09,hospitals.csv,real_age_65_plus_from_ingu_cva
-147,강원특별자치도,화천군,강원 화천군,군,강원 권역,38.10738,127.70888,23023,4130,0.1793858315597446,1,resident_population_2026-09,hospitals.csv,real_age_65_plus_from_ingu_cva
-148,강원특별자치도,횡성군,강원 횡성군,군,강원 권역,37.47846,127.97995,45417,11400,0.2510073320562785,1,resident_population_2026-09,hospitals.csv,real_age_65_plus_from_ingu_cva
-149,충청북도,괴산군,충북 괴산군,군,충청 권역,36.81544,127.78425,37074,9654,0.26039812267357176,1,resident_population_2026-09,hospitals.csv,real_age_65_plus_from_ingu_cva
-150,충청북도,단양군,충북 단양군,군,충청 권역,36.98454,128.36668,26457,6752,0.25520656159050537,1,resident_population_2026-09,hospitals.csv,real_age_65_plus_from_ingu_cva
-151,충청북도,보은군,충북 보은군,군,충청 권역,36.48327,127.71821,31566,7662,0.24272951910283216,1,resident_population_2026-09,hospitals.csv,real_age_65_plus_from_ingu_cva
-152,충청북도,영동군,충북 영동군,군,충청 권역,36.18523,127.78083,43080,9972,0.23147632311977717,1,resident_population_2026-09,hospitals.csv,real_age_65_plus_from_ingu_cva
-153,충청북도,옥천군,충북 옥천군,군,충청 권역,36.31335,127.57198,50775,10997,0.21658296405711472,1,resident_population_2026-09,hospitals.csv,real_age_65_plus_from_ingu_cva
-154,충청북도,음성군,충북 음성군,군,충청 권역,36.9976,127.59853,96203,16510,0.1716162697628972,1,resident_population_2026-09,hospitals.csv,real_age_65_plus_from_ingu_cva
-155,충청북도,제천시,충북 제천시,시,충청 권역,37.15079,128.2201,127880,23663,0.18504066312167658,2,resident_population_2026-09,hospitals.csv,real_age_65_plus_from_ingu_cva
-156,충청북도,증평군,충북 증평군,군,충청 권역,36.785,127.581,36769,5416,0.1472979955941146,0,resident_population_2026-09,none,real_age_65_plus_from_ingu_cva
-157,충청북도,진천군,충북 진천군,군,충청 권역,36.85849,127.44051,85620,11404,0.1331931791637468,1,resident_population_2026-09,hospitals.csv,real_age_65_plus_from_ingu_cva
-158,충청북도,청주시,충북 청주시,시,충청 권역,36.63451,127.45184,860937,100455,0.11668101150258381,8,resident_population_2026-09,hospitals.csv,real_age_65_plus_from_ingu_cva
-159,충청북도,충주시,충북 충주시,시,충청 권역,36.97966,127.94231,205581,33606,0.16346841390984576,3,resident_population_2026-09,hospitals.csv,real_age_65_plus_from_ingu_cva
-160,충청남도,계룡시,충남 계룡시,시,충청 권역,36.274,127.249,45915,5130,0.1117281934008494,0,resident_population_2026-09,none,real_age_65_plus_from_ingu_cva
-161,충청남도,공주시,충남 공주시,시,충청 권역,36.45905,127.10922,99424,19248,0.19359510782104924,1,resident_population_2026-09,hospitals.csv,real_age_65_plus_from_ingu_cva
-162,충청남도,금산군,충남 금산군,군,충청 권역,36.10403,127.4962,48684,10631,0.21836743077807905,1,resident_population_2026-09,hospitals.csv,real_age_65_plus_from_ingu_cva
-163,충청남도,논산시,충남 논산시,시,충청 권역,36.1925,127.09437,105661,20226,0.1914235148257162,1,resident_population_2026-09,hospitals.csv,real_age_65_plus_from_ingu_cva
-164,충청남도,당진시,충남 당진시,시,충청 권역,36.9044,126.68436,172300,22983,0.13338943702843878,1,resident_population_2026-09,hospitals.csv,real_age_65_plus_from_ingu_cva
-165,충청남도,보령시,충남 보령시,시,충청 권역,36.38114,126.62283,90916,17497,0.1924523736196049,1,resident_population_2026-09,hospitals.csv,real_age_65_plus_from_ingu_cva
-166,충청남도,부여군,충남 부여군,군,충청 권역,36.27555,126.9017,57473,13453,0.23407513093104587,1,resident_population_2026-09,hospitals.csv,real_age_65_plus_from_ingu_cva
-167,충청남도,서산시,충남 서산시,시,충청 권역,36.77829,126.48429,170634,23675,0.13874726021777606,2,resident_population_2026-09,hospitals.csv,real_age_65_plus_from_ingu_cva
-168,충청남도,서천군,충남 서천군,군,충청 권역,36.08449,126.68758,46519,10615,0.2281863324663041,1,resident_population_2026-09,hospitals.csv,real_age_65_plus_from_ingu_cva
-169,충청남도,아산시,충남 아산시,시,충청 권역,36.78121,127.01046,366594,35942,0.09804306671685843,2,resident_population_2026-09,hospitals.csv,real_age_65_plus_from_ingu_cva
-170,충청남도,예산군,충남 예산군,군,충청 권역,36.70242,126.83614,78010,15907,0.20390975515959492,2,resident_population_2026-09,hospitals.csv,real_age_65_plus_from_ingu_cva
-171,충청남도,천안시,충남 천안시,시,충청 권역,36.80452,127.15511,666700,68060,0.10208489575521223,4,resident_population_2026-09,hospitals.csv,real_age_65_plus_from_ingu_cva
-172,충청남도,청양군,충남 청양군,군,충청 권역,36.4553,126.80456,29998,6855,0.2285152343489566,1,resident_population_2026-09,hospitals.csv,real_age_65_plus_from_ingu_cva
-173,충청남도,태안군,충남 태안군,군,충청 권역,36.75191,126.32321,58804,13074,0.22233181416230188,1,resident_population_2026-09,hospitals.csv,real_age_65_plus_from_ingu_cva
-174,충청남도,홍성군,충남 홍성군,군,충청 권역,36.59934,126.67441,101926,15994,0.15691776386790415,1,resident_population_2026-09,hospitals.csv,real_age_65_plus_from_ingu_cva
-175,전북특별자치도,고창군,전북 고창군,군,전북 권역,35.43645,126.69332,49996,10194,0.20389631170493638,1,resident_population_2026-09,hospitals.csv,real_age_65_plus_from_ingu_cva
-176,전북특별자치도,군산시,전북 군산시,시,전북 권역,35.96619,126.72455,255575,37566,0.14698620757116307,2,resident_population_2026-09,hospitals.csv,real_age_65_plus_from_ingu_cva
-177,전북특별자치도,김제시,전북 김제시,시,전북 권역,35.80674,126.8797,81522,15308,0.18777753244522952,1,resident_population_2026-09,hospitals.csv,real_age_65_plus_from_ingu_cva
-178,전북특별자치도,남원시,전북 남원시,시,전북 권역,35.4319,127.40719,73452,13286,0.1808800304961063,1,resident_population_2026-09,hospitals.csv,real_age_65_plus_from_ingu_cva
-179,전북특별자치도,무주군,전북 무주군,군,전북 권역,36.00586,127.6717,23499,4922,0.2094557215200647,1,resident_population_2026-09,hospitals.csv,real_age_65_plus_from_ingu_cva
-180,전북특별자치도,부안군,전북 부안군,군,전북 권역,35.72482,126.73453,46950,9711,0.20683706070287539,1,resident_population_2026-09,hospitals.csv,real_age_65_plus_from_ingu_cva
-181,전북특별자치도,순창군,전북 순창군,군,전북 권역,35.36704,127.14367,27666,5407,0.19543844429986265,1,resident_population_2026-09,hospitals.csv,real_age_65_plus_from_ingu_cva
-182,전북특별자치도,완주군,전북 완주군,군,전북 권역,35.905,127.162,100719,15705,0.15592887141452955,0,resident_population_2026-09,none,real_age_65_plus_from_ingu_cva
-183,전북특별자치도,익산시,전북 익산시,시,전북 권역,35.96296,126.9629,266458,40581,0.1522979231248452,2,resident_population_2026-09,hospitals.csv,real_age_65_plus_from_ingu_cva
-184,전북특별자치도,임실군,전북 임실군,군,전북 권역,35.6125,127.28698,25344,5462,0.2155145202020202,1,resident_population_2026-09,hospitals.csv,real_age_65_plus_from_ingu_cva
-185,전북특별자치도,장수군,전북 장수군,군,전북 권역,35.65466,127.52014,21183,4558,0.21517254402114905,1,resident_population_2026-09,hospitals.csv,real_age_65_plus_from_ingu_cva
-186,전북특별자치도,전주시,전북 전주시,시,전북 권역,35.83209,127.14256,618328,74579,0.12061397834159217,7,resident_population_2026-09,hospitals.csv,real_age_65_plus_from_ingu_cva
-187,전북특별자치도,정읍시,전북 정읍시,시,전북 권역,35.58899,126.82346,100531,17534,0.17441386239070536,1,resident_population_2026-09,hospitals.csv,real_age_65_plus_from_ingu_cva
-188,전북특별자치도,진안군,전북 진안군,군,전북 권역,35.79519,127.43207,25006,5557,0.22222666560025595,1,resident_population_2026-09,hospitals.csv,real_age_65_plus_from_ingu_cva
-189,경상북도,경산시,경북 경산시,시,대구·경북 권역,35.81752,128.73878,262849,35971,0.13685043504065073,2,resident_population_2026-09,hospitals.csv,real_age_65_plus_from_ingu_cva
-190,경상북도,경주시,경북 경주시,시,대구·경북 권역,35.85193,129.20317,242405,42374,0.17480662527588128,2,resident_population_2026-09,hospitals.csv,real_age_65_plus_from_ingu_cva
-191,경상북도,고령군,경북 고령군,군,대구·경북 권역,35.72996,128.27201,29374,6891,0.23459522026281746,1,resident_population_2026-09,hospitals.csv,real_age_65_plus_from_ingu_cva
-192,경상북도,구미시,경북 구미시,시,대구·경북 권역,36.10453,128.38206,402657,41012,0.10185343853453435,3,resident_population_2026-09,hospitals.csv,real_age_65_plus_from_ingu_cva
-193,경상북도,김천시,경북 김천시,시,대구·경북 권역,36.12892,128.12266,132274,22843,0.17269455826541874,2,resident_population_2026-09,hospitals.csv,real_age_65_plus_from_ingu_cva
-194,경상북도,문경시,경북 문경시,시,대구·경북 권역,36.58482,128.18977,64669,13752,0.21265212079976495,1,resident_population_2026-09,hospitals.csv,real_age_65_plus_from_ingu_cva
-195,경상북도,봉화군,경북 봉화군,군,대구·경북 권역,36.89171,128.7335,28013,7081,0.2527754970906365,1,resident_population_2026-09,hospitals.csv,real_age_65_plus_from_ingu_cva
-196,경상북도,상주시,경북 상주시,시,대구·경북 권역,36.41747,128.15767,88825,18919,0.21299183788347875,2,resident_population_2026-09,hospitals.csv,real_age_65_plus_from_ingu_cva
-197,경상북도,성주군,경북 성주군,군,대구·경북 권역,35.91869,128.2867,40246,9979,0.24795010684291607,1,resident_population_2026-09,hospitals.csv,real_age_65_plus_from_ingu_cva
-198,경상북도,안동시,경북 안동시,시,대구·경북 권역,36.56077,128.71852,151366,26093,0.17238349431180053,3,resident_population_2026-09,hospitals.csv,real_age_65_plus_from_ingu_cva
-199,경상북도,영덕군,경북 영덕군,군,대구·경북 권역,36.52465,129.4023,32477,7566,0.23296486744465314,1,resident_population_2026-09,hospitals.csv,real_age_65_plus_from_ingu_cva
-200,경상북도,영양군,경북 영양군,군,대구·경북 권역,36.66258,129.11731,15960,3723,0.23327067669172932,1,resident_population_2026-09,hospitals.csv,real_age_65_plus_from_ingu_cva
-201,경상북도,영주시,경북 영주시,시,대구·경북 권역,36.82212,128.61025,96133,18554,0.19300344314647416,3,resident_population_2026-09,hospitals.csv,real_age_65_plus_from_ingu_cva
-202,경상북도,영천시,경북 영천시,시,대구·경북 권역,35.95732,128.91305,93387,19361,0.20732007667020036,1,resident_population_2026-09,hospitals.csv,real_age_65_plus_from_ingu_cva
-203,경상북도,예천군,경북 예천군,군,대구·경북 권역,36.65742,128.4589,53256,9870,0.18533123028391169,1,resident_population_2026-09,hospitals.csv,real_age_65_plus_from_ingu_cva
-204,경상북도,울릉군,경북 울릉군,군,대구·경북 권역,37.48589,130.89948,8724,1759,0.20162769371847777,1,resident_population_2026-09,hospitals.csv,real_age_65_plus_from_ingu_cva
-205,경상북도,울진군,경북 울진군,군,대구·경북 권역,36.99265,129.40949,46382,8700,0.1875727652968824,1,resident_population_2026-09,hospitals.csv,real_age_65_plus_from_ingu_cva
-206,경상북도,의성군,경북 의성군,군,대구·경북 권역,36.38926,128.43429,47861,12601,0.26328325776728445,1,resident_population_2026-09,hospitals.csv,real_age_65_plus_from_ingu_cva
-207,경상북도,청도군,경북 청도군,군,대구·경북 권역,35.64871,128.73711,39954,10400,0.26029934424588275,1,resident_population_2026-09,hospitals.csv,real_age_65_plus_from_ingu_cva
-208,경상북도,청송군,경북 청송군,군,대구·경북 권역,36.43104,129.05266,24618,5867,0.23832155333495816,1,resident_population_2026-09,hospitals.csv,real_age_65_plus_from_ingu_cva
-209,경상북도,칠곡군,경북 칠곡군,군,대구·경북 권역,35.995,128.402,103288,14367,0.13909650685462008,0,resident_population_2026-09,none,real_age_65_plus_from_ingu_cva
-210,경상북도,포항시,경북 포항시,시,대구·경북 권역,36.0303,129.35096,486788,78316,0.16088317707092203,5,resident_population_2026-09,hospitals.csv,real_age_65_plus_from_ingu_cva
-211,경상남도,거제시,경남 거제시,시,부산 권역,34.88128,128.66398,228629,27780,0.12150689545070835,3,resident_population_2026-09,hospitals.csv,real_age_65_plus_from_ingu_cva
-212,경상남도,거창군,경남 거창군,군,부산 권역,35.6868,127.90877,58712,10910,0.18582231911704591,1,resident_population_2026-09,hospitals.csv,real_age_65_plus_from_ingu_cva
-213,경상남도,고성군,경남 고성군,군,부산 권역,34.97394,128.32575,46662,10360,0.222022202220222,2,resident_population_2026-09,hospitals.csv,real_age_65_plus_from_ingu_cva
-214,경상남도,김해시,경남 김해시,시,부산 권역,35.22391,128.84938,533161,60303,0.11310467194712291,5,resident_population_2026-09,hospitals.csv,real_age_65_plus_from_ingu_cva
-215,경상남도,남해군,경남 남해군,군,부산 권역,34.84641,127.89425,41032,9011,0.21960908559173328,1,resident_population_2026-09,hospitals.csv,real_age_65_plus_from_ingu_cva
-216,경상남도,밀양시,경남 밀양시,시,부산 권역,35.44883,128.73857,98171,21673,0.22076784386427764,3,resident_population_2026-09,hospitals.csv,real_age_65_plus_from_ingu_cva
-217,경상남도,사천시,경남 사천시,시,부산 권역,34.98426,128.08204,107862,17006,0.15766442305909403,3,resident_population_2026-09,hospitals.csv,real_age_65_plus_from_ingu_cva
-218,경상남도,산청군,경남 산청군,군,부산 권역,35.41605,127.8842,32608,8092,0.24815996074582924,1,resident_population_2026-09,hospitals.csv,real_age_65_plus_from_ingu_cva
-219,경상남도,양산시,경남 양산시,시,부산 권역,35.35359,129.05731,360962,46413,0.12858140192042375,4,resident_population_2026-09,hospitals.csv,real_age_65_plus_from_ingu_cva
-220,경상남도,의령군,경남 의령군,군,부산 권역,35.31861,128.25868,24520,5929,0.2418026101141925,1,resident_population_2026-09,hospitals.csv,real_age_65_plus_from_ingu_cva
-221,경상남도,진주시,경남 진주시,시,부산 권역,35.179,128.09359,333850,46115,0.13813089710948032,8,resident_population_2026-09,hospitals.csv,real_age_65_plus_from_ingu_cva
-222,경상남도,창녕군,경남 창녕군,군,부산 권역,35.54215,128.49341,54046,12523,0.23171002479369426,1,resident_population_2026-09,hospitals.csv,real_age_65_plus_from_ingu_cva
-223,경상남도,창원시,경남 창원시,시,부산 권역,35.21228,128.62183,984721,140875,0.14306082636604683,10,resident_population_2026-09,hospitals.csv,real_age_65_plus_from_ingu_cva
-224,경상남도,통영시,경남 통영시,시,부산 권역,34.86536,128.42065,115838,20397,0.1760821146773943,1,resident_population_2026-09,hospitals.csv,real_age_65_plus_from_ingu_cva
-225,경상남도,하동군,경남 하동군,군,부산 권역,35.07144,127.75323,39524,9431,0.23861451270114362,1,resident_population_2026-09,hospitals.csv,real_age_65_plus_from_ingu_cva
-226,경상남도,함안군,경남 함안군,군,부산 권역,35.30898,128.51554,56522,11549,0.20432751848837621,1,resident_population_2026-09,hospitals.csv,real_age_65_plus_from_ingu_cva
-227,경상남도,함양군,경남 함양군,군,부산 권역,35.52047,127.72925,35036,7709,0.2200308254366937,1,resident_population_2026-09,hospitals.csv,real_age_65_plus_from_ingu_cva
-228,경상남도,합천군,경남 합천군,군,부산 권역,35.56636,128.16327,38693,9676,0.25007107228697695,1,resident_population_2026-09,hospitals.csv,real_age_65_plus_from_ingu_cva
-229,제주특별자치도,서귀포시,제주 서귀포시,시,제주 권역,33.25535,126.5642,178294,25211,0.14140128103020852,1,resident_population_2026-09,hospitals.csv,real_age_65_plus_from_ingu_cva
-230,제주특별자치도,제주시,제주 제주시,시,제주 권역,33.4892,126.51283,484079,54907,0.11342570117687402,5,resident_population_2026-09,hospitals.csv,real_age_65_plus_from_ingu_cva
+1,서울특별시,강남구,서울 강남구,구,수도권,37.49495,127.05164,551907,58413,0.105838,5,resident_population_2026-09,hospitals.csv,ingu_age_65_74_sum
+2,서울특별시,강동구,서울 강동구,구,수도권,37.53946,127.14677,497709,65326,0.131253,3,resident_population_2026-09,hospitals.csv,ingu_age_65_74_sum
+3,서울특별시,강북구,서울 강북구,구,수도권,37.63372,127.02579,277307,43303,0.156155,3,resident_population_2026-09,hospitals.csv,ingu_age_65_74_sum
+4,서울특별시,강서구,서울 강서구,구,수도권,37.55355,126.83683,547960,72375,0.132081,6,resident_population_2026-09,hospitals.csv,ingu_age_65_74_sum
+5,서울특별시,관악구,서울 관악구,구,수도권,37.48279,126.93931,477073,54178,0.113563,4,resident_population_2026-09,hospitals.csv,ingu_age_65_74_sum
+6,서울특별시,광진구,서울 광진구,구,수도권,37.53808,127.07786,330589,39276,0.118806,2,resident_population_2026-09,hospitals.csv,ingu_age_65_74_sum
+7,서울특별시,구로구,서울 구로구,구,수도권,37.49588,126.87555,382163,52947,0.138546,2,resident_population_2026-09,hospitals.csv,ingu_age_65_74_sum
+8,서울특별시,금천구,서울 금천구,구,수도권,37.45567,126.90056,222430,31683,0.14244,1,resident_population_2026-09,hospitals.csv,ingu_age_65_74_sum
+9,서울특별시,노원구,서울 노원구,구,수도권,37.63795,127.07194,479643,64281,0.134018,3,resident_population_2026-09,hospitals.csv,ingu_age_65_74_sum
+10,서울특별시,도봉구,서울 도봉구,구,수도권,37.64612,127.02902,297772,48172,0.161775,1,resident_population_2026-09,hospitals.csv,ingu_age_65_74_sum
+11,서울특별시,동대문구,서울 동대문구,구,수도권,37.58536,127.0496,353511,43908,0.124205,4,resident_population_2026-09,hospitals.csv,ingu_age_65_74_sum
+12,서울특별시,동작구,서울 동작구,구,수도권,37.49445,126.95544,370341,44339,0.119725,3,resident_population_2026-09,hospitals.csv,ingu_age_65_74_sum
+13,서울특별시,마포구,서울 마포구,구,수도권,37.55259,126.93373,355806,36251,0.101884,1,resident_population_2026-09,hospitals.csv,ingu_age_65_74_sum
+14,서울특별시,서대문구,서울 서대문구,구,수도권,37.57161,126.93871,299254,36127,0.120724,2,resident_population_2026-09,hospitals.csv,ingu_age_65_74_sum
+15,서울특별시,서초구,서울 서초구,구,수도권,37.49025,127.00906,420794,44237,0.105127,3,resident_population_2026-09,hospitals.csv,ingu_age_65_74_sum
+16,서울특별시,성동구,서울 성동구,구,수도권,37.56253,127.03645,274047,32560,0.118812,2,resident_population_2026-09,hospitals.csv,ingu_age_65_74_sum
+17,서울특별시,성북구,서울 성북구,구,수도권,37.58716,127.02647,420993,51712,0.122833,1,resident_population_2026-09,hospitals.csv,ingu_age_65_74_sum
+18,서울특별시,송파구,서울 송파구,구,수도권,37.50844,127.10867,648138,78661,0.121365,3,resident_population_2026-09,hospitals.csv,ingu_age_65_74_sum
+19,서울특별시,양천구,서울 양천구,구,수도권,37.52567,126.861,419688,55014,0.131083,3,resident_population_2026-09,hospitals.csv,ingu_age_65_74_sum
+20,서울특별시,영등포구,서울 영등포구,구,수도권,37.51108,126.9083,371156,42842,0.115429,9,resident_population_2026-09,hospitals.csv,ingu_age_65_74_sum
+21,서울특별시,용산구,서울 용산구,구,수도권,37.53384,127.00442,199192,23485,0.117901,1,resident_population_2026-09,hospitals.csv,ingu_age_65_74_sum
+22,서울특별시,은평구,서울 은평구,구,수도권,37.61847,126.91926,452390,61543,0.13604,4,resident_population_2026-09,hospitals.csv,ingu_age_65_74_sum
+23,서울특별시,종로구,서울 종로구,구,수도권,37.57422,126.97776,135842,17855,0.131439,5,resident_population_2026-09,hospitals.csv,ingu_age_65_74_sum
+24,서울특별시,중구,서울 중구,구,수도권,37.56734,127.0058,117205,15965,0.136214,1,resident_population_2026-09,hospitals.csv,ingu_age_65_74_sum
+25,서울특별시,중랑구,서울 중랑구,구,수도권,37.59906,127.09773,376951,56314,0.149393,3,resident_population_2026-09,hospitals.csv,ingu_age_65_74_sum
+26,전남광주통합특별시,강진군,전남광주 강진군,군,광주·전남 권역,34.63682,126.7579,31574,6372,0.201812,1,resident_population_2026-09,hospitals.csv,ingu_age_65_74_sum
+27,전남광주통합특별시,고흥군,전남광주 고흥군,군,광주·전남 권역,34.58329,127.21971,59034,13357,0.226259,2,resident_population_2026-09,hospitals.csv,ingu_age_65_74_sum
+28,전남광주통합특별시,곡성군,전남광주 곡성군,군,광주·전남 권역,35.27628,127.28798,27725,5715,0.206132,1,resident_population_2026-09,hospitals.csv,ingu_age_65_74_sum
+29,전남광주통합특별시,광산구,전남광주 광산구,구,광주·전남 권역,35.18019,126.82314,382461,32919,0.086072,9,resident_population_2026-09,hospitals.csv,ingu_age_65_74_sum
+30,전남광주통합특별시,광양시,전남광주 광양시,시,광주·전남 권역,34.94703,127.69375,156147,17749,0.113669,2,resident_population_2026-09,hospitals.csv,ingu_age_65_74_sum
+31,전남광주통합특별시,구례군,전남광주 구례군,군,광주·전남 권역,35.2159,127.46406,24653,5100,0.206871,1,resident_population_2026-09,hospitals.csv,ingu_age_65_74_sum
+32,전남광주통합특별시,나주시,전남광주 나주시,시,광주·전남 권역,35.0303,126.76009,116743,16659,0.142698,2,resident_population_2026-09,hospitals.csv,ingu_age_65_74_sum
+33,전남광주통합특별시,남구,전남광주 남구,구,광주·전남 권역,35.12974,126.90381,204825,27077,0.132196,3,resident_population_2026-09,hospitals.csv,ingu_age_65_74_sum
+34,전남광주통합특별시,담양군,전남광주 담양군,군,광주·전남 권역,35.31525,126.98263,43778,8811,0.201265,1,resident_population_2026-09,hospitals.csv,ingu_age_65_74_sum
+35,전남광주통합특별시,동구,전남광주 동구,구,광주·전남 권역,35.1402,126.92421,105222,14192,0.134877,2,resident_population_2026-09,hospitals.csv,ingu_age_65_74_sum
+36,전남광주통합특별시,목포시,전남광주 목포시,시,광주·전남 권역,34.8111,126.40877,198797,27769,0.139685,5,resident_population_2026-09,hospitals.csv,ingu_age_65_74_sum
+37,전남광주통합특별시,무안군,전남광주 무안군,군,광주·전남 권역,34.99176,126.48926,95516,11500,0.120399,1,resident_population_2026-09,hospitals.csv,ingu_age_65_74_sum
+38,전남광주통합특별시,보성군,전남광주 보성군,군,광주·전남 권역,34.80466,127.22501,38243,8126,0.212483,2,resident_population_2026-09,hospitals.csv,ingu_age_65_74_sum
+39,전남광주통합특별시,북구,전남광주 북구,구,광주·전남 권역,35.18742,126.89579,416528,52390,0.125778,6,resident_population_2026-09,hospitals.csv,ingu_age_65_74_sum
+40,전남광주통합특별시,서구,전남광주 서구,구,광주·전남 권역,35.14555,126.86589,274282,32948,0.120125,4,resident_population_2026-09,hospitals.csv,ingu_age_65_74_sum
+41,전남광주통합특별시,순천시,전남광주 순천시,시,광주·전남 권역,34.95589,127.51175,273175,34829,0.127497,6,resident_population_2026-09,hospitals.csv,ingu_age_65_74_sum
+42,전남광주통합특별시,신안군,전남광주 신안군,군,광주·전남 권역,34.72226,125.93257,42373,8677,0.204777,1,resident_population_2026-09,hospitals.csv,ingu_age_65_74_sum
+43,전남광주통합특별시,여수시,전남광주 여수시,시,광주·전남 권역,34.7604,127.6802,259570,39956,0.153932,4,resident_population_2026-09,hospitals.csv,ingu_age_65_74_sum
+44,전남광주통합특별시,영광군,전남광주 영광군,군,광주·전남 권역,35.27957,126.50491,53608,8991,0.167718,2,resident_population_2026-09,hospitals.csv,ingu_age_65_74_sum
+45,전남광주통합특별시,영암군,전남광주 영암군,군,광주·전남 권역,34.79434,126.70117,49943,8507,0.170334,1,resident_population_2026-09,hospitals.csv,ingu_age_65_74_sum
+46,전남광주통합특별시,완도군,전남광주 완도군,군,광주·전남 권역,34.28132,126.77875,44029,8547,0.194122,3,resident_population_2026-09,hospitals.csv,ingu_age_65_74_sum
+47,전남광주통합특별시,장성군,전남광주 장성군,군,광주·전남 권역,35.30587,126.78362,43103,7962,0.18472,1,resident_population_2026-09,hospitals.csv,ingu_age_65_74_sum
+48,전남광주통합특별시,장흥군,전남광주 장흥군,군,광주·전남 권역,34.67782,126.91102,33845,6778,0.200266,2,resident_population_2026-09,hospitals.csv,ingu_age_65_74_sum
+49,전남광주통합특별시,진도군,전남광주 진도군,군,광주·전남 권역,34.48085,126.26462,27764,5456,0.196513,2,resident_population_2026-09,hospitals.csv,ingu_age_65_74_sum
+50,전남광주통합특별시,함평군,전남광주 함평군,군,광주·전남 권역,35.06189,126.51981,29851,6291,0.210747,1,resident_population_2026-09,hospitals.csv,ingu_age_65_74_sum
+51,전남광주통합특별시,해남군,전남광주 해남군,군,광주·전남 권역,34.57789,126.62963,61816,12452,0.201437,2,resident_population_2026-09,hospitals.csv,ingu_age_65_74_sum
+52,전남광주통합특별시,화순군,전남광주 화순군,군,광주·전남 권역,35.05769,126.99387,59793,10297,0.172211,3,resident_population_2026-09,hospitals.csv,ingu_age_65_74_sum
+53,부산광역시,강서구,부산 강서구,구,부산 권역,35.212,128.981,155165,16142,0.104031,0,resident_population_2026-09,none,ingu_age_65_74_sum
+54,부산광역시,금정구,부산 금정구,구,부산 권역,35.21442,129.10408,205257,36140,0.176072,1,resident_population_2026-09,hospitals.csv,ingu_age_65_74_sum
+55,부산광역시,기장군,부산 기장군,군,부산 권역,35.27894,129.23041,175577,22507,0.128189,2,resident_population_2026-09,hospitals.csv,ingu_age_65_74_sum
+56,부산광역시,남구,부산 남구,구,부산 권역,35.11046,129.10919,254990,38334,0.150335,1,resident_population_2026-09,hospitals.csv,ingu_age_65_74_sum
+57,부산광역시,동구,부산 동구,구,부산 권역,35.13298,129.05221,82988,14830,0.178701,4,resident_population_2026-09,hospitals.csv,ingu_age_65_74_sum
+58,부산광역시,동래구,부산 동래구,구,부산 권역,35.20105,129.08893,270259,40031,0.148121,4,resident_population_2026-09,hospitals.csv,ingu_age_65_74_sum
+59,부산광역시,부산진구,부산 부산진구,구,부산 권역,35.15532,129.05146,363992,54250,0.149042,4,resident_population_2026-09,hospitals.csv,ingu_age_65_74_sum
+60,부산광역시,북구,부산 북구,구,부산 권역,35.21907,129.0082,260063,45353,0.174392,3,resident_population_2026-09,hospitals.csv,ingu_age_65_74_sum
+61,부산광역시,사상구,부산 사상구,구,부산 권역,35.15503,128.99977,191631,35315,0.184286,3,resident_population_2026-09,hospitals.csv,ingu_age_65_74_sum
+62,부산광역시,사하구,부산 사하구,구,부산 권역,35.10387,128.97389,280853,49652,0.17679,1,resident_population_2026-09,hospitals.csv,ingu_age_65_74_sum
+63,부산광역시,서구,부산 서구,구,부산 권역,35.10328,129.01582,100738,18522,0.183863,4,resident_population_2026-09,hospitals.csv,ingu_age_65_74_sum
+64,부산광역시,수영구,부산 수영구,구,부산 권역,35.15919,129.11276,169566,27203,0.160427,3,resident_population_2026-09,hospitals.csv,ingu_age_65_74_sum
+65,부산광역시,연제구,부산 연제구,구,부산 권역,35.18492,129.0688,211692,31916,0.150766,2,resident_population_2026-09,hospitals.csv,ingu_age_65_74_sum
+66,부산광역시,영도구,부산 영도구,구,부산 권역,35.09211,129.0422,99959,20595,0.206034,2,resident_population_2026-09,hospitals.csv,ingu_age_65_74_sum
+67,부산광역시,중구,부산 중구,구,부산 권역,35.10758,129.03246,36010,7289,0.202416,1,resident_population_2026-09,hospitals.csv,ingu_age_65_74_sum
+68,부산광역시,해운대구,부산 해운대구,구,부산 권역,35.17339,129.1531,369448,55261,0.149577,3,resident_population_2026-09,hospitals.csv,ingu_age_65_74_sum
+69,대구광역시,군위군,대구 군위군,군,대구·경북 권역,36.239,128.573,22432,6136,0.273538,0,resident_population_2026-09,none,ingu_age_65_74_sum
+70,대구광역시,남구,대구 남구,구,대구·경북 권역,35.8423,128.57633,141804,22701,0.160087,4,resident_population_2026-09,hospitals.csv,ingu_age_65_74_sum
+71,대구광역시,달서구,대구 달서구,구,대구·경북 권역,35.83466,128.53286,512374,71577,0.139697,6,resident_population_2026-09,hospitals.csv,ingu_age_65_74_sum
+72,대구광역시,달성군,대구 달성군,군,대구·경북 권역,35.69331,128.47044,251589,30993,0.123189,1,resident_population_2026-09,hospitals.csv,ingu_age_65_74_sum
+73,대구광역시,동구,대구 동구,구,대구·경북 권역,35.87847,128.63416,338592,51470,0.152012,3,resident_population_2026-09,hospitals.csv,ingu_age_65_74_sum
+74,대구광역시,북구,대구 북구,구,대구·경북 권역,35.94548,128.55683,406186,52964,0.130393,2,resident_population_2026-09,hospitals.csv,ingu_age_65_74_sum
+75,대구광역시,서구,대구 서구,구,대구·경북 권역,35.86508,128.56058,163197,29819,0.182718,4,resident_population_2026-09,hospitals.csv,ingu_age_65_74_sum
+76,대구광역시,수성구,대구 수성구,구,대구·경북 권역,35.84023,128.70573,407572,50493,0.123887,1,resident_population_2026-09,hospitals.csv,ingu_age_65_74_sum
+77,대구광역시,중구,대구 중구,구,대구·경북 권역,35.86957,128.59522,102082,10245,0.10036,4,resident_population_2026-09,hospitals.csv,ingu_age_65_74_sum
+78,인천광역시,강화군,인천 강화군,군,수도권,37.73605,126.48571,69469,16254,0.233975,1,resident_population_2026-09,hospitals.csv,ingu_age_65_74_sum
+79,인천광역시,검단구,인천 검단구,구,수도권,37.59761,126.66267,277639,22455,0.080878,2,resident_population_2026-09,hospitals.csv,ingu_age_65_74_sum
+80,인천광역시,계양구,인천 계양구,구,수도권,37.53324,126.73115,275766,40293,0.146113,3,resident_population_2026-09,hospitals.csv,ingu_age_65_74_sum
+81,인천광역시,남동구,인천 남동구,구,수도권,37.43955,126.70569,478372,66150,0.138282,3,resident_population_2026-09,hospitals.csv,ingu_age_65_74_sum
+82,인천광역시,미추홀구,인천 미추홀구,구,수도권,37.45988,126.65788,419583,56351,0.134302,3,resident_population_2026-09,hospitals.csv,ingu_age_65_74_sum
+83,인천광역시,부평구,인천 부평구,구,수도권,37.48925,126.73266,487060,66452,0.136435,3,resident_population_2026-09,hospitals.csv,ingu_age_65_74_sum
+84,인천광역시,서해구,인천 서해구,구,수도권,37.51347,126.67751,392114,44986,0.114727,3,resident_population_2026-09,hospitals.csv,ingu_age_65_74_sum
+85,인천광역시,연수구,인천 연수구,구,수도권,37.41316,126.68006,410511,41147,0.100234,2,resident_population_2026-09,hospitals.csv,ingu_age_65_74_sum
+86,인천광역시,영종구,인천 영종구,구,수도권,37.48847,126.56467,139382,11113,0.079731,1,resident_population_2026-09,hospitals.csv,ingu_age_65_74_sum
+87,인천광역시,옹진군,인천 옹진군,군,수도권,37.96802,124.72111,19258,4426,0.229827,1,resident_population_2026-09,hospitals.csv,ingu_age_65_74_sum
+88,인천광역시,제물포구,인천 제물포구,구,수도권,37.47144,126.64527,99174,17220,0.173634,4,resident_population_2026-09,hospitals.csv,ingu_age_65_74_sum
+89,대전광역시,대덕구,대전 대덕구,구,충청 권역,36.40776,127.43395,163274,24804,0.151916,2,resident_population_2026-09,hospitals.csv,ingu_age_65_74_sum
+90,대전광역시,동구,대전 동구,구,충청 권역,36.33866,127.43747,217857,32154,0.147592,2,resident_population_2026-09,hospitals.csv,ingu_age_65_74_sum
+91,대전광역시,서구,대전 서구,구,충청 권역,36.32336,127.36506,464189,53770,0.115836,3,resident_population_2026-09,hospitals.csv,ingu_age_65_74_sum
+92,대전광역시,유성구,대전 유성구,구,충청 권역,36.37535,127.32491,374328,35109,0.093792,1,resident_population_2026-09,hospitals.csv,ingu_age_65_74_sum
+93,대전광역시,중구,대전 중구,구,충청 권역,36.32532,127.41528,223474,32284,0.144464,3,resident_population_2026-09,hospitals.csv,ingu_age_65_74_sum
+94,울산광역시,남구,울산 남구,구,부산 권역,35.54288,129.30478,304783,39357,0.129131,5,resident_population_2026-09,hospitals.csv,ingu_age_65_74_sum
+95,울산광역시,동구,울산 동구,구,부산 권역,35.52006,129.4288,147352,21943,0.148916,1,resident_population_2026-09,hospitals.csv,ingu_age_65_74_sum
+96,울산광역시,북구,울산 북구,구,부산 권역,35.60588,129.35484,213305,20989,0.098399,2,resident_population_2026-09,hospitals.csv,ingu_age_65_74_sum
+97,울산광역시,울주군,울산 울주군,군,부산 권역,35.49096,129.20957,218207,31742,0.145467,2,resident_population_2026-09,hospitals.csv,ingu_age_65_74_sum
+98,울산광역시,중구,울산 중구,구,부산 권역,35.55951,129.3278,202430,30635,0.151336,3,resident_population_2026-09,hospitals.csv,ingu_age_65_74_sum
+99,세종특별자치시,세종시,세종 세종시,시,충청 권역,36.49957,127.2601,390585,32303,0.082704,2,resident_population_2026-09,hospitals.csv,ingu_age_65_74_sum
+100,경기도,가평군,경기 가평군,군,수도권,37.69105,127.52141,61954,13275,0.214272,1,resident_population_2026-09,hospitals.csv,ingu_age_65_74_sum
+101,경기도,고양시,경기 고양시,시,수도권,37.65769,126.7943,1056532,125939,0.1192,8,resident_population_2026-09,hospitals.csv,ingu_age_65_74_sum
+102,경기도,과천시,경기 과천시,시,수도권,37.429,126.988,81031,8323,0.102714,0,resident_population_2026-09,none,ingu_age_65_74_sum
+103,경기도,광명시,경기 광명시,시,수도권,37.44903,126.87892,303707,37246,0.122638,2,resident_population_2026-09,hospitals.csv,ingu_age_65_74_sum
+104,경기도,광주시,경기 광주시,시,수도권,37.41095,127.26022,401476,51912,0.129303,1,resident_population_2026-09,hospitals.csv,ingu_age_65_74_sum
+105,경기도,구리시,경기 구리시,시,수도권,37.60324,127.13606,188155,24196,0.128596,2,resident_population_2026-09,hospitals.csv,ingu_age_65_74_sum
+106,경기도,군포시,경기 군포시,시,수도권,37.35922,126.94033,248959,33178,0.133267,2,resident_population_2026-09,hospitals.csv,ingu_age_65_74_sum
+107,경기도,김포시,경기 김포시,시,수도권,37.63674,126.68538,483599,52832,0.109248,2,resident_population_2026-09,hospitals.csv,ingu_age_65_74_sum
+108,경기도,남양주시,경기 남양주시,시,수도권,37.66973,127.21358,727066,87908,0.120908,5,resident_population_2026-09,hospitals.csv,ingu_age_65_74_sum
+109,경기도,동두천시,경기 동두천시,시,수도권,37.90888,127.05398,86135,13755,0.159691,1,resident_population_2026-09,hospitals.csv,ingu_age_65_74_sum
+110,경기도,부천시,경기 부천시,시,수도권,37.50075,126.78413,753731,108141,0.143474,5,resident_population_2026-09,hospitals.csv,ingu_age_65_74_sum
+111,경기도,성남시,경기 성남시,시,수도권,37.41767,127.13779,899160,109501,0.121781,9,resident_population_2026-09,hospitals.csv,ingu_age_65_74_sum
+112,경기도,수원시,경기 수원시,시,수도권,37.26779,127.01621,1186308,122406,0.103182,9,resident_population_2026-09,hospitals.csv,ingu_age_65_74_sum
+113,경기도,시흥시,경기 시흥시,시,수도권,37.37697,126.75135,515633,50778,0.098477,3,resident_population_2026-09,hospitals.csv,ingu_age_65_74_sum
+114,경기도,안산시,경기 안산시,시,수도권,37.32156,126.83501,608343,72611,0.119359,7,resident_population_2026-09,hospitals.csv,ingu_age_65_74_sum
+115,경기도,안성시,경기 안성시,시,수도권,37.01174,127.26559,199288,27881,0.139903,2,resident_population_2026-09,hospitals.csv,ingu_age_65_74_sum
+116,경기도,안양시,경기 안양시,시,수도권,37.38788,126.94058,562140,71346,0.126919,3,resident_population_2026-09,hospitals.csv,ingu_age_65_74_sum
+117,경기도,양주시,경기 양주시,시,수도권,37.83756,127.06464,298139,35086,0.117683,1,resident_population_2026-09,hospitals.csv,ingu_age_65_74_sum
+118,경기도,양평군,경기 양평군,군,수도권,37.49396,127.50347,127019,26585,0.209299,1,resident_population_2026-09,hospitals.csv,ingu_age_65_74_sum
+119,경기도,여주시,경기 여주시,시,수도권,37.2956,127.6298,113202,20698,0.182841,2,resident_population_2026-09,hospitals.csv,ingu_age_65_74_sum
+120,경기도,연천군,경기 연천군,군,수도권,38.02374,127.06124,43195,8554,0.198032,1,resident_population_2026-09,hospitals.csv,ingu_age_65_74_sum
+121,경기도,오산시,경기 오산시,시,수도권,37.14123,127.07534,255729,22306,0.087225,1,resident_population_2026-09,hospitals.csv,ingu_age_65_74_sum
+122,경기도,용인시,경기 용인시,시,수도권,37.25098,127.17713,1090103,110704,0.101554,5,resident_population_2026-09,hospitals.csv,ingu_age_65_74_sum
+123,경기도,의왕시,경기 의왕시,시,수도권,37.345,126.968,167093,22095,0.132232,0,resident_population_2026-09,none,ingu_age_65_74_sum
+124,경기도,의정부시,경기 의정부시,시,수도권,37.74938,127.05562,462008,59306,0.128366,5,resident_population_2026-09,hospitals.csv,ingu_age_65_74_sum
+125,경기도,이천시,경기 이천시,시,수도권,37.27821,127.44153,227007,28112,0.123838,2,resident_population_2026-09,hospitals.csv,ingu_age_65_74_sum
+126,경기도,파주시,경기 파주시,시,수도권,37.80779,126.77967,536640,56913,0.106054,4,resident_population_2026-09,hospitals.csv,ingu_age_65_74_sum
+127,경기도,평택시,경기 평택시,시,수도권,37.01888,127.05536,624536,59318,0.094979,6,resident_population_2026-09,hospitals.csv,ingu_age_65_74_sum
+128,경기도,포천시,경기 포천시,시,수도권,37.86538,127.17323,140366,25991,0.185166,2,resident_population_2026-09,hospitals.csv,ingu_age_65_74_sum
+129,경기도,하남시,경기 하남시,시,수도권,37.539,127.215,327373,37189,0.113598,0,resident_population_2026-09,none,ingu_age_65_74_sum
+130,경기도,화성시,경기 화성시,시,수도권,37.19392,126.95777,1001559,80445,0.08032,4,resident_population_2026-09,hospitals.csv,ingu_age_65_74_sum
+131,강원특별자치도,강릉시,강원 강릉시,시,강원 권역,37.78069,128.88455,205547,34364,0.167183,3,resident_population_2026-09,hospitals.csv,ingu_age_65_74_sum
+132,강원특별자치도,고성군,강원 고성군,군,강원 권역,38.38,128.468,27203,5563,0.2045,0,resident_population_2026-09,none,ingu_age_65_74_sum
+133,강원특별자치도,동해시,강원 동해시,시,강원 권역,37.53116,129.10663,85445,14065,0.164609,2,resident_population_2026-09,hospitals.csv,ingu_age_65_74_sum
+134,강원특별자치도,삼척시,강원 삼척시,시,강원 권역,37.44028,129.1637,60057,11436,0.190419,1,resident_population_2026-09,hospitals.csv,ingu_age_65_74_sum
+135,강원특별자치도,속초시,강원 속초시,시,강원 권역,38.20712,128.58375,78735,13206,0.167727,2,resident_population_2026-09,hospitals.csv,ingu_age_65_74_sum
+136,강원특별자치도,양구군,강원 양구군,군,강원 권역,38.10478,127.9912,20322,3536,0.173999,1,resident_population_2026-09,hospitals.csv,ingu_age_65_74_sum
+137,강원특별자치도,양양군,강원 양양군,군,강원 권역,38.075,128.619,27321,5863,0.214597,0,resident_population_2026-09,none,ingu_age_65_74_sum
+138,강원특별자치도,영월군,강원 영월군,군,강원 권역,37.18659,128.46531,35570,8337,0.234383,1,resident_population_2026-09,hospitals.csv,ingu_age_65_74_sum
+139,강원특별자치도,원주시,강원 원주시,시,강원 권역,37.34192,127.94954,365634,49187,0.134525,3,resident_population_2026-09,hospitals.csv,ingu_age_65_74_sum
+140,강원특별자치도,인제군,강원 인제군,군,강원 권역,38.07,128.17,30636,5507,0.179756,0,resident_population_2026-09,none,ingu_age_65_74_sum
+141,강원특별자치도,정선군,강원 정선군,군,강원 권역,37.38292,128.65842,35137,7899,0.224806,1,resident_population_2026-09,hospitals.csv,ingu_age_65_74_sum
+142,강원특별자치도,철원군,강원 철원군,군,강원 권역,38.15033,127.30803,39593,6849,0.172985,1,resident_population_2026-09,hospitals.csv,ingu_age_65_74_sum
+143,강원특별자치도,춘천시,강원 춘천시,시,강원 권역,37.88012,127.73709,284801,40250,0.141327,3,resident_population_2026-09,hospitals.csv,ingu_age_65_74_sum
+144,강원특별자치도,태백시,강원 태백시,시,강원 권역,37.10404,129.00429,36642,7250,0.19786,1,resident_population_2026-09,hospitals.csv,ingu_age_65_74_sum
+145,강원특별자치도,평창군,강원 평창군,군,강원 권역,37.36058,128.38905,39854,9504,0.23847,1,resident_population_2026-09,hospitals.csv,ingu_age_65_74_sum
+146,강원특별자치도,홍천군,강원 홍천군,군,강원 권역,37.69082,127.89491,65764,15161,0.230536,1,resident_population_2026-09,hospitals.csv,ingu_age_65_74_sum
+147,강원특별자치도,화천군,강원 화천군,군,강원 권역,38.10738,127.70888,23023,4130,0.179386,1,resident_population_2026-09,hospitals.csv,ingu_age_65_74_sum
+148,강원특별자치도,횡성군,강원 횡성군,군,강원 권역,37.47846,127.97995,45417,11400,0.251007,1,resident_population_2026-09,hospitals.csv,ingu_age_65_74_sum
+149,충청북도,괴산군,충북 괴산군,군,충청 권역,36.81544,127.78425,37074,9654,0.260398,1,resident_population_2026-09,hospitals.csv,ingu_age_65_74_sum
+150,충청북도,단양군,충북 단양군,군,충청 권역,36.98454,128.36668,26457,6752,0.255207,1,resident_population_2026-09,hospitals.csv,ingu_age_65_74_sum
+151,충청북도,보은군,충북 보은군,군,충청 권역,36.48327,127.71821,31566,7662,0.24273,1,resident_population_2026-09,hospitals.csv,ingu_age_65_74_sum
+152,충청북도,영동군,충북 영동군,군,충청 권역,36.18523,127.78083,43080,9972,0.231476,1,resident_population_2026-09,hospitals.csv,ingu_age_65_74_sum
+153,충청북도,옥천군,충북 옥천군,군,충청 권역,36.31335,127.57198,50775,10997,0.216583,1,resident_population_2026-09,hospitals.csv,ingu_age_65_74_sum
+154,충청북도,음성군,충북 음성군,군,충청 권역,36.9976,127.59853,96203,16510,0.171616,1,resident_population_2026-09,hospitals.csv,ingu_age_65_74_sum
+155,충청북도,제천시,충북 제천시,시,충청 권역,37.15079,128.2201,127880,23663,0.185041,2,resident_population_2026-09,hospitals.csv,ingu_age_65_74_sum
+156,충청북도,증평군,충북 증평군,군,충청 권역,36.785,127.581,36769,5416,0.147298,0,resident_population_2026-09,none,ingu_age_65_74_sum
+157,충청북도,진천군,충북 진천군,군,충청 권역,36.85849,127.44051,85620,11404,0.133193,1,resident_population_2026-09,hospitals.csv,ingu_age_65_74_sum
+158,충청북도,청주시,충북 청주시,시,충청 권역,36.63451,127.45184,860937,100455,0.116681,8,resident_population_2026-09,hospitals.csv,ingu_age_65_74_sum
+159,충청북도,충주시,충북 충주시,시,충청 권역,36.97966,127.94231,205581,33606,0.163468,3,resident_population_2026-09,hospitals.csv,ingu_age_65_74_sum
+160,충청남도,계룡시,충남 계룡시,시,충청 권역,36.274,127.249,45915,5130,0.111728,0,resident_population_2026-09,none,ingu_age_65_74_sum
+161,충청남도,공주시,충남 공주시,시,충청 권역,36.45905,127.10922,99424,19248,0.193595,1,resident_population_2026-09,hospitals.csv,ingu_age_65_74_sum
+162,충청남도,금산군,충남 금산군,군,충청 권역,36.10403,127.4962,48684,10631,0.218367,1,resident_population_2026-09,hospitals.csv,ingu_age_65_74_sum
+163,충청남도,논산시,충남 논산시,시,충청 권역,36.1925,127.09437,105661,20226,0.191424,1,resident_population_2026-09,hospitals.csv,ingu_age_65_74_sum
+164,충청남도,당진시,충남 당진시,시,충청 권역,36.9044,126.68436,172300,22983,0.133389,1,resident_population_2026-09,hospitals.csv,ingu_age_65_74_sum
+165,충청남도,보령시,충남 보령시,시,충청 권역,36.38114,126.62283,90916,17497,0.192452,1,resident_population_2026-09,hospitals.csv,ingu_age_65_74_sum
+166,충청남도,부여군,충남 부여군,군,충청 권역,36.27555,126.9017,57473,13453,0.234075,1,resident_population_2026-09,hospitals.csv,ingu_age_65_74_sum
+167,충청남도,서산시,충남 서산시,시,충청 권역,36.77829,126.48429,170634,23675,0.138747,2,resident_population_2026-09,hospitals.csv,ingu_age_65_74_sum
+168,충청남도,서천군,충남 서천군,군,충청 권역,36.08449,126.68758,46519,10615,0.228186,1,resident_population_2026-09,hospitals.csv,ingu_age_65_74_sum
+169,충청남도,아산시,충남 아산시,시,충청 권역,36.78121,127.01046,366594,35942,0.098043,2,resident_population_2026-09,hospitals.csv,ingu_age_65_74_sum
+170,충청남도,예산군,충남 예산군,군,충청 권역,36.70242,126.83614,78010,15907,0.20391,2,resident_population_2026-09,hospitals.csv,ingu_age_65_74_sum
+171,충청남도,천안시,충남 천안시,시,충청 권역,36.80452,127.15511,666700,68060,0.102085,4,resident_population_2026-09,hospitals.csv,ingu_age_65_74_sum
+172,충청남도,청양군,충남 청양군,군,충청 권역,36.4553,126.80456,29998,6855,0.228515,1,resident_population_2026-09,hospitals.csv,ingu_age_65_74_sum
+173,충청남도,태안군,충남 태안군,군,충청 권역,36.75191,126.32321,58804,13074,0.222332,1,resident_population_2026-09,hospitals.csv,ingu_age_65_74_sum
+174,충청남도,홍성군,충남 홍성군,군,충청 권역,36.59934,126.67441,101926,15994,0.156918,1,resident_population_2026-09,hospitals.csv,ingu_age_65_74_sum
+175,전북특별자치도,고창군,전북 고창군,군,전북 권역,35.43645,126.69332,49996,10194,0.203896,1,resident_population_2026-09,hospitals.csv,ingu_age_65_74_sum
+176,전북특별자치도,군산시,전북 군산시,시,전북 권역,35.96619,126.72455,255575,37566,0.146986,2,resident_population_2026-09,hospitals.csv,ingu_age_65_74_sum
+177,전북특별자치도,김제시,전북 김제시,시,전북 권역,35.80674,126.8797,81522,15308,0.187778,1,resident_population_2026-09,hospitals.csv,ingu_age_65_74_sum
+178,전북특별자치도,남원시,전북 남원시,시,전북 권역,35.4319,127.40719,73452,13286,0.18088,1,resident_population_2026-09,hospitals.csv,ingu_age_65_74_sum
+179,전북특별자치도,무주군,전북 무주군,군,전북 권역,36.00586,127.6717,23499,4922,0.209456,1,resident_population_2026-09,hospitals.csv,ingu_age_65_74_sum
+180,전북특별자치도,부안군,전북 부안군,군,전북 권역,35.72482,126.73453,46950,9711,0.206837,1,resident_population_2026-09,hospitals.csv,ingu_age_65_74_sum
+181,전북특별자치도,순창군,전북 순창군,군,전북 권역,35.36704,127.14367,27666,5407,0.195438,1,resident_population_2026-09,hospitals.csv,ingu_age_65_74_sum
+182,전북특별자치도,완주군,전북 완주군,군,전북 권역,35.905,127.162,100719,15705,0.155929,0,resident_population_2026-09,none,ingu_age_65_74_sum
+183,전북특별자치도,익산시,전북 익산시,시,전북 권역,35.96296,126.9629,266458,40581,0.152298,2,resident_population_2026-09,hospitals.csv,ingu_age_65_74_sum
+184,전북특별자치도,임실군,전북 임실군,군,전북 권역,35.6125,127.28698,25344,5462,0.215515,1,resident_population_2026-09,hospitals.csv,ingu_age_65_74_sum
+185,전북특별자치도,장수군,전북 장수군,군,전북 권역,35.65466,127.52014,21183,4558,0.215173,1,resident_population_2026-09,hospitals.csv,ingu_age_65_74_sum
+186,전북특별자치도,전주시,전북 전주시,시,전북 권역,35.83209,127.14256,618328,74579,0.120614,7,resident_population_2026-09,hospitals.csv,ingu_age_65_74_sum
+187,전북특별자치도,정읍시,전북 정읍시,시,전북 권역,35.58899,126.82346,100531,17534,0.174414,1,resident_population_2026-09,hospitals.csv,ingu_age_65_74_sum
+188,전북특별자치도,진안군,전북 진안군,군,전북 권역,35.79519,127.43207,25006,5557,0.222227,1,resident_population_2026-09,hospitals.csv,ingu_age_65_74_sum
+189,경상북도,경산시,경북 경산시,시,대구·경북 권역,35.81752,128.73878,262849,35971,0.13685,2,resident_population_2026-09,hospitals.csv,ingu_age_65_74_sum
+190,경상북도,경주시,경북 경주시,시,대구·경북 권역,35.85193,129.20317,242405,42374,0.174807,2,resident_population_2026-09,hospitals.csv,ingu_age_65_74_sum
+191,경상북도,고령군,경북 고령군,군,대구·경북 권역,35.72996,128.27201,29374,6891,0.234595,1,resident_population_2026-09,hospitals.csv,ingu_age_65_74_sum
+192,경상북도,구미시,경북 구미시,시,대구·경북 권역,36.10453,128.38206,402657,41012,0.101853,3,resident_population_2026-09,hospitals.csv,ingu_age_65_74_sum
+193,경상북도,김천시,경북 김천시,시,대구·경북 권역,36.12892,128.12266,132274,22843,0.172695,2,resident_population_2026-09,hospitals.csv,ingu_age_65_74_sum
+194,경상북도,문경시,경북 문경시,시,대구·경북 권역,36.58482,128.18977,64669,13752,0.212652,1,resident_population_2026-09,hospitals.csv,ingu_age_65_74_sum
+195,경상북도,봉화군,경북 봉화군,군,대구·경북 권역,36.89171,128.7335,28013,7081,0.252775,1,resident_population_2026-09,hospitals.csv,ingu_age_65_74_sum
+196,경상북도,상주시,경북 상주시,시,대구·경북 권역,36.41747,128.15767,88825,18919,0.212992,2,resident_population_2026-09,hospitals.csv,ingu_age_65_74_sum
+197,경상북도,성주군,경북 성주군,군,대구·경북 권역,35.91869,128.2867,40246,9979,0.24795,1,resident_population_2026-09,hospitals.csv,ingu_age_65_74_sum
+198,경상북도,안동시,경북 안동시,시,대구·경북 권역,36.56077,128.71852,151366,26093,0.172383,3,resident_population_2026-09,hospitals.csv,ingu_age_65_74_sum
+199,경상북도,영덕군,경북 영덕군,군,대구·경북 권역,36.52465,129.4023,32477,7566,0.232965,1,resident_population_2026-09,hospitals.csv,ingu_age_65_74_sum
+200,경상북도,영양군,경북 영양군,군,대구·경북 권역,36.66258,129.11731,15960,3723,0.233271,1,resident_population_2026-09,hospitals.csv,ingu_age_65_74_sum
+201,경상북도,영주시,경북 영주시,시,대구·경북 권역,36.82212,128.61025,96133,18554,0.193003,3,resident_population_2026-09,hospitals.csv,ingu_age_65_74_sum
+202,경상북도,영천시,경북 영천시,시,대구·경북 권역,35.95732,128.91305,93387,19361,0.20732,1,resident_population_2026-09,hospitals.csv,ingu_age_65_74_sum
+203,경상북도,예천군,경북 예천군,군,대구·경북 권역,36.65742,128.4589,53256,9870,0.185331,1,resident_population_2026-09,hospitals.csv,ingu_age_65_74_sum
+204,경상북도,울릉군,경북 울릉군,군,대구·경북 권역,37.48589,130.89948,8724,1759,0.201628,1,resident_population_2026-09,hospitals.csv,ingu_age_65_74_sum
+205,경상북도,울진군,경북 울진군,군,대구·경북 권역,36.99265,129.40949,46382,8700,0.187573,1,resident_population_2026-09,hospitals.csv,ingu_age_65_74_sum
+206,경상북도,의성군,경북 의성군,군,대구·경북 권역,36.38926,128.43429,47861,12601,0.263283,1,resident_population_2026-09,hospitals.csv,ingu_age_65_74_sum
+207,경상북도,청도군,경북 청도군,군,대구·경북 권역,35.64871,128.73711,39954,10400,0.260299,1,resident_population_2026-09,hospitals.csv,ingu_age_65_74_sum
+208,경상북도,청송군,경북 청송군,군,대구·경북 권역,36.43104,129.05266,24618,5867,0.238322,1,resident_population_2026-09,hospitals.csv,ingu_age_65_74_sum
+209,경상북도,칠곡군,경북 칠곡군,군,대구·경북 권역,35.995,128.402,103288,14367,0.139097,0,resident_population_2026-09,none,ingu_age_65_74_sum
+210,경상북도,포항시,경북 포항시,시,대구·경북 권역,36.0303,129.35096,486788,78316,0.160883,5,resident_population_2026-09,hospitals.csv,ingu_age_65_74_sum
+211,경상남도,거제시,경남 거제시,시,부산 권역,34.88128,128.66398,228629,27780,0.121507,3,resident_population_2026-09,hospitals.csv,ingu_age_65_74_sum
+212,경상남도,거창군,경남 거창군,군,부산 권역,35.6868,127.90877,58712,10910,0.185822,1,resident_population_2026-09,hospitals.csv,ingu_age_65_74_sum
+213,경상남도,고성군,경남 고성군,군,부산 권역,34.97394,128.32575,46662,10360,0.222022,2,resident_population_2026-09,hospitals.csv,ingu_age_65_74_sum
+214,경상남도,김해시,경남 김해시,시,부산 권역,35.22391,128.84938,533161,60303,0.113105,5,resident_population_2026-09,hospitals.csv,ingu_age_65_74_sum
+215,경상남도,남해군,경남 남해군,군,부산 권역,34.84641,127.89425,41032,9011,0.219609,1,resident_population_2026-09,hospitals.csv,ingu_age_65_74_sum
+216,경상남도,밀양시,경남 밀양시,시,부산 권역,35.44883,128.73857,98171,21673,0.220768,3,resident_population_2026-09,hospitals.csv,ingu_age_65_74_sum
+217,경상남도,사천시,경남 사천시,시,부산 권역,34.98426,128.08204,107862,17006,0.157664,3,resident_population_2026-09,hospitals.csv,ingu_age_65_74_sum
+218,경상남도,산청군,경남 산청군,군,부산 권역,35.41605,127.8842,32608,8092,0.24816,1,resident_population_2026-09,hospitals.csv,ingu_age_65_74_sum
+219,경상남도,양산시,경남 양산시,시,부산 권역,35.35359,129.05731,360962,46413,0.128581,4,resident_population_2026-09,hospitals.csv,ingu_age_65_74_sum
+220,경상남도,의령군,경남 의령군,군,부산 권역,35.31861,128.25868,24520,5929,0.241803,1,resident_population_2026-09,hospitals.csv,ingu_age_65_74_sum
+221,경상남도,진주시,경남 진주시,시,부산 권역,35.179,128.09359,333850,46115,0.138131,8,resident_population_2026-09,hospitals.csv,ingu_age_65_74_sum
+222,경상남도,창녕군,경남 창녕군,군,부산 권역,35.54215,128.49341,54046,12523,0.23171,1,resident_population_2026-09,hospitals.csv,ingu_age_65_74_sum
+223,경상남도,창원시,경남 창원시,시,부산 권역,35.21228,128.62183,984721,140875,0.143061,10,resident_population_2026-09,hospitals.csv,ingu_age_65_74_sum
+224,경상남도,통영시,경남 통영시,시,부산 권역,34.86536,128.42065,115838,20397,0.176082,1,resident_population_2026-09,hospitals.csv,ingu_age_65_74_sum
+225,경상남도,하동군,경남 하동군,군,부산 권역,35.07144,127.75323,39524,9431,0.238615,1,resident_population_2026-09,hospitals.csv,ingu_age_65_74_sum
+226,경상남도,함안군,경남 함안군,군,부산 권역,35.30898,128.51554,56522,11549,0.204328,1,resident_population_2026-09,hospitals.csv,ingu_age_65_74_sum
+227,경상남도,함양군,경남 함양군,군,부산 권역,35.52047,127.72925,35036,7709,0.220031,1,resident_population_2026-09,hospitals.csv,ingu_age_65_74_sum
+228,경상남도,합천군,경남 합천군,군,부산 권역,35.56636,128.16327,38693,9676,0.250071,1,resident_population_2026-09,hospitals.csv,ingu_age_65_74_sum
+229,제주특별자치도,서귀포시,제주 서귀포시,시,제주 권역,33.25535,126.5642,178294,25211,0.141401,1,resident_population_2026-09,hospitals.csv,ingu_age_65_74_sum
+230,제주특별자치도,제주시,제주 제주시,시,제주 권역,33.4892,126.51283,484079,54907,0.113426,5,resident_population_2026-09,hospitals.csv,ingu_age_65_74_sum
