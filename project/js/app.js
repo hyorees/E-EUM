@@ -283,7 +283,7 @@ function renderBanner() {
   const sm = e.summary;
   const phase = S.phase === "analyzing" ? "우선순위 분석 중…" : S.phase === "error" ? "분석 실패" : S.analyzed ? `복구 기준: ${SC_NAME[S.sc]}` : "분석 대기";
   setText("#alertTitle", `[${e.type_name}] 정전 정보 수신 · ${e.occurred_at}`);
-  setText("#alertSub", `${e.desc} · 강도 ${SEV_TXT[String(e.severity)] || e.severity} · ${phase}`);
+  setText("#alertSub", `${e.desc}${e.severity == null ? "" : ` · 강도 ${SEV_TXT[String(e.severity)] || e.severity}`} · ${phase}`);
   setText("#aZones", sm.outage_zones);
   setText("#aFac", sm.hospitals_affected);
   setText("#aPop", man(sm.affected_population).replace(" 명", ""));

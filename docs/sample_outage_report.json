@@ -1,0 +1,15 @@
+{
+  "event": {
+    "event_id": "KDN-20261029-0001",
+    "type_name": "외부 정전 정보",
+    "desc": "한전 정전 현황 수신 샘플",
+    "occurred_at": "2026-10-29 14:30:00"
+  },
+  "outages": [
+    { "region_id": 223, "outage_ratio": 0.62, "est_hours": 18.5 },
+    { "region_id": 210, "outage_ratio": 0.48, "est_hours": 14, "hospitals_affected": 2 },
+    { "sido": "경상북도", "sigungu": "경주시", "outage_ratio": 0.21, "est_hours": 8 },
+    { "region_name": "서울 강남구", "outage_ratio": 0.05, "est_hours": 3,
+      "outage_cause": "변전소 A 설비 고장 (선로 단위 정보는 outage_cause 에 자유 기재)" }
+  ]
+}
