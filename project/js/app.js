@@ -418,6 +418,7 @@ function renderTables() {
 
 /* ── 시설 상세: hospitals.csv (js/hospitals.js) 기반 병원 목록 ── */
 function renderFacilities() {
+  $$("#facilityScenarioBtns button").forEach(b => b.classList.toggle("active", b.dataset.sc === S.sc));
   renderFacilityList({
     items: window.hospitalList || [],
     sort: S.facSort,
@@ -620,6 +621,7 @@ function bind() {
   $$(".nav-item").forEach(b => b.addEventListener("click", () => openTab(b.dataset.tab)));
   $$(".sc-tab").forEach(b => b.addEventListener("click", () => chooseScenario(b.dataset.sc)));
   $$("#priorityScenarioBtns button").forEach(b => b.addEventListener("click", () => chooseScenario(b.dataset.sc)));
+  $$("#facilityScenarioBtns button").forEach(b => b.addEventListener("click", () => chooseScenario(b.dataset.sc)));
   $$("#facSortBtns button").forEach(b => b.addEventListener("click", () => { S.facSort = b.dataset.fs; renderFacilities(); }));
   $("#facOnlyOutage").addEventListener("change", e => { S.facOnly = e.target.checked; renderFacilities(); });
   $$("#careSortBtns button").forEach(b => b.addEventListener("click", () => { S.careSort = b.dataset.fs; renderCareCenters(); }));

@@ -246,6 +246,11 @@
       <div class="panel full-page-panel">
         <h2>응급의료기관 목록</h2>
         <p id="facDesc">hospitals.csv 의 응급의료기관 전체 목록입니다. 병원이 속한 시·군·구의 정전 상황과 복구 순위를 함께 보여 줍니다. (병원 단위 비상발전기 정보는 공공데이터 연동 후 추가 예정)</p>
+        <div class="strategy-btns facility-scenario-btns" id="facilityScenarioBtns" aria-label="복구 시나리오 선택">
+          <button type="button" data-sc="A">A. 사회적 피해 최소화</button>
+          <button type="button" data-sc="B">B. 중요시설 우선</button>
+          <button type="button" data-sc="C">C. 네트워크 효율 우선</button>
+        </div>
         <div class="strategy-btns" id="facSortBtns">
           <button data-fs="rank" class="active">복구 순위순</button>
           <button data-fs="ratio">정전 비율순</button>
