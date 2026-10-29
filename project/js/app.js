@@ -16,7 +16,7 @@ const SEV_TXT = { "0.7": "약", "1": "보통", "1.3": "강" };
 const DEFAULT_STRATEGY_WEIGHTS = {
   A: { pop: 0.30, fac: 0.25, vul: 0.20, sev: 0.25, dur: 0.00 },
   B: { pop: 0.15, fac: 0.50, vul: 0.20, sev: 0.15, dur: 0.00 },
-  C: { pop: 0.15, fac: 0.10, vul: 0.10, sev: 0.10, dur: 0.55 }
+  C: { pop: 0.00, fac: 0.00, vul: 0.00, sev: 0.00, dur: 1.00 }
 };
 
 const S = {

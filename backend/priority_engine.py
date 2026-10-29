@@ -12,7 +12,8 @@
 STRATEGIES = {   # 복구 시나리오(A/B/C)와 같은 이름·순서를 사용한다
     "MIN_DAMAGE":        {"label": "A. 사회적 피해 최소화", "w": {"pop": 0.30, "fac": 0.25, "vul": 0.20, "sev": 0.25, "dur": 0.00}},
     "CRITICAL_FACILITY": {"label": "B. 중요시설 우선",      "w": {"pop": 0.15, "fac": 0.50, "vul": 0.20, "sev": 0.15, "dur": 0.00}},
-    "EFFICIENCY":        {"label": "C. 네트워크 효율 우선", "w": {"pop": 0.15, "fac": 0.10, "vul": 0.10, "sev": 0.10, "dur": 0.55}},
+    "EFFICIENCY":        {"label": "C. 네트워크 효율 우선", "w": {"pop": 0.00, "fac": 0.00, "vul": 0.00, "sev": 0.00, "dur": 1.00
+                                                        }},
 }
 DEFAULT_STRATEGY = "MIN_DAMAGE"
 LABEL = {"pop": "영향 인구", "fac": "응급의료기관", "vul": "고령층(65~74세)", "sev": "정전 비율", "dur": "복구 소요시간"}
