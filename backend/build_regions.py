@@ -24,7 +24,8 @@ SIDO_RE = re.compile(r"(특별시|광역시|특별자치시|특별자치도|통�
 def _is_sido(name):
     # '…도'로 끝나는 시·도(경기도, 충청북도 …) 와 '…시'로 끝나는 일반 시(수원시)를 구분
     return bool(SIDO_RE.search(name)) and (not name.endswith("시") or name.endswith(("특별시", "광역시", "특별자치시")))
-
+    # re.compile 정규표현식을 사용해 "경기도", "서울특별시" 같은 
+    # 상위 시·도 단위 이름인지, "수원시", "강남구" 같은 시·군·구 단위 이름인지 구분합니다.
 
 def _read_cp949(path):
     for enc in ("utf-8-sig", "cp949", "euc-kr"):
@@ -34,7 +35,8 @@ def _read_cp949(path):
         except UnicodeDecodeError:
             continue
     raise ValueError(f"CSV 인코딩을 확인할 수 없습니다: {path}")
-
+# 한국어 CSV 파일은 저장 형태에 따라 한글이 깨지는 경우가 많습니다 (utf-8-sig, cp949, euc-kr).
+#  이 인코딩들을 순서대로 시도하며 에러 없이 안전하게 텍스트를 읽어옵니다.
 
 def load_pop65_map():
     """{(시·도, 시군구): 65~74세 인구}. 시·도 행 자체는 (시·도, '') 로 저장."""
@@ -57,7 +59,8 @@ def load_pop65_map():
             mapping[(sido, name)] = value
     return mapping
 
-
+#행정안전부 주민등록 인구 파일과 고령층 인구 파일에서 필요한 숫자를 뽑아 
+# (시·도, 시군구) 형태의 딕셔너리(Dictionary) 구조로 만듭니다.
 def load_population_map():
     with open(POP_CSV, encoding="cp949", newline="") as f:
         reader = csv.DictReader(f)
@@ -122,3 +125,5 @@ def apply_real_population():
 
 if __name__ == "__main__":
     apply_real_population()
+#메인 실행 함수입니다. 위에서 만든 인구 딕셔너리를 바탕으로 
+# regions.csv 파일의 빈칸(인구수, 고령층 비율 등)을 실제 값으로 채워 넣고 저장합니다.
