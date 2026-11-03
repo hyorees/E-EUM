@@ -1,6 +1,8 @@
+/* 대시보드의 모든 UI 인터랙션, 백엔드 API 주기적 폴링(Polling), 지도(Leaflet) 시각화, 
+ MCDA 시나리오 클라이언트 연산, 동적 테이블 렌더링을 총괄하는 핵심 JavaScript 파일 */
 const $ = s => document.querySelector(s), $$ = s => document.querySelectorAll(s);
 const API = "http://127.0.0.1:8000";
-const POLL_MS = 3000;
+const POLL_MS = 3000; // 실시간 정전 데이터 수신 주기 (3초)
 
 const LEVEL_COLOR = { critical: "#e11d48", high: "#f97316", mid: "#0284c7", low: "#16a34a" };
 const LEVEL_TXT = { critical: "긴급", high: "높음", mid: "보통", low: "낮음" };
@@ -11,7 +13,7 @@ const SC_RULE = {
   C: "복구 소요시간 가중치(55%)를 크게 둔 점수가 높은 구역, 즉 빨리 끝나는 구역부터 복구합니다."
 };
 const SC_COLOR = { A: "#e11d48", B: "#f97316", C: "#0284c7" };
-const CREWS = 10;                       // 복구반 수 (고정)
+const CREWS = 10; // 복구반 수 (고정)
 const SEV_TXT = { "0.7": "약", "1": "보통", "1.3": "강" };
 const DEFAULT_STRATEGY_WEIGHTS = {
   A: { pop: 0.30, fac: 0.25, vul: 0.20, sev: 0.25, dur: 0.00 },
@@ -21,10 +23,10 @@ const DEFAULT_STRATEGY_WEIGHTS = {
 
 const S = {
   eventId: null, event: null, outages: [], rows: [],
-  phase: "idle",              // idle → received → analyzing → done (| error)
+  phase: "idle", // 상태 플로우: idle → received → analyzing → done (| error)
   analyzed: false, summary: null,
-  facSort: "rank", facOnly: true,
-  careSort: "rank", careOnly: true,
+  facSort: "rank", facOnly: true, // 병원 테이블 정렬/필터 옵션
+  careSort: "rank", careOnly: true, // 노인돌봄기관 테이블 정렬/필터 옵션
   sel: null, crews: CREWS, sc: "A", reqSeq: 0, metaLoaded: false,
   strategyMeta: { ...DEFAULT_STRATEGY_WEIGHTS }
 };
@@ -97,18 +99,21 @@ async function loadMeta() {
   S.metaLoaded = true;
 }
 
+// 주기적(3초)으로 백엔드의 정전 발생 현황을 탐지하는 폴링 함수
 async function poll() {
-  if (polling) return;
+  if (polling) return; // 중복 요청 방지
   polling = true;
   try {
-    const d = await api("/api/outage-report");
+    const d = await api("/api/outage-report"); // 백엔드 정전 정보 조회 API
     if (!S.metaLoaded) await loadMeta();
     setConn(true);
-    if (d.event) { if (d.event.event_id !== S.eventId) await onNewEvent(d); }
-    else if (S.eventId) clearEvent();
+
+    if (d.event) { 
+      if (d.event.event_id !== S.eventId) await onNewEvent(d); // 새 재난 수신
+    } else if (S.eventId) clearEvent(); // 발생한 재난이 해제되면 초기화
   } catch (e) {
     if (e.status === 404) setConn(false, "백엔드가 구버전입니다 (main.py 교체 후 uvicorn 재시작)");
-    else setConn(false);
+    else setConn(false); // 서버 연결 실패 시 상단 상태바에 연결 오류 표시
     console.warn("poll 실패:", e);
   } finally { polling = false; }
 }
@@ -132,21 +137,23 @@ function clearEvent() {
   renderAll(true);
 }
 
+// 신규 재난 수신 시 백엔드 MCDA 1차 연산 호출
 async function runAnalysis() {
   if (!S.outages.length) return;
   const seq = ++S.reqSeq;
-  S.phase = "analyzing"; renderFlow(); renderBanner();
+  S.phase = "analyzing"; renderFlow(); renderBanner(); // UI 분석중 상태 변경
   await sleep(700);
   try {
     const body = { outages: S.outages, strategy: "MIN_DAMAGE" };
+    // 백엔드 MCDA 연산 엔진 요청
     const res = await api("/api/priority", { method: "POST", body: JSON.stringify(body) });
     if (seq !== S.reqSeq) return;
     S.rows = res.items.map(fromItem); S.summary = res.summary;
     S.analyzed = true; S.phase = "done";
-    SC = scenarios(S.rows);
-    applyScenarioPriority();
+    SC = scenarios(S.rows); // 클라이언트 단 3개 시나리오 자원 배분 스케줄링 계산
+    applyScenarioPriority(); // 현재 선택된 시나리오 가중치 적용
     if (!S.rows.find(r => r.id === S.sel)) S.sel = S.rows[0] ? S.rows[0].id : null;
-    renderAll(false);
+    renderAll(false); // 전역 UI 재렌더링
     toast(`우선순위 분석 완료 (${SC_NAME[S.sc]})`);
   } catch (e) {
     if (seq !== S.reqSeq) return;
@@ -155,15 +162,20 @@ async function runAnalysis() {
   }
 }
 
-/* ── 복구 시나리오 계산 ── */
+// 복구반(10팀)의 작업 대기열(Queue)에 따른 시나리오별 지표 계산
 function metrics(order, K) {
-  const free = Array(K).fill(0), sc = {};
+  const free = Array(K).fill(0), sc = {}; // 각 복구반의 유휴 시각 배열
   let D = 0, F = 0, Mk = 0;
   for (const r of order) {
     let c = 0;
+    // 가장 먼저 작업이 끝나는 복구반(c)을 탐색
     for (let j = 1; j < K; j++) if (free[j] < free[c]) c = j;
-    const s = free[c]; free[c] = s + r.dur;
-    D += (r.pop / 1e4) * free[c]; F += r.hosp * free[c]; Mk = Math.max(Mk, free[c]);
+    const s = free[c]; // 복구 시작 시각
+    free[c] = s + r.dur; // 복구 종료 시각 (시작시각 + 소요시간)
+
+    D += (r.pop / 1e4) * free[c]; // 인구 누적 정전 시간 누적
+    F += r.hosp * free[c]; // 병원 누적 정전 시간 누적
+    Mk = Math.max(Mk, free[c]); // 전체 복구 완료 시간
     sc[r.id] = { s, f: free[c], c };
   }
   return { D, F, M: Mk, sc };
@@ -190,6 +202,7 @@ function scenarioComparison(out) {
   });
 }
 
+// 3가지 시나리오(A, B, C)별 구역 가중치 산출 및 복구 순서 결정
 function scenarios(rows) {
   if (!rows || !rows.length) return {};
   const K = S.crews;
@@ -206,6 +219,7 @@ function scenarios(rows) {
   for (const k of ["A", "B", "C"]) {
     const w = scenarioWeights(k), scores = {}, parts = {};
     for (const r of rows) {
+      // 5대 지표별 가중 점수 계산 (인구, 병원, 취약계층, 정전비율, 소요시간)
       parts[r.id] = {
         pop: r1(100 * w.pop * r.pop / maxPop),
         fac: r1(100 * w.fac * (maxHosp ? r.hosp / maxHosp : 0)),
@@ -219,10 +233,10 @@ function scenarios(rows) {
     }
     // 복구 순서 = 시나리오 점수 내림차순 (동점이면 영향 인구 많은 곳, 그다음 복구시간 짧은 곳)
     const order = [...rows].sort((a, b) => scores[b.id] - scores[a.id] || b.pop - a.pop || a.dur - b.dur);
-    const m = metrics(order, K);
+    const m = metrics(order, K); // 정렬된 순서로 복구반 스케줄링 시뮬레이션
     out[k] = { k, order, scores, parts, sc: m.sc, makespan: m.M, avgP: m.D / totP, avgH: m.F / totH };
   }
-  scenarioComparison(out);
+  scenarioComparison(out); // 3개 안 간 상대 우수성 점수(0~100) 계산
   out.totP = totP;
   return out;
 }
@@ -444,9 +458,15 @@ function renderCareCenters() {
 
 function renderFacilityList({ items, sort, onlyOutage, sortButtons, count, table, itemLabel }) {
   const byId = {}; S.rows.forEach(r => byId[r.id] = r);
+
+  // 전체 시설 리스트에 현재 정전 구역(rid) 정보 매핑
   let list = items.map(item => ({ item, r: byId[String(item.rid)] || null }));
   const outN = list.filter(x => x.r).length;
+
+  // '정전 구역 소재 시설만 보기' 체크 시 필터링
   if (onlyOutage) list = list.filter(x => x.r);
+
+  // 정렬 옵션(복구 순위순, 정전 비율순, 지역순, 시설명순) 적용
   const rk = x => x.r ? (S.analyzed ? x.r.rank : 1e6) : 2e6;
   const cmp = {
     rank: (a, b) => rk(a) - rk(b) || (b.r ? b.r.ratio : 0) - (a.r ? a.r.ratio : 0) || a.item.n.localeCompare(b.item.n, "ko"),
