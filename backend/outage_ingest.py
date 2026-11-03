@@ -1,7 +1,7 @@
 # backend/outage_ingest.py
 """외부 시스템이 보낸 정전 정보를 검증하고, 화면·우선순위 엔진이 쓰는 형식으로 변환한다.
 
-- 외부에서는 '지역 식별 + 정전 비율 + 예상 복구시간' 만 보내면 된다.
+- 외부에서는 '전체 복구반 수 + 지역 식별 + 정전 비율' 만 보내면 된다.
   인구·65~74세 인구·병원 수·좌표·지역 유형은 backend/data/regions.csv 에서 채운다.
 - 형식이 틀리면 일부만 받지 않고 전체를 거절한다(IngestError). 잘못된 값으로 순위가 계산되는 것을 막기 위함.
 - 값이 어색하지만 계산은 가능한 경우(예: 병원 수 초과)는 보정하고 warnings 로 알린다.
@@ -10,9 +10,10 @@
 입력 규격 전문: docs/outage_report_spec.md
 """
 from datetime import datetime
+from data_generator import estimate_recovery_hours
 
 MAX_OUTAGES = 1000
-MAX_HOURS = 24 * 30          # 복구 예상 30일 초과는 입력 오류로 본다
+MAX_REPAIR_CREWS = 1000
 MAX_ERRORS_SHOWN = 50
 
 
@@ -59,6 +60,16 @@ def build_report(payload, regions):
         raise IngestError(["outages 는 1개 이상의 항목을 가진 배열이어야 합니다. (정전 해제는 POST /api/reset)"])
     if len(raw) > MAX_OUTAGES:
         raise IngestError([f"outages 는 최대 {MAX_OUTAGES}개까지 받을 수 있습니다. (받은 개수: {len(raw)})"])
+    crew_count = payload.get("repair_crew_count")
+    if not isinstance(crew_count, int) or isinstance(crew_count, bool) or not 1 <= crew_count <= MAX_REPAIR_CREWS:
+        raise IngestError([f"repair_crew_count 는 1~{MAX_REPAIR_CREWS} 사이 정수여야 합니다. (받은 값: {crew_count!r})"])
+
+    ev_in = payload.get("event")
+    if ev_in is not None and not isinstance(ev_in, dict):
+        errors.append("event 는 객체여야 합니다.")
+        ev_in = {}
+    ev_in = ev_in or {}
+    event_type = str(ev_in.get("type") or "EXTERNAL").upper()
 
     tools = _index_regions(regions)
     outages, seen = [], set()
@@ -80,11 +91,13 @@ def build_report(payload, regions):
         seen.add(reg["id"])
 
         bad = False
-        ratio, hours = o.get("outage_ratio"), o.get("est_hours")
+        ratio = o.get("outage_ratio")
         if not _is_num(ratio) or not 0 <= ratio <= 1:
             errors.append(f"{tag}: outage_ratio 는 0~1 사이 숫자여야 합니다. (받은 값: {ratio!r}) 예: 정전 42% → 0.42"); bad = True
-        if not _is_num(hours) or not 0 < hours <= MAX_HOURS:
-            errors.append(f"{tag}: est_hours 는 0 초과 {MAX_HOURS} 이하 숫자(시간)여야 합니다. (받은 값: {hours!r})"); bad = True
+        if "est_hours" in o:
+            errors.append(f"{tag}: est_hours 는 외부 입력으로 받지 않습니다. 서비스가 자체 추정합니다."); bad = True
+        if "repair_crew_count" in o:
+            errors.append(f"{tag}: repair_crew_count 는 outage 항목이 아니라 요청 최상위에 지정해야 합니다."); bad = True
 
         pop = reg["pop"]
         for key in ("population", "pop65", "hospitals"):
@@ -129,17 +142,12 @@ def build_report(payload, regions):
             "outage_ratio": round(float(ratio), 3),
             "affected_population": aff_pop, "vulnerable_affected": vul,
             "hospitals": hospitals, "hospitals_affected": hosp_aff,
-            "est_hours": round(float(hours), 1),
+            "est_hours": round(estimate_recovery_hours(event_type, reg["type"], float(ratio)), 1),
             "wind_speed": 0.0, "rainfall": 0.0, "temperature": 0.0, "seismic_intensity": 0.0,
             "hazard_text": str(o.get("hazard_text") or "외부 수신 데이터"),
             "outage_cause": str(o.get("outage_cause") or f"외부 시스템에서 수신한 정전 정보 (정전 비율 {ratio * 100:.0f}%)"),
         })
 
-    ev_in = payload.get("event")
-    if ev_in is not None and not isinstance(ev_in, dict):
-        errors.append("event 는 객체여야 합니다.")
-        ev_in = {}
-    ev_in = ev_in or {}
     sev = ev_in.get("severity")
     if sev is not None and (not _is_num(sev) or sev < 0):
         errors.append(f"event.severity 는 0 이상의 숫자여야 합니다. (받은 값: {sev!r})")
@@ -158,15 +166,16 @@ def build_report(payload, regions):
     now = datetime.now()
     event = {
         "event_id": str(ev_in.get("event_id") or now.strftime("%Y%m%d%H%M%S%f")),
-        "type": str(ev_in.get("type") or "EXTERNAL").upper(),
+        "type": event_type,
         "type_name": str(ev_in.get("type_name") or "외부 정전 정보"),
         "desc": str(ev_in.get("desc") or "외부 시스템에서 수신한 정전 현황"),
         "severity": float(sev) if sev is not None else None,
+        "repair_crew_count": crew_count,
         "occurred_at": str(ev_in.get("occurred_at") or now.strftime("%Y-%m-%d %H:%M:%S")),
         "geo": geo,
         "explain": {
-            "how": ["외부 시스템이 보낸 정전 현황을 그대로 사용합니다. 인구·고령 인구·병원 수는 regions.csv 값으로 채웠습니다."],
-            "notes": ["이 데이터는 시뮬레이션이 아니라 외부에서 수신한 값입니다."],
+            "how": ["외부 시스템이 보낸 정전 비율과 복구반 수를 사용합니다. 구역별 복구 작업시간은 재난 종류·지역 유형·정전 비율 기반 산식으로 추정하고, 인구·고령 인구·병원 수는 regions.csv 값으로 채웠습니다."],
+            "notes": ["복구시간은 학습형 AI 예측이 아닌 현재 시뮬레이터와 같은 결정론적 추정값입니다. 미등록 재난 종류는 외부 재난 기본시간 9시간을 사용합니다."],
         },
         "summary": {
             "outage_zones": len(outages), "unaffected_zones": max(0, len(regions) - len(outages)),

@@ -31,7 +31,7 @@ RAIN_CENTER = (37.55, 126.95)
 # 3. 주요 임계값 및 기준 소요시간
 MIN_OUTAGE_RATIO = 0.04         
 # 정전 비율이 4%(0.04) 미만이면 정전 구역에서 제외
-BASE_HOURS = {"TYPHOON": 6.0, "EARTHQUAKE": 14.0, "HEAVY_RAIN": 9.0}
+BASE_HOURS = {"TYPHOON": 6.0, "EARTHQUAKE": 14.0, "HEAVY_RAIN": 9.0, "EXTERNAL": 9.0}
 # 재난별 기본 복구시간
 _REGIONS = None
 # 읽어온 지역 데이터를 메모리에 저장해두는 캐싱용 전역 변수
@@ -82,6 +82,12 @@ def _noise(rid, salt=1):
 def _clip(v, lo=0.0, hi=1.0):
     """수치가 0.0보다 작아지거나 1.0보다 커지지 않도록 한계를 자르는 안전 함수"""
     return max(lo, min(hi, v))
+
+
+def estimate_recovery_hours(kind, region_type, outage_ratio):
+    """재난 종류·지역 유형·정전 비율로 구역별 기본 복구 작업시간을 추정한다."""
+    base_hours = BASE_HOURS.get(kind, BASE_HOURS["EXTERNAL"])
+    return base_hours * (0.6 + 1.4 * outage_ratio) * (1.25 if region_type == "군" else 1.0)
 
 
 # ---------- 재난별 위험요소 → 정전 비율 (+ 왜 그렇게 됐는지 설명 문장) ----------
@@ -175,7 +181,7 @@ def generate_disaster_scenario(disaster_type: str, severity: float = 1.0):
 
         # [복구 소요시간 est_hours 계산 공식]
         # 기본시간 * (0.6 + 1.4 * 정전비율) * (군 지역은 진입이 어려워 1.25배 추가)
-        hours = BASE_HOURS[kind] * (0.6 + 1.4 * ratio) * (1.25 if reg["type"] == "군" else 1.0)
+        hours = estimate_recovery_hours(kind, reg["type"], ratio)
         hours *= 0.9 + 0.2 * _noise(reg["id"], 3) # ±10% 고정 미세 편차
 
         # 정전 영향을 받은 병원 수 산출
@@ -206,7 +212,7 @@ def generate_disaster_scenario(disaster_type: str, severity: float = 1.0):
     event = {
         "event_id": now.strftime("%Y%m%d%H%M%S%f"),
         "type": kind, "type_name": DISASTERS[kind]["name"], "desc": DISASTERS[kind]["desc"],
-        "severity": severity, "occurred_at": now.strftime("%Y-%m-%d %H:%M:%S"),
+        "severity": severity, "repair_crew_count": 50, "occurred_at": now.strftime("%Y-%m-%d %H:%M:%S"),
         "geo": _geo(kind),
         "summary": {
             "outage_zones": len(outages), "unaffected_zones": unaffected,

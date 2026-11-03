@@ -13,7 +13,7 @@ const SC_RULE = {
   C: "복구 소요시간 가중치(55%)를 크게 둔 점수가 높은 구역, 즉 빨리 끝나는 구역부터 복구합니다."
 };
 const SC_COLOR = { A: "#e11d48", B: "#f97316", C: "#0284c7" };
-const CREWS = 10; // 복구반 수 (고정)
+const CREWS = 50; // 데모 기본 복구반 수
 const SEV_TXT = { "0.7": "약", "1": "보통", "1.3": "강" };
 const DEFAULT_STRATEGY_WEIGHTS = {
   A: { pop: 0.30, fac: 0.25, vul: 0.20, sev: 0.25, dur: 0.00 },
@@ -120,6 +120,7 @@ async function poll() {
 
 async function onNewEvent(d) {
   S.eventId = d.event.event_id; S.event = d.event; S.outages = d.outages;
+  S.crews = d.event.repair_crew_count;
   S.rows = d.outages.map(fromOutage).sort((a, b) => b.pop - a.pop);
   S.analyzed = false; S.summary = null; S.sc = "A"; SC = {};
   S.sel = S.rows.length ? S.rows[0].id : null;
@@ -132,6 +133,7 @@ async function onNewEvent(d) {
 
 function clearEvent() {
   S.eventId = null; S.event = null; S.outages = []; S.rows = []; S.summary = null;
+  S.crews = CREWS;
   S.analyzed = false; S.phase = "idle"; S.sel = null; S.sc = "A"; SC = {}; S.reqSeq++;
   renderStrategyBtns();
   renderAll(true);
@@ -297,7 +299,7 @@ function renderBanner() {
   const sm = e.summary;
   const phase = S.phase === "analyzing" ? "우선순위 분석 중…" : S.phase === "error" ? "분석 실패" : S.analyzed ? `복구 기준: ${SC_NAME[S.sc]}` : "분석 대기";
   setText("#alertTitle", `[${e.type_name}] 정전 정보 수신 · ${e.occurred_at}`);
-  setText("#alertSub", `${e.desc}${e.severity == null ? "" : ` · 강도 ${SEV_TXT[String(e.severity)] || e.severity}`} · ${phase}`);
+  setText("#alertSub", `${e.desc}${e.severity == null ? "" : ` · 강도 ${SEV_TXT[String(e.severity)] || e.severity}`} · 복구반 ${e.repair_crew_count}팀 · ${phase}`);
   setText("#aZones", sm.outage_zones);
   setText("#aFac", sm.hospitals_affected);
   setText("#aPop", man(sm.affected_population).replace(" 명", ""));
