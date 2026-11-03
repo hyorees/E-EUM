@@ -14,12 +14,11 @@ from datetime import datetime # 재난 발생 시각 기록용 도구
 HERE = os.path.dirname(os.path.abspath(__file__))
 # 기준 지역 DB 파일(regions.csv)의 absolute 경로 설정
 REGIONS_CSV = os.path.join(HERE, "data", "regions.csv")
-# 1. 지원하는 4가지 재난 종류 사전
+# 1. 지원하는 3가지 재난 종류 사전
 DISASTERS = {
     "TYPHOON":    {"name": "태풍", "desc": "제주 → 남해안 → 동해안으로 북상하는 강한 태풍"},
     "EARTHQUAKE": {"name": "지진", "desc": "경북 포항 인근 진앙의 강진"},
     "HEAVY_RAIN": {"name": "집중호우", "desc": "수도권 중심의 시간당 100mm급 집중호우"},
-    "HEATWAVE":   {"name": "폭염", "desc": "전국 폭염으로 인한 전력 피크 과부하 정전"},
 }
 # 2. 재난 이동 경로 및 중심점 좌표 (위도, 경도)
 # 태풍 이동 경로선 (제주 서쪽 해상부터 동해안까지 6개 지점을 잇는 꺾은선)
@@ -32,7 +31,7 @@ RAIN_CENTER = (37.55, 126.95)
 # 3. 주요 임계값 및 기준 소요시간
 MIN_OUTAGE_RATIO = 0.04         
 # 정전 비율이 4%(0.04) 미만이면 정전 구역에서 제외
-BASE_HOURS = {"TYPHOON": 6.0, "EARTHQUAKE": 14.0, "HEAVY_RAIN": 9.0, "HEATWAVE": 4.0} 
+BASE_HOURS = {"TYPHOON": 6.0, "EARTHQUAKE": 14.0, "HEAVY_RAIN": 9.0}
 # 재난별 기본 복구시간
 _REGIONS = None
 # 읽어온 지역 데이터를 메모리에 저장해두는 캐싱용 전역 변수
@@ -120,16 +119,7 @@ def _heavy_rain(reg, sev):
     detail = f"호우 중심에서 {d:.0f}km 거리 → 강수 {rain:.0f}mm (90mm부터 정전 시작, 380mm 부근 최대) · {why}"
     return 0.9 * _clip((rain - 90) / 290) ** 1.2 * f, {"rainfall": rain, "wind_speed": 12 * sev * math.exp(-((d / 120) ** 2))}, detail
 
-def _heatwave(reg, sev):
-    """폭염 발생 시 정전 비율 계산"""
-    temp = 35 + 4 * sev * _noise(reg["id"], 7)
-    # 인구가 많은 도시일수록 냉방 전력 수요 과부하로 정전 비율이 상승하는 물리 규칙
-    ratio = _clip(0.55 * (reg["pop"] / 800_000) ** 0.9, 0, 0.6) * sev
-    detail = (f"인구 {reg['pop']/1e4:.0f}만 명 도시라 냉방 수요가 집중 → 전력 피크 과부하 "
-    f"(규칙: 인구가 클수록 정전 비율↑, 기온 {temp:.1f}℃는 참고 표시값)")
-    return ratio, {"temperature": temp}, detail
-
-_MODELS = {"TYPHOON": _typhoon, "EARTHQUAKE": _earthquake, "HEAVY_RAIN": _heavy_rain, "HEATWAVE": _heatwave}
+_MODELS = {"TYPHOON": _typhoon, "EARTHQUAKE": _earthquake, "HEAVY_RAIN": _heavy_rain}
 
 COMMON_NOTES = [
     "이 화면의 기상·정전 수치는 실제 관측값이 아니라 공식으로 만든 '가상 시뮬레이션'입니다.",
@@ -145,8 +135,6 @@ HOW = {
                    "진도 4.4부터 정전이 시작되어 7.4 이상에서 최대가 됩니다. 그래서 진앙 주변 약 100km 안쪽만 정전이 발생합니다."],
     "HEAVY_RAIN": ["가상 호우 중심(수도권)에서 각 시·군·구까지의 거리로 강수량을 만듭니다. 중심에서 멀어질수록 급격히 줄어듭니다.",
                    "강수 90mm부터 정전이 시작되어 380mm 부근에서 최대입니다. 도심 구는 지하변전·침수에 취약해 ×1.1, 군 지역은 ×0.85로 보정합니다."],
-    "HEATWAVE": ["기상 수치가 아니라 '전력 수요' 규칙으로 만듭니다. 인구가 큰 도시일수록 냉방 수요가 몰려 정전 비율이 커집니다.",
-                 "기온(35~39℃)은 시·군·구마다 고정 편차로 만든 참고 표시값이며 정전 비율 계산에는 쓰이지 않습니다."],
 }
 
 

@@ -71,7 +71,7 @@ def health():
 
 @app.get("/api/disasters")
 def disasters():
-    """시스템이 지원하는 재난 4종류와 복구 시나리오(A/B/C) 목록을 프론트엔드에 전달하는 창구"""
+    """시스템이 지원하는 재난 3종류와 복구 시나리오(A/B/C) 목록을 프론트엔드에 전달하는 창구"""
     return {
         "disasters": [{"type": k, **v} for k, v in DISASTERS.items()],
         "strategies": [{"type": k, "label": v["label"], "weights": v["w"]} for k, v in STRATEGIES.items()],
